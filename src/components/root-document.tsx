@@ -1,5 +1,6 @@
 import type { Locale } from "@/i18n";
 import { fontVariables } from "@/lib/fonts";
+import { restoreScrollScript } from "@/lib/language-scroll";
 
 /**
  * The <html>/<body> shell shared by every root layout. Each language has its
@@ -15,7 +16,12 @@ export function RootDocument({
 }) {
   return (
     <html lang={locale} className={fontVariables}>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* Must come after the page content: it measures the sections to
+            restore the scroll position carried over from a language switch. */}
+        <script dangerouslySetInnerHTML={{ __html: restoreScrollScript }} />
+      </body>
     </html>
   );
 }

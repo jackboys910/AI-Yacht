@@ -87,14 +87,23 @@ export function SiteHeader({
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <LanguageSwitcher locale={locale} hrefs={languageHrefs} label={t.language} />
+          {/* At 400px and below there is no room for it here; it moves into
+              the burger menu instead. */}
+          <LanguageSwitcher
+            locale={locale}
+            hrefs={languageHrefs}
+            label={t.language}
+            className="hidden min-[401px]:inline-flex"
+          />
           <a
             href={cta.href}
             onClick={() => setMenuOpen(false)}
-            className="whitespace-nowrap rounded-full border border-white/40 px-3.5 py-2 text-xs font-medium text-white transition hover:border-[color:var(--gold)] hover:text-[color:var(--gold)] sm:px-5 sm:text-sm"
+            className="inline-flex h-[34px] items-center whitespace-nowrap rounded-full border border-white/40 px-3.5 text-xs font-medium text-white transition hover:border-[color:var(--gold)] hover:text-[color:var(--gold)] sm:h-[38px] sm:px-5 sm:text-sm"
           >
-            <span className="sm:hidden">{cta.short}</span>
-            <span className="hidden sm:inline">{cta.label}</span>
+            {/* The short label is only needed while the switcher shares the
+                row on a narrow screen (401–639px). */}
+            <span className="hidden min-[401px]:max-sm:inline">{cta.short}</span>
+            <span className="min-[401px]:max-sm:hidden">{cta.label}</span>
           </a>
           <button
             type="button"
@@ -135,6 +144,14 @@ export function SiteHeader({
                 {link.label}
               </a>
             ))}
+            <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-4 pb-1 min-[401px]:hidden">
+              <span className="text-sm text-white/60">{t.language}</span>
+              <LanguageSwitcher
+                locale={locale}
+                hrefs={languageHrefs}
+                label={t.language}
+              />
+            </div>
           </div>
         </div>
       )}
