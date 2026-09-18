@@ -21,7 +21,7 @@ export function ItServices({ t }: { t: Dictionary["it"]["services"] }) {
               <span className="font-display text-3xl text-[color:var(--gold)]">
                 {String(index + 1).padStart(2, "0")}
               </span>
-              <h3 className="mt-5 font-display text-2xl leading-snug">
+              <h3 className="fit-words mt-5 font-display text-2xl leading-snug">
                 {item.title}
               </h3>
               <p className="mt-3 flex-1 text-[15px] leading-relaxed text-muted-foreground">

@@ -80,6 +80,17 @@ body {
   padding-inline: 1.25rem;
 }
 
+/* Card headings sit in narrow grid columns. A long word (Russian
+   "единомышленников") must break rather than push the page sideways.
+   `overflow-wrap` only acts on words wider than the whole line, so English
+   wrapping is unchanged; Russian additionally gets proper hyphenation. */
+@utility fit-words {
+  overflow-wrap: break-word;
+  &:lang(ru) {
+    hyphens: auto;
+  }
+}
+
 @utility scrollbar-hide {
   scrollbar-width: none;
   &::-webkit-scrollbar {

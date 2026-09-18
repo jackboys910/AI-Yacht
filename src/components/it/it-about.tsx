@@ -23,9 +23,9 @@ export function ItAbout({ t }: { t: Dictionary["it"]["about"] }) {
           {t.stats.map((stat) => (
             <div
               key={stat.label}
-              className="rounded-3xl border border-border bg-card p-6 shadow-card sm:p-7"
+              className="rounded-3xl border border-border bg-card p-5 shadow-card sm:p-7"
             >
-              <div className="font-display text-3xl text-[color:var(--gold)] sm:text-4xl">
+              <div className="fit-words font-display text-2xl text-[color:var(--gold)] sm:text-4xl">
                 {stat.value}
               </div>
               <div className="mt-2 text-sm leading-snug text-muted-foreground">
@@ -57,7 +57,7 @@ export function ItPrinciples({ t }: { t: Dictionary["it"]["about"] }) {
               <span className="font-display text-4xl text-[color:var(--gold)]">
                 {item.num}
               </span>
-              <h3 className="mt-6 font-display text-2xl">{item.title}</h3>
+              <h3 className="fit-words mt-6 font-display text-2xl">{item.title}</h3>
               <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground">
                 {item.text}
               </p>

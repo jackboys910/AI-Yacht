@@ -16,7 +16,7 @@ export function Prep({ t }: { t: Dictionary["home"]["prep"] }) {
               key={item.title}
               className="rounded-3xl border border-border bg-card p-8 shadow-card"
             >
-              <h3 className="font-display text-2xl">{item.title}</h3>
+              <h3 className="fit-words font-display text-2xl">{item.title}</h3>
               <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground">
                 {item.text}
               </p>

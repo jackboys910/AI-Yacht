@@ -19,7 +19,7 @@ export function Benefits({ t }: { t: Dictionary["home"]["benefits"] }) {
               <span className="font-display text-4xl text-[color:var(--gold)]">
                 {item.num}
               </span>
-              <h3 className="mt-6 font-display text-2xl">{item.title}</h3>
+              <h3 className="fit-words mt-6 font-display text-2xl">{item.title}</h3>
               <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground">
                 {item.text}
               </p>

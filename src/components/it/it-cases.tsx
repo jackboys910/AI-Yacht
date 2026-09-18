@@ -33,7 +33,7 @@ export function ItCases({ t }: { t: Dictionary["it"]["cases"] }) {
                   <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--teal)]">
                     {t.builtLabel}
                   </span>
-                  <h3 className="mt-3 font-display text-xl">{item.caseTitle}</h3>
+                  <h3 className="fit-words mt-3 font-display text-xl">{item.caseTitle}</h3>
                   <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
                     {item.caseText}
                   </p>
@@ -67,7 +67,7 @@ export function ItCases({ t }: { t: Dictionary["it"]["cases"] }) {
                   <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">
                     {t.offerLabel}
                   </span>
-                  <h3 className="mt-3 font-display text-2xl">{item.offerTitle}</h3>
+                  <h3 className="fit-words mt-3 font-display text-2xl">{item.offerTitle}</h3>
                   <p className="mt-3 text-[15px] leading-relaxed text-foreground/80">
                     {item.offerText}
                   </p>
