@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  // The Worker name also determines the default workers.dev subdomain:
+  //   https://ai-yacht.<your-subdomain>.workers.dev
+  "name": "ai-yacht",
+  "compatibility_date": "2026-09-18",
+
+  // No "main" entry: this is an assets-only Worker. Cloudflare serves the
+  // statically exported files directly from its edge, with no JS execution
+  // and no request billing for asset hits.
+  "assets": {
+    "directory": "./out",
+
+    // `next build` with `trailingSlash: true` emits out/404.html, which
+    // Cloudflare returns (with a 404 status) for unknown paths.
+    "not_found_handling": "404-page"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}

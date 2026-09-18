@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Yacht
 
-## Getting Started
+Landing page for the AI Yacht bootcamp — 10 days in the Caribbean, 7 of them
+aboard a catamaran, November 12–22 2026.
 
-First, run the development server:
+Built as a single statically exported page, deployed to Cloudflare Workers.
+
+## Stack
+
+| Piece      | Choice                                             |
+| ---------- | -------------------------------------------------- |
+| Framework  | Next.js 16 (App Router), `output: "export"`         |
+| Language   | TypeScript                                         |
+| Styling    | Tailwind CSS v4, OKLCH design tokens in `globals.css` |
+| Fonts      | Manrope + Playfair Display, self-hosted via `next/font` |
+| Form       | EmailJS (browser SDK) → `support@ctmass.com`        |
+| Hosting    | Cloudflare Workers static assets                    |
+
+There is no server, no database and no API route: `next build` produces plain
+HTML/CSS/JS in `out/`, which Cloudflare serves from its edge.
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Other scripts:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build      # static export into out/
+npm run lint
+npm run preview    # serve the built out/ through a local Worker
+npm run deploy     # build + wrangler deploy (needs Cloudflare auth)
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Configuration
 
-## Learn More
+Everything environment-specific lives in [`src/lib/site.ts`](src/lib/site.ts).
+**Change the production domain in one place** — `siteConfig.domain` and
+`siteConfig.url` — and the metadata, Open Graph tags and footer follow.
 
-To learn more about Next.js, take a look at the following resources:
+Each EmailJS value has a working default baked in, so the project builds and
+sends mail with no `.env` file at all. To point the form elsewhere, create
+`.env.local`:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```ini
+NEXT_PUBLIC_EMAILJS_SERVICE_ID=default_service
+NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=template_epduqer
+NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=as4ih3rGW3abw98dk
+NEXT_PUBLIC_CONTACT_EMAIL=support@ctmass.com
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The EmailJS public key is designed to be visible in the browser — EmailJS
+prevents abuse with a domain allow-list in its dashboard, not by keeping the
+key secret. Add the production domain to that allow-list before going live.
 
-## Deploy on Vercel
+### The application email
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`src/lib/application-email.ts` builds the message. It sends three fields to the
+shared `template_epduqer` EmailJS template:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `subject` — `AI Yacht — new application from <name>`
+- `html` — the branded email body
+- `text` — a plain-text fallback
+
+> **If the email arrives as raw HTML source instead of a rendered message,**
+> the EmailJS template is escaping it. Open the template in the EmailJS
+> dashboard and make sure the content field uses **triple** braces —
+> `{{{html}}}`, not `{{html}}` — and that the template's content type is set to
+> HTML rather than plain text. Handlebars escapes `{{html}}` by design, which
+> is exactly what turns a formatted email into a wall of tags.
+
+## Structure
+
+```
+src/
+  app/
+    layout.tsx        metadata, fonts
+    page.tsx          composes the sections in order
+    globals.css       design tokens + custom utilities
+  components/         one file per page section
+  lib/
+    site.ts           domain + EmailJS configuration
+    application-email.ts   subject / HTML / text builders
+public/assets/        photography and nautical charts
+```
+
+## Deployment
+
+See [DEPLOY.md](DEPLOY.md) for the full walkthrough. Short version: push to
+GitHub, add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as repository
+secrets, then run the **Deploy to Cloudflare** workflow manually from the
+Actions tab and pick your branch.
