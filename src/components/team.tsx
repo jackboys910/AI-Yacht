@@ -1,36 +1,24 @@
+import type { Dictionary } from "@/i18n";
 import { Eyebrow } from "./eyebrow";
 
-const members = [
-  {
-    name: "Ivan",
-    role: "AI entrepreneur, bootcamp host",
-    photo: "/assets/ivan.jpg",
-    bio: "22 years in business. For the past year and a half he has been travelling the world — without offices and without visas in the usual sense. A living example that travel and entrepreneurship go together. He runs the programme and cooks on board.",
-  },
-  {
-    name: "Yasha",
-    role: "Captain, engineer, self-made property developer",
-    photo: "/assets/yasha.jpg",
-    bio: "He knows the water and he knows how to build — literally and in the business sense. He is responsible for safety and logistics across the whole week. Going to sea with him isn't frightening, and talking business with him isn't boring.",
-  },
-];
-
-export function Team() {
+export function Team({ t }: { t: Dictionary["home"]["team"] }) {
   return (
     <section id="team" className="bg-muted/40 py-20 sm:py-32">
       <div className="container-narrow">
-        <Eyebrow>Team</Eyebrow>
+        <Eyebrow>{t.eyebrow}</Eyebrow>
         <h2 className="mt-4 max-w-2xl font-display text-3xl leading-tight sm:text-5xl">
-          Who you&apos;ll spend this week with.
+          {t.title}
         </h2>
 
         <div className="mt-12 flex flex-col gap-6 md:grid md:grid-cols-2 md:gap-8">
-          {members.map((member) => (
+          {t.members.map((member) => (
             <article
               key={member.name}
               className="group w-full overflow-hidden rounded-3xl border border-border bg-card shadow-card"
             >
               <div className="relative aspect-[4/5] overflow-hidden bg-primary">
+                {/* The photo is part of the dictionary: Ivan's has a speech
+                    bubble baked into the image, localised per language. */}
                 <img
                   src={member.photo}
                   alt={member.name}

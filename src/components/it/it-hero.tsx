@@ -1,22 +1,22 @@
 import type { Dictionary } from "@/i18n";
 
-export function Hero({ t }: { t: Dictionary["home"]["hero"] }) {
+export function ItHero({ t }: { t: Dictionary["it"]["hero"] }) {
   return (
     <section
       id="top"
-      className="relative isolate min-h-[100svh] overflow-hidden bg-primary text-white"
+      className="relative isolate min-h-[88svh] overflow-hidden bg-primary text-white"
     >
       <img
-        src="/assets/hero-catamaran.jpg"
+        src="/assets/laptop-deck.jpg"
         alt={t.imageAlt}
-        width={1920}
-        height={1280}
-        className="absolute inset-0 h-full w-full object-cover opacity-70"
+        width={1400}
+        height={1000}
+        className="absolute inset-0 h-full w-full object-cover opacity-60"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/60 via-primary/40 to-primary" />
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/70 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/70 via-primary/50 to-primary" />
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/80 via-primary/20 to-transparent" />
 
-      <div className="container-narrow relative flex min-h-[100svh] flex-col justify-end pb-16 pt-32 sm:pb-24 sm:pt-40">
+      <div className="container-narrow relative flex min-h-[88svh] flex-col justify-end pb-16 pt-32 sm:pb-24 sm:pt-40">
         <div className="max-w-3xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/5 px-4 py-1.5 text-xs uppercase tracking-[0.18em] text-white/85 backdrop-blur">
             <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--gold)]" />
@@ -32,21 +32,21 @@ export function Hero({ t }: { t: Dictionary["home"]["hero"] }) {
           </h1>
 
           <p className="mt-8 max-w-2xl text-base text-white/80 sm:text-lg">
-            {t.lead} <span className="text-white">{t.leadRoute}</span>
+            {t.lead}
           </p>
 
           <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
             <a
-              href="#apply"
+              href="#it-apply"
               className="inline-flex items-center justify-center rounded-full bg-[color:var(--gold)] px-8 py-4 text-base font-semibold text-[color:var(--gold-foreground)] shadow-elegant transition hover:brightness-110 active:scale-[0.98]"
             >
-              {t.ctaApply}
+              {t.ctaPrimary}
             </a>
             <a
-              href="#price"
+              href="#services"
               className="inline-flex items-center justify-center rounded-full border border-white/30 px-8 py-4 text-base font-medium text-white transition hover:border-white/60"
             >
-              {t.ctaPrice}
+              {t.ctaSecondary}
             </a>
           </div>
         </div>

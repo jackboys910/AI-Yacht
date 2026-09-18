@@ -1,6 +1,7 @@
+import type { Dictionary } from "@/i18n";
 import { Eyebrow } from "./eyebrow";
 
-export function Format() {
+export function Format({ t }: { t: Dictionary["home"]["format"] }) {
   return (
     <section
       id="format"
@@ -36,17 +37,11 @@ export function Format() {
         </div>
 
         <div>
-          <Eyebrow tone="light">Format</Eyebrow>
+          <Eyebrow tone="light">{t.eyebrow}</Eyebrow>
           <h2 className="mt-4 font-display text-3xl leading-tight sm:text-5xl">
-            This is not a party on the water.
+            {t.title}
           </h2>
-          <p className="mt-6 max-w-2xl text-white/85">
-            Minimum alcohol, maximum value. We are here to actually build a
-            working AI tool in 10 days, not to sleep off cocktails until
-            lunchtime. Wine or beer with dinner is up to you, but the day&apos;s
-            programme is built around a clear head and focus, not around the
-            bar.
-          </p>
+          <p className="mt-6 max-w-2xl text-white/85">{t.text}</p>
         </div>
       </div>
     </section>
