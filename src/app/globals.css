@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Design tokens — extracted verbatim from the reference site's stylesheet.
+   --------------------------------------------------------------------------- */
+:root {
+  --radius: 0.75rem;
+
+  --background: oklch(98.5% 0.005 240);
+  --foreground: oklch(22% 0.06 260);
+
+  --surface: oklch(22% 0.06 260);
+  --surface-foreground: oklch(97% 0.01 240);
+
+  --card: oklch(100% 0 0);
+  --card-foreground: oklch(22% 0.06 260);
+
+  --primary: oklch(22% 0.06 260);
+  --primary-foreground: oklch(98% 0.01 240);
+
+  --teal: oklch(55% 0.09 190);
+  --teal-foreground: oklch(98% 0.01 200);
+
+  --gold: oklch(72% 0.12 75);
+  --gold-foreground: oklch(20% 0.05 260);
+
+  --muted: oklch(95% 0.01 240);
+  --muted-foreground: oklch(50% 0.03 250);
+
+  --border: oklch(90% 0.015 240);
+  --ring: oklch(55% 0.09 190);
+}
+
+/* Expose the tokens above as Tailwind v4 theme values, so utilities such as
+   `bg-primary`, `text-muted-foreground` and `border-border` resolve. */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-teal: var(--teal);
+  --color-teal-foreground: var(--teal-foreground);
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+
+  /* `--font-manrope` / `--font-playfair` are injected by next/font, which
+     self-hosts both families instead of hitting fonts.googleapis.com. */
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-playfair), ui-serif, Georgia, serif;
+
+  --shadow-elegant: 0 30px 80px -20px
+    color-mix(in oklab, var(--primary) 55%, transparent);
+  --shadow-card: 0 12px 40px -12px
+    color-mix(in oklab, var(--primary) 35%, transparent);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------------------------------------------------------------------------
+   Custom utilities used across the page.
+   --------------------------------------------------------------------------- */
+@utility container-narrow {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+@utility scrollbar-hide {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
