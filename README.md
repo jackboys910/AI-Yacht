@@ -1,9 +1,22 @@
 # AI Yacht
 
 Landing page for the AI Yacht bootcamp — 10 days in the Caribbean, 7 of them
-aboard a catamaran, November 12–22 2026.
+aboard a catamaran, November 12–22 2026 — plus an IT Solutions page selling
+the CTMASS team's development services. English and Russian.
 
-Built as a single statically exported page, deployed to Cloudflare Workers.
+Statically exported, deployed to Cloudflare Workers.
+
+## Pages
+
+| URL | Page |
+| --- | ---- |
+| `/` | AI Yacht (English, default) |
+| `/it-solutions/` | IT Solutions by CTMASS (English) |
+| `/ru/` | AI Yacht (Russian) |
+| `/ru/it-solutions/` | IT Solutions by CTMASS (Russian) |
+
+The EN/RU switch in the header links to the same page in the other language
+and keeps the current `#section`.
 
 ## Stack
 
@@ -11,9 +24,10 @@ Built as a single statically exported page, deployed to Cloudflare Workers.
 | ---------- | -------------------------------------------------- |
 | Framework  | Next.js 16 (App Router), `output: "export"`         |
 | Language   | TypeScript                                         |
+| i18n       | Typed dictionaries, one root layout per language    |
 | Styling    | Tailwind CSS v4, OKLCH design tokens in `globals.css` |
-| Fonts      | Manrope + Playfair Display, self-hosted via `next/font` |
-| Form       | EmailJS (browser SDK) → `support@ctmass.com`        |
+| Fonts      | Manrope + Playfair Display (Latin + Cyrillic), self-hosted via `next/font` |
+| Forms      | EmailJS (browser SDK) → `support@ctmass.com`        |
 | Hosting    | Cloudflare Workers static assets                    |
 
 There is no server, no database and no API route: `next build` produces plain
@@ -23,7 +37,7 @@ HTML/CSS/JS in `out/`, which Cloudflare serves from its edge.
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+npm run dev        # http://localhost:3000  (Russian: /ru/)
 ```
 
 Other scripts:
@@ -35,15 +49,52 @@ npm run preview    # serve the built out/ through a local Worker
 npm run deploy     # build + wrangler deploy (needs Cloudflare auth)
 ```
 
+## Editing text
+
+All copy lives in two files:
+
+- [`src/i18n/dictionaries/en.ts`](src/i18n/dictionaries/en.ts)
+- [`src/i18n/dictionaries/ru.ts`](src/i18n/dictionaries/ru.ts)
+
+`ru.ts` is typed against `en.ts`, so a key added to one and forgotten in the
+other fails the build instead of rendering blank.
+
+Team photos are part of the dictionaries too: Ivan's photo has a speech bubble
+baked into the image, so English uses `ivanEN.jpg` and Russian the original
+`ivan.jpg`.
+
+## How the languages are wired
+
+Each language has its own root layout, using route groups:
+
+```
+src/app/
+  (en)/layout.tsx            <html lang="en">
+  (en)/page.tsx              /
+  (en)/it-solutions/page.tsx /it-solutions/
+  (ru)/layout.tsx            <html lang="ru">
+  (ru)/ru/page.tsx           /ru/
+  (ru)/ru/it-solutions/…     /ru/it-solutions/
+  global-not-found.tsx       bilingual 404 (needs experimental.globalNotFound)
+```
+
+That way the exported HTML carries the correct `lang`, title, canonical URL
+and hreflang alternates for every page — nothing is swapped in on the client.
+The page files are one-liners; the real composition is in `src/views/`.
+
+To add a page: add its id and slug to `src/i18n/config.ts`, its `meta` entry
+to both dictionaries, and a page file under each language group.
+
 ## Configuration
 
-Everything environment-specific lives in [`src/lib/site.ts`](src/lib/site.ts).
-**Change the production domain in one place** — `siteConfig.domain` and
-`siteConfig.url` — and the metadata, Open Graph tags and footer follow.
+Environment-specific values live in [`src/lib/site.ts`](src/lib/site.ts). The
+production domain is set in one place — `siteConfig.domain` and
+`siteConfig.url` — and canonical URLs, hreflang, Open Graph and the footer
+follow.
 
-Each EmailJS value has a working default baked in, so the project builds and
-sends mail with no `.env` file at all. To point the form elsewhere, create
-`.env.local`:
+Each EmailJS value has a working default, so the project builds and sends mail
+with no `.env` file. Override any of them in `.env.local`, or as GitHub
+repository variables for the deploy workflow:
 
 ```ini
 NEXT_PUBLIC_EMAILJS_SERVICE_ID=default_service
@@ -52,38 +103,34 @@ NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=as4ih3rGW3abw98dk
 NEXT_PUBLIC_CONTACT_EMAIL=support@ctmass.com
 ```
 
-The EmailJS public key is designed to be visible in the browser — EmailJS
-prevents abuse with a domain allow-list in its dashboard, not by keeping the
-key secret. Add the production domain to that allow-list before going live.
+The EmailJS public key is designed to be visible in the browser.
 
-### The application email
+### Emails
 
-`src/lib/application-email.ts` builds the message. It sends three fields to the
-shared `template_epduqer` EmailJS template:
+`src/lib/email/` builds both messages. They always go out in **English** and
+say which site language the visitor used:
 
-- `subject` — `AI Yacht — new application from <name>`
-- `html` — the branded email body
-- `text` — a plain-text fallback
+- `yacht-application.ts` — `AI Yacht — new application from <name>`
+- `it-inquiry.ts` — `AI Yacht · IT Solutions — <service> inquiry from <name>`,
+  with `reply_to` set to the client's email
+- `shell.ts` — the shared branded HTML layout and plain-text fallback
 
-> **If the email arrives as raw HTML source instead of a rendered message,**
-> the EmailJS template is escaping it. Open the template in the EmailJS
-> dashboard and make sure the content field uses **triple** braces —
-> `{{{html}}}`, not `{{html}}` — and that the template's content type is set to
-> HTML rather than plain text. Handlebars escapes `{{html}}` by design, which
-> is exactly what turns a formatted email into a wall of tags.
+> **If an email arrives as raw HTML source,** the EmailJS template is escaping
+> it: its content must be `{{{html}}}` (triple braces), not `{{html}}`. See
+> DEPLOY.md §9 for setting up a dedicated template.
 
 ## Structure
 
 ```
 src/
-  app/
-    layout.tsx        metadata, fonts
-    page.tsx          composes the sections in order
-    globals.css       design tokens + custom utilities
-  components/         one file per page section
+  app/                route groups per language (see above) + globals.css
+  views/              home-page.tsx, it-solutions-page.tsx
+  components/         one file per home section; it/ for the IT page
+  i18n/               locales, dictionaries, metadata builder
   lib/
     site.ts           domain + EmailJS configuration
-    application-email.ts   subject / HTML / text builders
+    fonts.ts          next/font setup
+    email/            email builders and the EmailJS sender
 public/assets/        photography and nautical charts
 ```
 

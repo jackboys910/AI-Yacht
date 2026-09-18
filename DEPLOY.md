@@ -105,43 +105,37 @@ I queried the registry directly. As of 18 September 2026:
 | Nameservers | `ns3-l2.nic.ru`, `ns4-l2.nic.ru`, `ns8-l2.nic.ru`, `ns4-cloud.nic.ru`, `ns8-cloud.nic.ru` |
 | Lock | `clientTransferProhibited` |
 
-It has been held since 2007 and its DNS is on nic.ru, **not** Cloudflare. So
-there are three possible situations — confirm which one applies before doing
-anything else.
+**Confirmed: the domain belongs to the manager**, registered at nic.ru.
 
-#### Case A — the manager already owns it
+Its DNS does not currently resolve at all — every lookup (A, MX, TXT, www)
+returns `SERVFAIL`, because the nic.ru nameservers hold no zone for it. So
+there is **no website and no email on it today**, and moving it to Cloudflare
+cannot break anything.
 
-Most likely if he asked for this specific name. Ask him for **one** of:
+**Do not transfer it to another registrar** (GoDaddy or anyone else). A
+transfer takes 5–7 days, costs a year's renewal and changes nothing that
+matters: Cloudflare works with any registrar. The domain stays at nic.ru; only
+its nameservers change (§7).
 
-- **Preferred:** an invitation to his Cloudflare account. He goes to
-  **Manage Account** → **Members** → **Invite**, enters your email, and gives
-  you the **Administrator** role (or at minimum *Workers Admin* + *DNS*).
-  You then create the token in §4 from within his account.
-- Or: he creates the API token himself (§4) and sends it to you privately.
-- Or: he does §7 and §8 himself while you watch.
+### What the manager needs to do
 
-Also ask **which registrar account** holds the domain, because the nameservers
-must be changed there (§7).
+1. **Create a free Cloudflare account** at
+   <https://dash.cloudflare.com/sign-up> (email + password, no card) and
+   confirm the email.
+2. **Invite you:** **Manage Account** → **Members** → **Invite** → your email
+   → role **Administrator** → send. The account stays his; you get a normal
+   login of your own. (Alternative if he would rather not touch Cloudflare:
+   you create the account and invite *him* as **Super Administrator**.)
+3. **Change two nameservers at nic.ru** when you send them (§7, step 6) — or
+   do it together on a screen-share. He does not need to share his nic.ru
+   password.
 
-#### Case B — it belongs to a stranger
+### Logging in as the invited member
 
-Then it must be bought from the current holder. `clientTransferProhibited` is
-just the standard anti-hijack lock; the owner can unlock it to transfer. Check
-who it is:
-
-```bash
-# Windows PowerShell
-Invoke-RestMethod https://rdap.verisign.com/net/v1/domain/nazarov.net
-```
-
-Buying a 19-year-old `.net` from its owner is a negotiation, not a checkout —
-budget time, or pick a different name.
-
-#### Case C — a different domain
-
-Anything works. Cheapest path: register it **through Cloudflare Registrar**
-(Domain Registration → Register Domains), which sells at wholesale cost and
-puts the domain on Cloudflare DNS instantly — §7 then becomes unnecessary.
+Cloudflare emails you an invitation. Accept it — sign in, or sign up with the
+same email address it was sent to. At <https://dash.cloudflare.com> the
+account switcher (top-left) now lists the manager's account; select it before
+doing §3 onward.
 
 ---
 
@@ -186,46 +180,72 @@ Cloudflare creates the DNS records and issues the TLS certificate
 automatically — usually under a minute, occasionally a few minutes. No
 certificate files to manage, HTTPS is on by default.
 
-Finally, update the domain in the code so metadata and the footer stop saying
-the old name:
-
-```ts
-// src/lib/site.ts
-domain: "nazarov.net",
-url: "https://nazarov.net",
-```
-
-Commit, push, and run the workflow again.
+The code already uses `nazarov.net` for canonical URLs, hreflang tags and the
+footer (`src/lib/site.ts`). If the domain ever changes, edit it there, commit,
+push and run the workflow again.
 
 ---
 
-## 9. Allow the domain in EmailJS
+## 9. EmailJS
 
-**The form will silently fail until you do this.** EmailJS blocks requests from
-domains that are not on its allow-list.
+Both forms (AI Yacht application, IT Solutions inquiry) send through the
+CTMASS EmailJS account to `support@ctmass.com`. Out of the box they use the
+shared `template_epduqer`, which CTMASS also uses. Every request passes:
 
-1. Log in to <https://dashboard.emailjs.com> with the manager's account.
-2. **Account** → **Security**.
-3. Under the allowed-origins / API settings, add:
-   - `https://nazarov.net`
-   - `https://www.nazarov.net`
-   - `https://ai-yacht.<your-subdomain>.workers.dev` (for testing)
-4. Save, then submit the form on the live site and confirm the email lands at
-   `support@ctmass.com`.
+| Variable | Contents |
+| -------- | -------- |
+| `subject` | e.g. `AI Yacht — new application from Anna` |
+| `html` | the branded email body |
+| `text` | plain-text version |
+| `mail_to` | `support@ctmass.com` |
+| `from_name` | `AI Yacht` or `AI Yacht · IT Solutions` |
+| `reply_to` | the client's email (IT inquiries only) |
+
+### Recommended: a dedicated template for this site
+
+This leaves CTMASS's own emails untouched, fixes the raw-HTML problem for this
+site regardless of how the shared template is set up, and locks the recipient.
+
+1. Log in at <https://dashboard.emailjs.com>.
+2. **Email Templates** → **Create New Template**.
+3. **Subject:** `{{subject}}`
+4. **Content:** press **Edit Content** → switch to the **Code** editor →
+   delete everything → type exactly `{{{html}}}` (three braces) → apply.
+5. Right-hand fields:
+   - **To Email:** `support@ctmass.com` — typed literally, *not*
+     `{{mail_to}}`. The public key is visible in the browser, so a template
+     that takes its recipient from the request could be abused to send mail
+     anywhere.
+   - **From Name:** `{{from_name}}`
+   - **From Email:** keep *Use Default Email Address*.
+   - **Reply To:** `{{reply_to}}` — pressing *Reply* on an IT inquiry then
+     answers the client directly.
+6. **Save**. Open the template's **Settings** tab and copy its **Template ID**
+   (you may rename it, e.g. `template_aiyacht`).
+7. In GitHub: **Settings** → **Secrets and variables** → **Actions** →
+   **Variables** tab → **New repository variable**:
+   `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID` = that ID. The deploy workflow already
+   reads it; run the workflow again.
+8. Use the template editor's **Test It** button, or submit a form on the live
+   site, and check the result in `support@ctmass.com`.
 
 ### If the email arrives as raw HTML
 
-This is the problem you hit before. The `template_epduqer` template escapes its
-variable. Fix it in the EmailJS dashboard:
+Handlebars escapes `{{html}}` by design — that is what turns `<div>` into
+`&lt;div&gt;`, so a formatted email arrives as a wall of tags. The template
+must use **triple** braces, `{{{html}}}`. That is a template-side setting;
+nothing in this repository can override it. The dedicated template above has
+it right from the start.
 
-1. **Email Templates** → `template_epduqer`.
-2. Switch the content editor to **Code / HTML** mode.
-3. Make sure the body uses **three** braces — `{{{html}}}` — not `{{html}}`.
+### Other things to check in the dashboard
 
-Handlebars escapes `{{html}}` by design (that is what turns `<div>` into
-`&lt;div&gt;`), so a formatted email arrives as a wall of tags. Triple braces
-insert the value raw. Nothing in this repository can override that — it is a
-template-side setting.
+- **Account → Security:** if domain restrictions are switched on, add
+  `https://nazarov.net`, `https://www.nazarov.net` and your
+  `*.workers.dev` URL. If there are none, nothing to do.
+- **Email Services:** the service marked as default must be connected
+  (the site calls `default_service`, EmailJS's alias for it).
+- **Usage / plan:** each form submission is one email against the monthly
+  quota.
 
 ---
 
@@ -257,7 +277,7 @@ rebuild.
 | ------- | ----- | --- |
 | Workflow fails on the deploy step with `Authentication error` | Token is wrong, expired, or scoped to another account | Recreate the token (§4), update the secret |
 | `workers.dev` URL works, custom domain gives 522/error | Zone is not Active yet, or the custom domain was never added | Check §7 and §8 |
-| Form shows "Something went wrong" | Domain missing from the EmailJS allow-list | §9 |
+| Form shows "Something went wrong" | EmailJS rejected the request: domain restriction, quota, or disconnected service | §9 — the browser console logs EmailJS's exact reason |
 | Email arrives as HTML source | `{{html}}` instead of `{{{html}}}` in the EmailJS template | §9 |
 | Images missing after deploy | `out/` was not rebuilt | Rerun the workflow; the build step regenerates `out/` |
 | Old content still showing | Cloudflare edge cache | **Caching** → **Configuration** → **Purge Everything** |
