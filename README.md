@@ -4,7 +4,7 @@ Landing page for the AI Yacht bootcamp — 10 days in the Caribbean, 7 of them
 aboard a catamaran, November 12–22 2026 — plus an IT Solutions page selling
 the CTMASS team's development services. English and Russian.
 
-Statically exported, deployed to Cloudflare Workers.
+Statically exported, then added improvements, deployed to Cloudflare Workers.
 
 ## Pages
 
