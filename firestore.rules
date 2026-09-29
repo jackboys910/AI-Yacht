@@ -1,0 +1,109 @@
+rules_version = '2';
+
+// Who may read and write what in the nazarov.net database.
+//
+// The project's API key travels to every visitor's browser, so nothing here
+// may rely on it being secret. Three groups exist:
+//
+//   - visitors and `next build`, signed in to nothing, who may read exactly
+//     the content the site renders;
+//   - the owner, whose account is listed under /owners;
+//   - the Cloudflare Worker, which talks to Firestore through a service
+//     account and bypasses these rules entirely — that is how subscriptions
+//     and applications get written without opening the database to browsers.
+//
+// Deploy with `firebase deploy --only firestore:rules`, or paste this file
+// into Firebase console → Firestore Database → Rules → Publish.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Being signed in is not being the owner. The Email/Password provider will
+    // create an account for anyone who calls it directly with the public API
+    // key, so authority comes from an /owners entry, which can only be added
+    // by hand in the Firebase console.
+    function isOwner() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/owners/$(request.auth.uid));
+    }
+
+    // A person may check their own entry — the admin panel uses that to say
+    // "this account is not the owner" instead of showing a panel where every
+    // action silently fails. Nobody may list the collection or write to it.
+    match /owners/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list, write: if false;
+    }
+
+    /* ---------------------------------------------------------------------
+       Content the site renders. Anonymous reads here are what `next build`
+       uses to print the pages.
+       --------------------------------------------------------------------- */
+
+    match /interests/{id} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+
+    match /people/{id} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+
+    match /projects/{id} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+
+    // Live Going / Interested numbers, refreshed in the browser between builds
+    // (§6.3). Visitors read them; the Worker is what increments them.
+    match /counters/{tripId} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+
+    // П-09: drafts and archived trips are invisible to visitors anywhere on
+    // the site. The published test comes first so that reading a public trip
+    // costs no extra document lookup.
+    match /trips/{id} {
+      allow read: if resource.data.status == 'published' || isOwner();
+      allow write: if isOwner();
+    }
+
+    /* ---------------------------------------------------------------------
+       Personal data. Written by the Worker, read by the owner, never exposed
+       to a browser: one line in a console would otherwise walk off with the
+       whole subscriber list.
+       --------------------------------------------------------------------- */
+
+    match /subscribers/{id} {
+      allow read, write: if isOwner();
+    }
+
+    match /interested/{id} {
+      allow read, write: if isOwner();
+    }
+
+    match /applications/{id} {
+      allow read, write: if isOwner();
+    }
+
+    match /solutionsInquiries/{id} {
+      allow read, write: if isOwner();
+    }
+
+    // Anything added later starts closed rather than open.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
