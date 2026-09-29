@@ -105,6 +105,45 @@ NEXT_PUBLIC_CONTACT_EMAIL=support@ctmass.com
 
 The EmailJS public key is designed to be visible in the browser.
 
+The Firebase project works the same way — defaults in
+[`src/lib/firebase/config.ts`](src/lib/firebase/config.ts), overridable for a
+test copy of the site with its own database:
+
+```ini
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=nazarov-net.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=nazarov-net
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=nazarov-net.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+NEXT_PUBLIC_FIREBASE_APP_ID=...
+```
+
+These values identify the project rather than granting access to it; Firebase
+ships them to every visitor. What protects the data is
+[`firestore.rules`](firestore.rules).
+
+### Firebase
+
+Content lives in Firestore and is read once per build by
+[`src/lib/firebase/content.ts`](src/lib/firebase/content.ts), which prints it
+into static HTML. Two failures are treated differently on purpose: with no
+project configured the build finishes with an empty site, but a configured
+project that cannot be read **fails the build** rather than publishing an empty
+nazarov.net over a working one.
+
+Authority in the admin panel comes from a document at `owners/{uid}`, not from
+having signed in. The project's API key is public and the Email/Password
+provider will create an account for anyone who calls it directly, so a bare
+session is granted nothing by the rules. To let an account in:
+
+1. Firebase console → Authentication → Users → copy the account's **User UID**.
+2. Firestore → Data → collection `owners` → new document whose **ID is that
+   UID**, with any field (`email` is the useful one).
+
+After editing the rules, publish them with
+`npx firebase deploy --only firestore:rules,storage` or by pasting the file into
+Firebase console → Firestore Database → Rules → Publish.
+
 ### Emails
 
 `src/lib/email/` builds both messages. They always go out in **English** and
@@ -123,15 +162,21 @@ say which site language the visitor used:
 
 ```
 src/
-  app/                route groups per language (see above) + globals.css
+  app/                route groups: (en), (ru), (admin) + globals.css
   views/              home-page.tsx, it-solutions-page.tsx
   components/         one file per home section; it/ for the IT page
+    admin/            the admin panel at /admin/
   i18n/               locales, dictionaries, metadata builder
   lib/
     site.ts           domain + EmailJS configuration
     fonts.ts          next/font setup
     email/            email builders and the EmailJS sender
+    content/          the domain model: trips, interests, schedule, validation
+    firebase/         project config, build-time reads, sign-in
 public/assets/        photography and nautical charts
+firestore.rules       who may read and write what
+storage.rules         who may upload photos
+docs/                 the spec and the implementation plan
 ```
 
 ## Deployment
