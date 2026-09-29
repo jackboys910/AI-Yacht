@@ -232,6 +232,141 @@ export function LocalizedTextarea({
   );
 }
 
+/**
+ * A bullet list, edited as one item per line.
+ *
+ * "What's included", the paragraphs of "The place", the points of "Is this trip
+ * for you?" are all short lists, and a textarea is far quicker to fill and to
+ * reorder than a stack of single-line inputs with buttons beside each — on a
+ * phone especially. Blank lines are dropped, so a stray newline costs nothing.
+ *
+ * The two languages are independent lists: a translation may legitimately need
+ * a different number of lines.
+ */
+export function LocalizedLines({
+  id,
+  label,
+  value,
+  onChange,
+  hint,
+  rows = 5,
+  placeholder,
+}: {
+  id: string;
+  label: string;
+  value: Localized<string[]>;
+  onChange: (value: Localized<string[]>) => void;
+  hint?: ReactNode;
+  rows?: number;
+  placeholder?: string;
+}) {
+  const locale = useFormLocale();
+  const other = locales.find((l) => l !== locale)!;
+  const otherCount = value[other].filter((line) => line.trim()).length;
+
+  return (
+    <div>
+      <Label htmlFor={id}>{label}</Label>
+      <textarea
+        id={id}
+        rows={rows}
+        lang={locale}
+        placeholder={placeholder}
+        value={value[locale].join("\n")}
+        onChange={(event) =>
+          onChange({
+            ...value,
+            [locale]: event.target.value.split("\n").filter((line) => line.trim()),
+          })
+        }
+        className={`mt-1.5 ${inputClass} resize-y`}
+      />
+      <p className={`mt-1 text-xs ${otherCount ? "text-muted-foreground" : "text-amber-600"}`}>
+        <span className="font-semibold">{localeLabels[other]}:</span>{" "}
+        {otherCount ? `${otherCount} стр.` : "не заполнено"}
+      </p>
+      {hint && <Hint>{hint}</Hint>}
+    </div>
+  );
+}
+
+export function NumberInput({
+  id,
+  label,
+  value,
+  onChange,
+  hint,
+  min = 0,
+  required,
+}: {
+  id: string;
+  label: string;
+  value: number | undefined;
+  onChange: (value: number | undefined) => void;
+  hint?: ReactNode;
+  min?: number;
+  required?: boolean;
+}) {
+  return (
+    <div>
+      <Label htmlFor={id} required={required}>
+        {label}
+      </Label>
+      <input
+        id={id}
+        type="number"
+        min={min}
+        value={value ?? ""}
+        onChange={(event) => {
+          const raw = event.target.value;
+          onChange(raw === "" ? undefined : Number(raw));
+        }}
+        className={`mt-1.5 ${inputClass}`}
+      />
+      {hint && <Hint>{hint}</Hint>}
+    </div>
+  );
+}
+
+export function Select<T extends string>({
+  id,
+  label,
+  value,
+  options,
+  onChange,
+  hint,
+  required,
+}: {
+  id: string;
+  label: string;
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (value: T) => void;
+  hint?: ReactNode;
+  required?: boolean;
+}) {
+  return (
+    <div>
+      <Label htmlFor={id} required={required}>
+        {label}
+      </Label>
+      <select
+        id={id}
+        value={value}
+        onChange={(event) => onChange(event.target.value as T)}
+        className={`mt-1.5 ${inputClass}`}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      {hint && <Hint>{hint}</Hint>}
+    </div>
+  );
+}
+
 export function Checkbox({
   id,
   label,

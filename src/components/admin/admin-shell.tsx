@@ -7,6 +7,7 @@ import type { User } from "firebase/auth";
 import { signOutOwner } from "@/lib/firebase/auth";
 import { InterestsView } from "./interests/interests-view";
 import { PeopleView } from "./people/people-view";
+import { TripsView } from "./trips/trips-view";
 import { ADMIN_VIEWS, resolveView } from "./views";
 
 /**
@@ -107,7 +108,9 @@ export function AdminShell({ user }: { user: User }) {
         <p className="mt-1.5 text-sm text-muted-foreground">{current.description}</p>
 
         <div className="mt-8">
-          {active === "interests" ? (
+          {active === "trips" ? (
+            <TripsView />
+          ) : active === "interests" ? (
             <InterestsView />
           ) : active === "people" ? (
             <PeopleView />
