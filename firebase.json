@@ -1,0 +1,9 @@
+{
+  "//": "Only the security rules live here. Hosting is Cloudflare, not Firebase — see wrangler.jsonc.",
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  }
+}

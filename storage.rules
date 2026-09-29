@@ -1,0 +1,38 @@
+rules_version = '2';
+
+// Who may upload and read the trip photos.
+//
+// Reads are open because these files are the pictures on the public pages.
+// Uploads are the owner's alone, and the owner is defined the same way as in
+// firestore.rules: an entry under /owners, not merely a signed-in account.
+//
+// Not deployed yet — Cloud Storage waits on the Blaze upgrade (plan item 1.5).
+// Deploy with `firebase deploy --only storage`, or paste into
+// Firebase console → Storage → Rules → Publish.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isOwner() {
+      return request.auth != null
+        && firestore.exists(
+             /databases/(default)/documents/owners/$(request.auth.uid)
+           );
+    }
+
+    match /{allPaths=**} {
+      allow read: if true;
+
+      // The admin panel compresses and resizes before uploading, so a file
+      // over 10 MB means something went wrong rather than a large photo, and
+      // the content type keeps the bucket from becoming general file storage.
+      allow create, update: if isOwner()
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+
+      // `request.resource` does not exist on a delete, so this is its own rule
+      // rather than part of the one above.
+      allow delete: if isOwner();
+    }
+  }
+}
