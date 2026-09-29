@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import type { User } from "firebase/auth";
 import { signOutOwner } from "@/lib/firebase/auth";
+import { InterestsView } from "./interests/interests-view";
 import { ADMIN_VIEWS, resolveView } from "./views";
 
 /**
@@ -64,6 +65,12 @@ export function AdminShell({ user }: { user: User }) {
             <li key={view.id}>
               <Link
                 href={`/admin/?view=${view.id}`}
+                // Every item is the same route with a different query string,
+                // so there is nothing to fetch ahead of time. Left on, the
+                // prefetch asks for an RSC payload under a flattened name that
+                // the static export writes to a nested path, and every page
+                // load ends in a 404 in the console.
+                prefetch={false}
                 // Picking an item is what closes the menu on a phone; left
                 // open it would cover the screen the tap just asked for.
                 onClick={() => setMenuOpen(false)}
@@ -98,11 +105,16 @@ export function AdminShell({ user }: { user: User }) {
         <h1 className="font-display text-2xl sm:text-3xl">{current.label}</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">{current.description}</p>
 
-        <div className="mt-8 rounded-2xl border border-dashed border-border bg-card p-6 sm:p-10">
-          <p className="text-sm text-muted-foreground">
-            Раздел появится на пункте {current.comingIn} плана работ. Сейчас готов
-            каркас админки: вход, меню и мобильная вёрстка.
-          </p>
+        <div className="mt-8">
+          {active === "interests" ? (
+            <InterestsView />
+          ) : (
+            <div className="rounded-2xl border border-dashed border-border bg-card p-6 sm:p-10">
+              <p className="text-sm text-muted-foreground">
+                Раздел появится на пункте {current.comingIn} плана работ.
+              </p>
+            </div>
+          )}
         </div>
       </main>
     </div>
