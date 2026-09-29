@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { Locale } from "@/i18n/config";
 import { slugify } from "@/lib/content/slug";
-import type { Interest, StoredImage } from "@/lib/content/types";
+import type { Interest } from "@/lib/content/types";
 import {
   InterestInUseError,
   deleteInterest,
@@ -22,6 +22,7 @@ import {
   SecondaryButton,
   TextInput,
 } from "../fields";
+import { ImageUrlField } from "../image-field";
 
 export function InterestForm({
   id,
@@ -136,7 +137,10 @@ export function InterestForm({
             onChange={(value) => set("description", value)}
           />
 
-          <CoverField
+          <ImageUrlField
+            id="interest-cover"
+            label="Обложка вкладки"
+            placeholder="/assets/hero-catamaran.jpg"
             value={draft.cover}
             onChange={(cover) => set("cover", cover)}
           />
@@ -219,83 +223,6 @@ export function InterestForm({
       </div>
     </FormLocaleProvider>
   );
-}
-
-/**
- * The cover, entered as an address for now.
- *
- * Uploading from a computer or a phone arrives with plan item 1.5, once Cloud
- * Storage is available. Until then an address still covers the case that
- * matters: item 1.11 moves the AI Yacht trip across, and its photography
- * already sits under /assets/. The real dimensions are measured in the browser
- * rather than guessed, so the page can reserve the right space and avoid the
- * layout jumping as images arrive. `storagePath` stays empty, which marks the
- * file as one we did not upload and must not delete.
- */
-function CoverField({
-  value,
-  onChange,
-}: {
-  value?: StoredImage;
-  onChange: (cover: StoredImage | undefined) => void;
-}) {
-  const [probing, setProbing] = useState(false);
-
-  async function apply(url: string) {
-    const trimmed = url.trim();
-    if (!trimmed) {
-      onChange(undefined);
-      return;
-    }
-
-    setProbing(true);
-    const size = await measure(trimmed);
-    setProbing(false);
-
-    onChange({
-      url: trimmed,
-      width: size?.width ?? 0,
-      height: size?.height ?? 0,
-      storagePath: "",
-      alt: value?.alt ?? { en: "", ru: "" },
-    });
-  }
-
-  return (
-    <div>
-      <TextInput
-        id="interest-cover"
-        label="Обложка вкладки"
-        type="url"
-        value={value?.url ?? ""}
-        onChange={apply}
-        placeholder="/assets/hero-catamaran.jpg"
-        hint={
-          probing
-            ? "Определяем размер картинки…"
-            : value?.width
-              ? `Картинка ${value.width}×${value.height}. Загрузка с компьютера и телефона появится на пункте 1.5.`
-              : "Пока — адрес картинки. Загрузка с компьютера и телефона появится на пункте 1.5."
-        }
-      />
-      {value?.url && (
-        <img
-          src={value.url}
-          alt=""
-          className="mt-3 h-32 w-full rounded-lg border border-border object-cover"
-        />
-      )}
-    </div>
-  );
-}
-
-function measure(url: string): Promise<{ width: number; height: number } | null> {
-  return new Promise((resolve) => {
-    const image = new Image();
-    image.onload = () => resolve({ width: image.naturalWidth, height: image.naturalHeight });
-    image.onerror = () => resolve(null);
-    image.src = url;
-  });
 }
 
 function message(error: unknown): string {

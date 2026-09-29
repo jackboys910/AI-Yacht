@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { User } from "firebase/auth";
 import { signOutOwner } from "@/lib/firebase/auth";
 import { InterestsView } from "./interests/interests-view";
+import { PeopleView } from "./people/people-view";
 import { ADMIN_VIEWS, resolveView } from "./views";
 
 /**
@@ -108,6 +109,8 @@ export function AdminShell({ user }: { user: User }) {
         <div className="mt-8">
           {active === "interests" ? (
             <InterestsView />
+          ) : active === "people" ? (
+            <PeopleView />
           ) : (
             <div className="rounded-2xl border border-dashed border-border bg-card p-6 sm:p-10">
               <p className="text-sm text-muted-foreground">
