@@ -1,3 +1,4 @@
+import { interestLabel } from "./nav";
 import type { Interest, Person, SiteContent, Trip } from "./types";
 import { isPublic, tabTrips } from "./visibility";
 
@@ -74,7 +75,7 @@ export function resolveInterestPage(
         {
           trip,
           interestSlug: owner.slug,
-          interestLabel: owner.name.en || owner.name.ru || owner.slug,
+          interestLabel: interestLabel(owner),
         },
       ];
     });

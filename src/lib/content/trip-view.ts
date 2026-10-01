@@ -119,15 +119,26 @@ export function bookingLabel(status: BookingStatus, locale: Locale): string {
   return BOOKING_LABELS[status][locale];
 }
 
-/** "Kids 2–6" — only when the owner gave an age range (§6.3). */
-export function kidsLabel(trip: Trip, locale: Locale): string | null {
-  if (!trip.kidFriendly) return null;
-  const { kidAgeFrom: from, kidAgeTo: to } = trip;
-  const welcome = locale === "en" ? "Kids welcome" : "Можно с детьми";
+/**
+ * The badges a kid-friendly trip carries (§6.3).
+ *
+ * The spec asks for two different things and they are not alternatives: the
+ * mark itself puts "Kids welcome" on the trip, and an age range the owner
+ * filled in adds a badge of the form "Kids 2–6". So a range extends the first
+ * badge rather than replacing it — otherwise filling the ages in would quietly
+ * take away the words Appendix В fixes for the mark.
+ */
+export function kidsBadges(trip: Trip, locale: Locale): string[] {
+  if (!trip.kidFriendly) return [];
 
-  if (from === undefined && to === undefined) return welcome;
+  const welcome = locale === "en" ? "Kids welcome" : "Можно с детьми";
   const kids = locale === "en" ? "Kids" : "Дети";
-  if (from !== undefined && to !== undefined) return `${kids} ${from}–${to}`;
-  if (from !== undefined) return locale === "en" ? `${kids} ${from}+` : `${kids} от ${from}`;
-  return locale === "en" ? `${kids} up to ${to}` : `${kids} до ${to}`;
+  const { kidAgeFrom: from, kidAgeTo: to } = trip;
+
+  if (from !== undefined && to !== undefined) return [welcome, `${kids} ${from}–${to}`];
+  if (from !== undefined)
+    return [welcome, locale === "en" ? `${kids} ${from}+` : `${kids} от ${from}`];
+  if (to !== undefined)
+    return [welcome, locale === "en" ? `${kids} up to ${to}` : `${kids} до ${to}`];
+  return [welcome];
 }

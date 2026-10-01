@@ -20,15 +20,23 @@ export interface NavLink {
 }
 
 /**
- * The interests, in the order the owner arranged them, hidden ones left out.
+ * The name a tab is known by, wherever it is shown — the header, the home
+ * page's tiles, a filter chip.
  *
- * Labels are English in both language versions: §16.1 fixes the tab names that
- * way, and Appendix В lists them as strings to carry across verbatim.
+ * English in both language versions: §16.1 fixes the tab names that way, and
+ * Appendix В lists them as strings to carry across verbatim. The Russian name
+ * is the fallback, so an interest the owner added in Russian only still has a
+ * label instead of showing its slug.
  */
+export function interestLabel(interest: Interest): string {
+  return interest.name.en || interest.name.ru || interest.slug;
+}
+
+/** The interests, in the order the owner arranged them, hidden ones left out. */
 export function interestLinks(interests: Interest[], locale: Locale): NavLink[] {
   return visibleInterests(interests).map((interest) => ({
     id: interest.slug,
-    label: interest.name.en || interest.name.ru || interest.slug,
+    label: interestLabel(interest),
     href: localized(`/${interest.slug}/`, locale),
   }));
 }

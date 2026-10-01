@@ -1,9 +1,9 @@
 export const en = {
   meta: {
     home: {
-      title: "AI Yacht — AI bootcamp on a catamaran in the Caribbean",
+      title: "Nazarov — sailing, snowboarding and skydiving trips in small groups",
       description:
-        "10 days in the Caribbean, 7 of them aboard a catamaran. A closed group of 6 entrepreneurs builds a working AI tool. November 12–22, 2026.",
+        "Small-group sailing, snowboarding, skydiving and kid-friendly trips across the US and beyond. See what is coming up and join the crew.",
     },
     itSolutions: {
       title: "IT Solutions by CTMASS — custom software, mobile apps and AI",
@@ -29,7 +29,21 @@ export const en = {
     language: "Language",
   },
 
+  /**
+   * The AI Yacht landing. Its content is the AI Yacht trip, and plan item 1.11
+   * moves it into the admin panel, after which this section goes away. The
+   * strings stay word for word until then, because that item compares the new
+   * trip page against them (П-11).
+   */
   home: {
+    /** The landing's own title and description, which move with it to the
+        trip's social preview so the page keeps its search result (§7.2). */
+    seo: {
+      title: "AI Yacht — AI bootcamp on a catamaran in the Caribbean",
+      description:
+        "10 days in the Caribbean, 7 of them aboard a catamaran. A closed group of 6 entrepreneurs builds a working AI tool. November 12–22, 2026.",
+    },
+
     hero: {
       imageAlt: "Catamaran in the Caribbean Sea",
       badge: "November 12–22, 2026 · Caribbean",
