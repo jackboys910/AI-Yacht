@@ -238,6 +238,14 @@ export interface Trip {
   social: SocialPreview;
   /** Set once the announcement went out; a resend needs its own confirmation. */
   announcementSentAt?: IsoDateTime;
+  /**
+   * What the trip was before it went to the archive.
+   *
+   * А-10 wants "В архив" and "Вернуть" to be one action each. Without this,
+   * returning an archived trip could only ever produce a draft, and the owner
+   * would have to publish it again — two steps where the spec promises one.
+   */
+  statusBeforeArchive?: Exclude<PublicationStatus, "archived">;
 
   createdAt: IsoDateTime;
   updatedAt: IsoDateTime;

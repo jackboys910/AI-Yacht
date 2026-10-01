@@ -73,6 +73,28 @@ export async function uploadImage(
 }
 
 /**
+ * Why duplicating a trip shares its pictures instead of copying the files.
+ *
+ * Copying would mean reading the bytes back out of Storage in the browser, and
+ * Cloud Storage serves download URLs without an `Access-Control-Allow-Origin`
+ * header, so `fetch` is blocked. The policy that would allow it can only be set
+ * on the bucket with gcloud or gsutil — a tool to install and a step to
+ * remember, for the sake of one operation.
+ *
+ * Sharing is safe here because of two properties this code maintains:
+ *
+ *  - stored files are immutable. A path carries a random id, nothing is ever
+ *    written over, and an edit uploads a new file rather than replacing one.
+ *  - nothing in the application deletes a stored file. Removing a photo from a
+ *    form drops the reference only, which is deliberate: otherwise cancelling
+ *    an edit would take a picture away from an already-published trip.
+ *
+ * So two trips pointing at one file is the same arrangement the /assets/
+ * photography is already in. When a cleanup sweep is added it has to count
+ * references regardless, for exactly that reason.
+ */
+
+/**
  * Whether this picture is one we uploaded.
  *
  * An empty `storagePath` marks a file that merely has an address — the
