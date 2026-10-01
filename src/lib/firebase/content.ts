@@ -34,7 +34,24 @@ import {
  *
  * An empty database is neither of those — it is a legitimately empty site.
  */
-export async function getSiteContent(): Promise<SiteContent> {
+/**
+ * One read per build, not one per page file.
+ *
+ * Several route files ask for the content — the trip pages in each language,
+ * their `generateStaticParams`, their metadata — and without this the build
+ * would walk the whole database once for each. Only in a production build:
+ * caching in `next dev` would mean restarting the server to see a change the
+ * admin panel just made.
+ */
+let cached: Promise<SiteContent> | null = null;
+
+export function getSiteContent(): Promise<SiteContent> {
+  if (process.env.NODE_ENV !== "production") return readSiteContent();
+  cached ??= readSiteContent();
+  return cached;
+}
+
+async function readSiteContent(): Promise<SiteContent> {
   if (!isFirebaseConfigured) {
     console.warn(
       "[content] Firebase is not configured — building the site with no trips.",
