@@ -6,7 +6,6 @@ rules_version = '2';
 // Uploads are the owner's alone, and the owner is defined the same way as in
 // firestore.rules: an entry under /owners, not merely a signed-in account.
 //
-// Not deployed yet — Cloud Storage waits on the Blaze upgrade (plan item 1.5).
 // Deploy with `firebase deploy --only storage`, or paste into
 // Firebase console → Storage → Rules → Publish.
 

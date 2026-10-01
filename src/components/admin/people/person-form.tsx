@@ -18,7 +18,7 @@ import {
   Problems,
   SecondaryButton,
 } from "../fields";
-import { ImageUrlField } from "../image-field";
+import { ImageField } from "../image-field";
 
 export function PersonForm({
   id,
@@ -110,7 +110,7 @@ export function PersonForm({
             onChange={(value) => set("bio", value)}
           />
 
-          <ImageUrlField
+          <ImageField
             id="person-photo"
             label="Фото"
             placeholder="/assets/ivan.jpg"

@@ -9,7 +9,7 @@ import {
   NumberInput,
   TextInput,
 } from "../fields";
-import { ImageUrlField } from "../image-field";
+import { ImageField } from "../image-field";
 import { Repeatable } from "../repeatable";
 import { OptionalSection, Section } from "./section";
 
@@ -62,7 +62,7 @@ export function TripGallery({
         empty="Фотографий пока нет. Без трёх штук поездку опубликовать нельзя."
         render={(image, update, index) => (
           <>
-            <ImageUrlField
+            <ImageField
               id={`gallery-${index}`}
               label="Адрес фото"
               value={image.url ? image : undefined}
@@ -148,7 +148,7 @@ export function TripRoute({
                     value={day.text}
                     onChange={(text) => updateDay({ ...day, text })}
                   />
-                  <ImageUrlField
+                  <ImageField
                     id={`day-${index}-photo`}
                     label="Фото дня"
                     value={day.photo}
@@ -179,7 +179,7 @@ export function TripRoute({
               addLabel="Добавить картинку"
               empty="Картинок пока нет."
               render={(image, updateImage, index) => (
-                <ImageUrlField
+                <ImageField
                   id={`map-${index}`}
                   label="Адрес картинки"
                   value={image.url ? image : undefined}
@@ -232,7 +232,7 @@ export function TripRoute({
               addLabel="Добавить фото"
               empty="Фотографий пока нет."
               render={(image, updateImage, index) => (
-                <ImageUrlField
+                <ImageField
                   id={`media-${index}`}
                   label="Адрес фото"
                   value={image.url ? image : undefined}
