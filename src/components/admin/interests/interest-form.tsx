@@ -22,7 +22,7 @@ import {
   SecondaryButton,
   TextInput,
 } from "../fields";
-import { ImageUrlField } from "../image-field";
+import { ImageField } from "../image-field";
 
 export function InterestForm({
   id,
@@ -137,7 +137,7 @@ export function InterestForm({
             onChange={(value) => set("description", value)}
           />
 
-          <ImageUrlField
+          <ImageField
             id="interest-cover"
             label="Обложка вкладки"
             placeholder="/assets/hero-catamaran.jpg"
