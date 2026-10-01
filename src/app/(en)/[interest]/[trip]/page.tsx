@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { localeHrefs, pagePath } from "@/i18n/config";
 import { todayUtc } from "@/lib/content/schedule";
+import { interestLinks } from "@/lib/content/nav";
 import { resolveTrip, withPlaceholder } from "@/lib/content/lookup";
 import { pick, pickOrOther } from "@/lib/content/trip-view";
 import { publishedTripPaths } from "@/lib/content/visibility";
@@ -50,7 +52,8 @@ export async function generateMetadata({
 
 export default async function Page({ params }: { params: Promise<Params> }) {
   const { interest, trip: tripSlug } = await params;
-  const found = resolveTrip(await getSiteContent(), interest, tripSlug);
+  const content = await getSiteContent();
+  const found = resolveTrip(content, interest, tripSlug);
   if (!found) notFound();
 
   return (
@@ -60,6 +63,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       locale="en"
       today={todayUtc()}
       interestSlug={interest}
+      chrome={{
+        interests: interestLinks(content.interests, "en"),
+        solutionsHref: pagePath("itSolutions", "en"),
+        languageHrefs: localeHrefs(`/${interest}/${tripSlug}/`),
+      }}
     />
   );
 }

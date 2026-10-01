@@ -7,7 +7,9 @@ export type PageId = "home" | "itSolutions";
 
 const slugs: Record<PageId, string> = {
   home: "/",
-  itSolutions: "/it-solutions/",
+  // §2 of the spec renames the page to "Solutions"; its content is rewritten in
+  // plan item 3.3, and /it-solutions redirects here (public/_redirects).
+  itSolutions: "/solutions/",
 };
 
 /**
@@ -18,6 +20,24 @@ const slugs: Record<PageId, string> = {
 export function pagePath(page: PageId, locale: Locale): string {
   const slug = slugs[page];
   return locale === defaultLocale ? slug : `/${locale}${slug}`;
+}
+
+/**
+ * The same address in a given language. English lives at the root, every other
+ * locale is prefixed — `/sailing/grenadines/` becomes `/ru/sailing/grenadines/`.
+ *
+ * Used for addresses built at runtime from the database (interests, trips),
+ * where `pagePath` and its fixed list of pages cannot help.
+ */
+export function localized(path: string, locale: Locale): string {
+  return locale === defaultLocale ? path : `/${locale}${path}`;
+}
+
+/** Both language versions of one address, for the EN / RU switch. */
+export function localeHrefs(path: string): Record<Locale, string> {
+  return Object.fromEntries(
+    locales.map((locale) => [locale, localized(path, locale)]),
+  ) as Record<Locale, string>;
 }
 
 export const localeLabels: Record<Locale, string> = {

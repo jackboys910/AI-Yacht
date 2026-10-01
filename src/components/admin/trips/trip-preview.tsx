@@ -67,7 +67,6 @@ export function TripPreview({
         locale={locale}
         today={todayUtc()}
         interestSlug={interestSlug}
-        chrome={false}
       />
     </div>
   );
