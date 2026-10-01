@@ -6,7 +6,7 @@ import {
   bookingLabel,
   coverOf,
   formatDateRange,
-  kidsLabel,
+  kidsBadges,
   pick,
   pickOrOther,
   thumbOf,
@@ -38,7 +38,7 @@ export function TripCard({
   const cover = coverOf(trip);
   const status = effectiveBookingStatus(trip, today);
   const past = status === "completed";
-  const kids = kidsLabel(trip, locale);
+  const kids = past ? [] : kidsBadges(trip, locale);
   const href = localized(`/${interestSlug}/${trip.slug}/`, locale);
   const price = pick(trip.price?.amount, locale);
 
@@ -66,11 +66,14 @@ export function TripCard({
             <span className="rounded-full bg-black/55 px-3 py-1 text-xs font-medium text-white backdrop-blur">
               {bookingLabel(status, locale)}
             </span>
-            {kids && !past && (
-              <span className="rounded-full bg-black/55 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-                {kids}
+            {kids.map((label) => (
+              <span
+                key={label}
+                className="rounded-full bg-black/55 px-3 py-1 text-xs font-medium text-white backdrop-blur"
+              >
+                {label}
               </span>
-            )}
+            ))}
           </div>
         </div>
       </a>

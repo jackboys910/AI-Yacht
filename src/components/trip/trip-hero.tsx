@@ -4,7 +4,7 @@ import {
   bookingLabel,
   coverOf,
   formatDateRange,
-  kidsLabel,
+  kidsBadges,
   pick,
   pickOrOther,
 } from "@/lib/content/trip-view";
@@ -29,7 +29,7 @@ export function TripHero({
 }) {
   const cover = coverOf(trip);
   const status = effectiveBookingStatus(trip, today);
-  const kids = kidsLabel(trip, locale);
+  const kids = kidsBadges(trip, locale);
   const dates = formatDateRange(trip.startDate, trip.endDate, locale);
   const place = pick(trip.place, locale);
   const rest = trip.gallery.filter((_, index) => index !== trip.coverIndex);
@@ -58,11 +58,14 @@ export function TripHero({
               <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--gold)]" />
               {bookingLabel(status, locale)}
             </span>
-            {kids && (
-              <span className="inline-flex items-center rounded-full border border-white/25 bg-white/5 px-4 py-1.5 text-xs uppercase tracking-[0.18em] text-white/85 backdrop-blur">
-                {kids}
+            {kids.map((label) => (
+              <span
+                key={label}
+                className="inline-flex items-center rounded-full border border-white/25 bg-white/5 px-4 py-1.5 text-xs uppercase tracking-[0.18em] text-white/85 backdrop-blur"
+              >
+                {label}
               </span>
-            )}
+            ))}
           </div>
 
           <h1 className="font-display text-4xl leading-[1.05] sm:text-6xl md:text-7xl">
