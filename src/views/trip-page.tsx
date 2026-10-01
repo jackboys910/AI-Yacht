@@ -1,4 +1,5 @@
-import { LanguageSwitcher } from "@/components/language-switcher";
+import { SiteFoot } from "@/components/site-foot";
+import { SiteNav } from "@/components/site-nav";
 import { TripHero } from "@/components/trip/trip-hero";
 import {
   TripAudience,
@@ -17,8 +18,16 @@ import {
   TripMedia,
   TripRouteDays,
 } from "@/components/trip/trip-journey";
-import { defaultLocale, locales, type Locale } from "@/i18n/config";
+import type { Locale } from "@/i18n/config";
+import type { NavLink } from "@/lib/content/nav";
 import type { Person, Trip } from "@/lib/content/types";
+
+/** Header and footer. Absent in the admin preview, which brings its own bar. */
+export interface SiteChrome {
+  interests: NavLink[];
+  solutionsHref: string;
+  languageHrefs: Record<Locale, string>;
+}
 
 /**
  * A whole trip page, assembled from what the owner filled in (§6.3).
@@ -37,20 +46,26 @@ export function TripPage({
   locale,
   today,
   interestSlug,
-  chrome = true,
+  chrome,
 }: {
   trip: Trip;
   people: Person[];
   locale: Locale;
   today: string;
   interestSlug: string;
-  /** Off in the admin preview, which brings its own bar and has nowhere to navigate to. */
-  chrome?: boolean;
+  /** Absent in the admin preview, which has nowhere to navigate to. */
+  chrome?: SiteChrome;
 }) {
   return (
     <div className="bg-background text-foreground">
       {chrome && (
-        <TripTopBar locale={locale} interestSlug={interestSlug} tripSlug={trip.slug} />
+        <SiteNav
+          locale={locale}
+          interests={chrome.interests}
+          solutionsHref={chrome.solutionsHref}
+          languageHrefs={chrome.languageHrefs}
+          active={interestSlug}
+        />
       )}
 
       <TripHero trip={trip} locale={locale} today={today} />
@@ -82,50 +97,15 @@ export function TripPage({
       {/* "Book my spot", the subscribe strip and the share buttons belong to
           items 2.3, 2.1 and 3.2. A form that cannot send would be worse than
           no form, so they arrive with the code that makes them work. */}
-    </div>
-  );
-}
 
-/**
- * A minimal bar so the page is navigable on its own.
- *
- * The real header — "NAZAROV", the MY INTERESTS block, Story, Solutions and
- * "+ Subscribe" — is plan item 1.8, and it needs the interests out of the
- * database to build its menu. This stands in until then.
- */
-function TripTopBar({
-  locale,
-  interestSlug,
-  tripSlug,
-}: {
-  locale: Locale;
-  interestSlug: string;
-  tripSlug: string;
-}) {
-  const hrefs = Object.fromEntries(
-    locales.map((l) => [
-      l,
-      l === defaultLocale
-        ? `/${interestSlug}/${tripSlug}/`
-        : `/${l}/${interestSlug}/${tripSlug}/`,
-    ]),
-  ) as Record<Locale, string>;
-
-  return (
-    <header className="fixed top-0 z-40 w-full bg-transparent">
-      <div className="container-narrow flex items-center justify-between gap-2 py-3 sm:py-4">
-        <a
-          href={locale === defaultLocale ? "/" : `/${locale}/`}
-          className="font-display text-xl font-bold leading-none tracking-[0.14em] text-white sm:text-2xl"
-        >
-          NAZAROV
-        </a>
-        <LanguageSwitcher
+      {chrome && (
+        <SiteFoot
           locale={locale}
-          hrefs={hrefs}
-          label={locale === "en" ? "Language" : "Язык"}
+          interests={chrome.interests}
+          solutionsHref={chrome.solutionsHref}
+          languageHrefs={chrome.languageHrefs}
         />
-      </div>
-    </header>
+      )}
+    </div>
   );
 }

@@ -1,0 +1,15 @@
+# Permanent redirects, read by Cloudflare from the deployed assets.
+#
+# `redirects` in next.config.ts is not available with output: "export" — it
+# needs a server to run on — so the rules live here instead, where Cloudflare
+# applies them before it looks for a file.
+#
+# §2 of the spec renames the IT Solutions page to Solutions. Links to the old
+# address exist in the wild, so it keeps working (П-18).
+/it-solutions/ /solutions/ 301
+/it-solutions /solutions/ 301
+/ru/it-solutions/ /ru/solutions/ 301
+/ru/it-solutions /ru/solutions/ 301
+
+# /about → /story joins this list with plan item 3.1, when there is a Story
+# page for it to lead to. A redirect to a 404 is worse than no redirect.
