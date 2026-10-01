@@ -26,6 +26,7 @@ import {
 import { Section } from "./section";
 import { TripBlocks, TripClosingBlocks } from "./trip-blocks";
 import { TripCrew, TripGallery, TripRoute } from "./trip-media";
+import { TripPreview } from "./trip-preview";
 
 /**
  * The trip form — every block of §6.3, filled in for both languages.
@@ -89,6 +90,7 @@ export function TripForm({
   const [busy, setBusy] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
 
   // Read once, on mount, so nothing is set from inside an effect.
   const [backup] = useState(() => readBackup(backupKey(id)));
@@ -166,6 +168,18 @@ export function TripForm({
       setBusy(false);
       setConfirmDelete(false);
     }
+  }
+
+  if (previewing) {
+    return (
+      <TripPreview
+        draft={draft}
+        id={id}
+        people={people}
+        interestSlug={interestSlug(interests, draft.interestId)}
+        onClose={() => setPreviewing(false)}
+      />
+    );
   }
 
   return (
@@ -438,6 +452,10 @@ export function TripForm({
                 Опубликовать
               </SecondaryButton>
             )}
+
+            <SecondaryButton onClick={() => setPreviewing(true)} disabled={busy}>
+              Предпросмотр
+            </SecondaryButton>
 
             <SecondaryButton onClick={onCancel} disabled={busy}>
               {dirty ? "Отменить изменения" : "Назад"}
