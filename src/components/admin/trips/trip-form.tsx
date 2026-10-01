@@ -447,9 +447,15 @@ export function TripForm({
                   : "Сохранить черновик"}
             </PrimaryButton>
 
-            {draft.status !== "published" && (
+            {draft.status !== "published" ? (
               <SecondaryButton onClick={() => save("published")} disabled={busy || errors.length > 0}>
                 Опубликовать
+              </SecondaryButton>
+            ) : (
+              // Back to a draft, which takes the trip off the site without
+              // archiving it. Archiving and restoring live in the trip list.
+              <SecondaryButton onClick={() => save("draft")} disabled={busy}>
+                Снять с публикации
               </SecondaryButton>
             )}
 

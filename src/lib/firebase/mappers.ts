@@ -181,6 +181,10 @@ export function toTrip(id: string, data: DocumentData): Trip {
       description: text(data.social?.description),
     },
     announcementSentAt: data.announcementSentAt || undefined,
+    statusBeforeArchive:
+      data.statusBeforeArchive === "draft" || data.statusBeforeArchive === "published"
+        ? data.statusBeforeArchive
+        : undefined,
 
     createdAt: str(data.createdAt),
     updatedAt: str(data.updatedAt),
