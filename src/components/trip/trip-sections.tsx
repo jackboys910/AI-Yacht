@@ -2,7 +2,8 @@ import { Eyebrow } from "@/components/eyebrow";
 import { FaqList } from "@/components/faq-list";
 import type { Locale } from "@/i18n/config";
 import { effectiveBookingStatus, goingCount } from "@/lib/content/schedule";
-import type { CardsBlock, Trip } from "@/lib/content/types";
+import type { CardsBlock, Settings, Trip } from "@/lib/content/types";
+import { DEFAULT_COUNTER_THRESHOLDS } from "@/lib/content/visibility";
 import { bookingLabel, pick, pickList } from "@/lib/content/trip-view";
 
 /**
@@ -35,24 +36,35 @@ const HEADINGS = {
 
 const say = (key: keyof typeof HEADINGS, locale: Locale) => HEADINGS[key][locale];
 
+/**
+ * "Who's going" (§6.3).
+ *
+ * The number of people going appears only once there are enough of them: the
+ * spec sets a threshold because a trip that says "1 going" reads worse than one
+ * that says nothing. Until the counters of item 2.4 exist, this is what keeps a
+ * freshly published trip from announcing "0 going" to its first visitor.
+ */
 export function TripSeats({
   trip,
   locale,
   today,
+  thresholds = DEFAULT_COUNTER_THRESHOLDS,
 }: {
   trip: Trip;
   locale: Locale;
   today: string;
+  thresholds?: Settings["counterThresholds"];
 }) {
   const status = effectiveBookingStatus(trip, today);
   const going = goingCount(trip);
+  const showGoing = going >= thresholds.going;
 
   return (
     <section id="seats" className="bg-background py-14 sm:py-20">
       <div className="container-narrow">
         <Eyebrow>{say("seats", locale)}</Eyebrow>
         <div className="mt-6 flex flex-wrap items-center gap-x-10 gap-y-6">
-          <Figure value={String(going)} label={say("going", locale)} />
+          {showGoing && <Figure value={String(going)} label={say("going", locale)} />}
           {status !== "completed" && trip.seatsLeft > 0 && (
             <Figure value={String(trip.seatsLeft)} label={say("seatsLeft", locale)} />
           )}

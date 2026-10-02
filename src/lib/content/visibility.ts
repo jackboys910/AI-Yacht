@@ -83,6 +83,13 @@ export function homeTrips(
 }
 
 /**
+ * §6.3: the counters are shown only above these numbers, because "1 going"
+ * puts people off more than no number at all. The owner can raise or lower
+ * them in the settings; these are the values the spec starts from.
+ */
+export const DEFAULT_COUNTER_THRESHOLDS = { going: 3, interested: 10 } as const;
+
+/**
  * The tabs the header and the subscription form offer. Hidden interests keep
  * their trips in the database but disappear from the site (§7.3).
  */

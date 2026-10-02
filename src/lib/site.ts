@@ -1,17 +1,15 @@
 /**
- * Single place to change when the production domain is decided.
- * Everything that renders a URL (metadata, footer, canonical tags) reads it.
+ * The site itself: its name and where it lives. Everything that renders a URL
+ * — metadata, canonical tags, the footer, the links inside emails — reads it.
+ *
+ * The AI Yacht dates, price and seat count used to live here too. They are a
+ * trip's details, and since plan item 1.11 the trip keeps them in the database
+ * where the owner can change them without a developer.
  */
 export const siteConfig = {
-  name: "AI Yacht",
+  name: "Nazarov",
   domain: "nazarov.net",
   url: "https://nazarov.net",
-  title: "AI Yacht — AI bootcamp on a catamaran in the Caribbean",
-  description:
-    "10 days in the Caribbean, 7 of them aboard a catamaran. A closed group of 6 entrepreneurs builds a working AI tool. November 12–22, 2026.",
-  dates: "12–22 NOV 2026",
-  price: "$3,500",
-  seats: 6,
 } as const;
 
 /**
