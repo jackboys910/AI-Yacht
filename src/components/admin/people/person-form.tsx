@@ -1,5 +1,6 @@
 "use client";
 
+import { rebuildSoon } from "@/lib/rebuild";
 import { useState } from "react";
 import type { Locale } from "@/i18n/config";
 import {
@@ -50,6 +51,7 @@ export function PersonForm({
     setBusy(true);
     try {
       await savePerson(id, draft);
+      rebuildSoon();
       onDone();
     } catch (error) {
       setProblems([`Не удалось сохранить: ${describe(error)}`]);
@@ -61,6 +63,7 @@ export function PersonForm({
     setBusy(true);
     try {
       await deletePerson(id!);
+      rebuildSoon();
       onDone();
     } catch (error) {
       setProblems([

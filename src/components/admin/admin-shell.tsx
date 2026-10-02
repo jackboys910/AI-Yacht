@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { User } from "firebase/auth";
 import { signOutOwner } from "@/lib/firebase/auth";
 import { InterestsView } from "./interests/interests-view";
+import { RebuildBar } from "./rebuild-bar";
 import { PeopleView } from "./people/people-view";
 import { TripsView } from "./trips/trips-view";
 import { ADMIN_VIEWS, resolveView } from "./views";
@@ -104,8 +105,13 @@ export function AdminShell({ user }: { user: User }) {
       </nav>
 
       <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
-        <h1 className="font-display text-2xl sm:text-3xl">{current.label}</h1>
-        <p className="mt-1.5 text-sm text-muted-foreground">{current.description}</p>
+        <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+          <div>
+            <h1 className="font-display text-2xl sm:text-3xl">{current.label}</h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">{current.description}</p>
+          </div>
+          <RebuildBar />
+        </div>
 
         <div className="mt-8">
           {active === "trips" ? (

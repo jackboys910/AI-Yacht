@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Locale } from "@/i18n/config";
+import { rebuildSoon } from "@/lib/rebuild";
 import { slugify } from "@/lib/content/slug";
 import type { Interest } from "@/lib/content/types";
 import {
@@ -60,6 +61,7 @@ export function InterestForm({
     setBusy(true);
     try {
       await saveInterest(id, draft);
+      rebuildSoon();
       onDone();
     } catch (error) {
       setProblems([`Не удалось сохранить: ${message(error)}`]);
@@ -71,6 +73,7 @@ export function InterestForm({
     setBusy(true);
     try {
       await deleteInterest(id!);
+      rebuildSoon();
       onDone();
     } catch (error) {
       setProblems([

@@ -5,6 +5,7 @@ import type { Locale } from "@/i18n/config";
 import { slugify } from "@/lib/content/slug";
 import type { Interest, Person, Trip } from "@/lib/content/types";
 import { validateTrip, type ValidationIssue } from "@/lib/content/validation";
+import { rebuildAfterTrip, rebuildSoon } from "@/lib/rebuild";
 import {
   TripValidationError,
   deleteTrip,
@@ -139,6 +140,10 @@ export function TripForm({
     setSaveError(null);
     try {
       await saveTrip(id, { ...draft, status }, allTrips);
+      // А-08: publishing is what the owner presses, and the page appearing is
+      // what they expect to follow. Saving a draft changes nothing a visitor
+      // can see, so it starts no build.
+      if (rebuildAfterTrip(id ? initial.status : null, status)) rebuildSoon();
       try {
         localStorage.removeItem(backupKey(id));
       } catch {
