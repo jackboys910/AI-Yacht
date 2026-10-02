@@ -25,6 +25,15 @@
     "run_worker_first": ["/api/*"]
   },
 
+  // Plain values live here rather than in the dashboard, because a deploy
+  // replaces whatever the dashboard holds. The one value that must not be in
+  // the repository — the GitHub token — is a secret, and secrets survive a
+  // deploy untouched: `wrangler secret put GITHUB_TOKEN`, or the dashboard's
+  // Variables and Secrets page.
+  "vars": {
+    "GITHUB_REPO": "jackboys910/AI-Yacht"
+  },
+
   "observability": {
     "enabled": true
   }
