@@ -1,0 +1,642 @@
+{
+  "interests": [
+    {
+      "id": "sailing",
+      "slug": "sailing",
+      "name": {
+        "en": "Sailing",
+        "ru": "Sailing"
+      },
+      "description": {
+        "en": "",
+        "ru": ""
+      },
+      "tileCaption": {
+        "en": "On the water",
+        "ru": "На воде"
+      },
+      "cover": {
+        "url": "/assets/hero-catamaran.jpg",
+        "height": 1280,
+        "width": 1920,
+        "storagePath": "",
+        "alt": {
+          "en": "Catamaran in the Caribbean Sea",
+          "ru": "Катамаран в Карибском море"
+        }
+      },
+      "order": 1,
+      "showPastTrips": true,
+      "hidden": false,
+      "collectsKidFriendly": false
+    },
+    {
+      "id": "snowboarding",
+      "slug": "snowboarding",
+      "name": {
+        "en": "Snowboarding",
+        "ru": "Snowboarding"
+      },
+      "description": {
+        "en": "",
+        "ru": ""
+      },
+      "tileCaption": {
+        "en": "In the mountains",
+        "ru": "В горах"
+      },
+      "order": 2,
+      "showPastTrips": true,
+      "hidden": false,
+      "collectsKidFriendly": false
+    },
+    {
+      "id": "skydiving",
+      "slug": "skydiving",
+      "name": {
+        "en": "Skydiving",
+        "ru": "Skydiving"
+      },
+      "description": {
+        "en": "",
+        "ru": ""
+      },
+      "tileCaption": {
+        "en": "In the sky",
+        "ru": "В небе"
+      },
+      "order": 3,
+      "showPastTrips": true,
+      "hidden": false,
+      "collectsKidFriendly": false
+    },
+    {
+      "id": "son",
+      "slug": "son",
+      "name": {
+        "en": "Son",
+        "ru": "Son"
+      },
+      "description": {
+        "en": "Trips with kids. I travel with my son Stefan — bring yours too. Every kid-friendly trip from all sections, in one place.",
+        "ru": "Поездки с детьми. Я путешествую с сыном Стефаном — берите своих. Все поездки с детьми из всех разделов, собранные в одном месте."
+      },
+      "tileCaption": {
+        "en": "Trips with kids",
+        "ru": "Поездки с детьми"
+      },
+      "order": 4,
+      "showPastTrips": true,
+      "hidden": false,
+      "collectsKidFriendly": true
+    }
+  ],
+  "people": [
+    {
+      "id": "ivan",
+      "name": {
+        "en": "Ivan",
+        "ru": "Иван"
+      },
+      "role": {
+        "en": "AI entrepreneur, bootcamp host",
+        "ru": "AI-предприниматель, ведущий буткемпа"
+      },
+      "bio": {
+        "en": "22 years in business. For the past year and a half he has been travelling the world — without offices and without visas in the usual sense. A living example that travel and entrepreneurship go together. He runs the programme and cooks on board.",
+        "ru": "22 года в бизнесе. Полтора года путешествует по миру — без офисов и виз в привычном смысле. Живой пример того, что путешествия и предпринимательство совместимы. Ведёт программу и готовит на борту."
+      },
+      "photo": {
+        "url": "/assets/ivanEN.jpg",
+        "height": 1364,
+        "width": 1364,
+        "storagePath": "",
+        "alt": {
+          "en": "Ivan",
+          "ru": "Иван"
+        }
+      }
+    },
+    {
+      "id": "yasha",
+      "name": {
+        "en": "Yasha",
+        "ru": "Яша"
+      },
+      "role": {
+        "en": "Captain, engineer, self-made property developer",
+        "ru": "Капитан, инженер, self-made девелопер недвижимости"
+      },
+      "bio": {
+        "en": "He knows the water and he knows how to build — literally and in the business sense. He is responsible for safety and logistics across the whole week. Going to sea with him isn't frightening, and talking business with him isn't boring.",
+        "ru": "Знает воду и умеет строить — в буквальном и в бизнес-смысле. Отвечает за безопасность и логистику всей недели. С ним не страшно идти в море и не скучно говорить о деле."
+      },
+      "photo": {
+        "url": "/assets/yasha.jpg",
+        "height": 904,
+        "width": 912,
+        "storagePath": "",
+        "alt": {
+          "en": "Yasha",
+          "ru": "Яша"
+        }
+      }
+    }
+  ],
+  "trips": [
+    {
+      "id": "ai-yacht",
+      "interestId": "sailing",
+      "slug": "ai-yacht",
+      "status": "published",
+      "title": {
+        "en": "AI Yacht",
+        "ru": "AI Yacht"
+      },
+      "subtitle": {
+        "en": "10 days in the Caribbean Sea. 7 of them aboard a catamaran, and a working AI product for your business at the end.",
+        "ru": "10 дней в Карибском море. 7 из них — на катамаране, с рабочим AI-продуктом для своего бизнеса на выходе."
+      },
+      "startDate": "2026-11-12",
+      "endDate": "2026-11-22",
+      "place": {
+        "en": "Caribbean",
+        "ru": "Карибы"
+      },
+      "gallery": [
+        {
+          "url": "/assets/hero-catamaran.jpg",
+          "height": 1280,
+          "width": 1920,
+          "storagePath": "",
+          "alt": {
+            "en": "Catamaran in the Caribbean Sea",
+            "ru": "Катамаран в Карибском море"
+          }
+        },
+        {
+          "url": "/assets/islands.jpg",
+          "height": 1000,
+          "width": 1400,
+          "storagePath": "",
+          "alt": {
+            "en": "The Grenadines",
+            "ru": "Гренадины"
+          }
+        },
+        {
+          "url": "/assets/sunset-cat.jpg",
+          "height": 900,
+          "width": 1600,
+          "storagePath": "",
+          "alt": {
+            "en": "Catamaran at sunset",
+            "ru": "Катамаран на закате"
+          }
+        }
+      ],
+      "coverIndex": 0,
+      "bookingStatus": "open",
+      "totalSeats": 6,
+      "seatsLeft": 6,
+      "kidFriendly": false,
+      "showInPast": true,
+      "price": {
+        "amount": {
+          "en": "$3,500",
+          "ru": "$3,500"
+        },
+        "included": {
+          "en": [
+            "7 days on the catamaran",
+            "The bootcamp programme",
+            "The captain's work",
+            "Marina berths and fuel",
+            "Basic meals on board"
+          ],
+          "ru": [
+            "7 дней на катамаране",
+            "Программа буткемпа",
+            "Работа капитана",
+            "Стоянки в маринах и топливо",
+            "Базовое питание на борту"
+          ]
+        },
+        "notIncluded": {
+          "en": [
+            "Flights",
+            "Accommodation on the first and last day"
+          ],
+          "ru": [
+            "Перелёты",
+            "Проживание в первый и последний день"
+          ]
+        }
+      },
+      "audience": {
+        "items": {
+          "en": [
+            "You already run a business with real revenue — you're not testing whether entrepreneurship is for you.",
+            "You've heard about AI and vibe coding, but you haven't built anything with your own hands yet.",
+            "You don't need another lecture — you need a working tool for your business by the end of the week.",
+            "You're ready to spend a week in a small group on the water — no office, no rush.",
+            "You value a clear head and focus over parties.",
+            "You understand that custom software built for your business usually means a year of development and a $100,000+ budget. We'll build your working tool in one week on board — that's not just saved time and money, it's leverage that can dramatically accelerate your business growth."
+          ],
+          "ru": [
+            "У тебя уже есть действующий бизнес с оборотом — ты не пробуешь себя в предпринимательстве.",
+            "Ты слышал про AI и vibe-коддинг, но сам пока ничего не собирал руками.",
+            "Тебе не нужна ещё одна лекция — нужен рабочий инструмент для своего бизнеса к концу недели.",
+            "Ты готов провести неделю в тесной группе на воде — без офиса, без спешки.",
+            "Ты ценишь ясную голову и фокус выше вечеринок.",
+            "Понимаешь, что кастомный софт под твой бизнес на заказ — это обычно год разработки и $100,000+ бюджета. Мы построим твой рабочий инструмент за неделю на борту — это не просто экономия времени и денег, а рычаг, который может кардинально ускорить рост твоего бизнеса."
+          ]
+        },
+        "note": {
+          "en": "We deliberately don't gather a crowd. Six people — because in a week on the water you only get somewhere with those who are already playing their own game. This is not for anyone looking for a beach holiday, or who wants to learn to code from scratch for the sake of coding itself.",
+          "ru": "Мы сознательно не собираем толпу. Шесть человек — потому что за неделю на воде успеть можно только с теми, кто уже играет в свою игру. Это не для тех, кто ищет просто пляжный отдых или хочет научиться программировать с нуля ради самого программирования."
+        }
+      },
+      "whatYouGet": {
+        "cards": [
+          {
+            "title": {
+              "en": "A working AI tool",
+              "ru": "Рабочий AI-инструмент"
+            },
+            "text": {
+              "en": "By the end of the week you won't have notes or an idea — you'll have a working product built for a specific job in your business.",
+              "ru": "К концу недели у тебя не конспект и не идея — а рабочий продукт под конкретную задачу твоего бизнеса."
+            }
+          },
+          {
+            "title": {
+              "en": "Vibe coding with no experience",
+              "ru": "Vibe-коддинг без опыта"
+            },
+            "text": {
+              "en": "You'll learn to assemble tools with AI, even if you've never written a single line of code.",
+              "ru": "Ты научишься собирать инструменты через AI, даже если никогда не писал ни строчки кода."
+            }
+          },
+          {
+            "title": {
+              "en": "A circle of like-minded people",
+              "ru": "Круг единомышленников"
+            },
+            "text": {
+              "en": "Five other entrepreneurs — plus Ivan and Yasha, who are part of this week too, not just crew on board. Seven people living on the same deck for a week. Connections like that can't be bought.",
+              "ru": "Пятеро других предпринимателей — плюс Иван и Яша, которые тоже часть этой недели, а не просто персонал на борту. Семь человек, которые неделю живут на одной палубе. Такие связи не покупаются."
+            }
+          }
+        ]
+      },
+      "howToPrepare": {
+        "cards": [
+          {
+            "title": {
+              "en": "A reliable, fast laptop",
+              "ru": "Надёжный быстрый ноутбук"
+            },
+            "text": {
+              "en": "This is your working instrument for the whole week — there is no doing the bootcamp without one. It has to run modern AI tools comfortably and not freeze at the critical moment.",
+              "ru": "Это твой рабочий инструмент на всю неделю — без него буткемп не пройти. Ноутбук должен уверенно тянуть современные AI-инструменты и не зависать на важном моменте."
+            }
+          },
+          {
+            "title": {
+              "en": "Basic AI knowledge",
+              "ru": "Базовые знания об AI"
+            },
+            "text": {
+              "en": "We don't spend the group's time on the basics — “what is a prompt” and “how ChatGPT works” need to be known before you step aboard. If you already use AI tools in your work, that's enough.",
+              "ru": "Мы не тратим время группы на азы — «что такое промпт» и «как работает ChatGPT» нужно знать до посадки на борт. Если ты уже пользуешься AI-инструментами в работе — этого достаточно."
+            }
+          }
+        ],
+        "note": {
+          "en": "Once your seat is confirmed we'll send a short preparation programme — work through it at your own pace before you fly out, and every hour on board will go into your product instead of into learning the basics.",
+          "ru": "После подтверждения места мы пришлём короткую программу подготовки — пройди её в своём темпе перед вылетом, и каждый час на борту будет уходить на твой продукт, а не на изучение основ."
+        }
+      },
+      "program": {
+        "stages": [
+          {
+            "duration": {
+              "en": "1.5 days",
+              "ru": "1,5 дня"
+            },
+            "place": {
+              "en": "on land, Grenada",
+              "ru": "суша, Гренада"
+            },
+            "text": {
+              "en": "Getting to know each other, unhurried. Kick-off session, dinner, the plan for the week.",
+              "ru": "Знакомство без спешки. Установочная сессия, ужин, план недели."
+            }
+          },
+          {
+            "duration": {
+              "en": "7 days",
+              "ru": "7 дней"
+            },
+            "place": {
+              "en": "catamaran, Grenadines",
+              "ru": "катамаран, Гренадины"
+            },
+            "text": {
+              "en": "Bootcamp + the island route. Every night in a marina or a sheltered bay.",
+              "ru": "Буткемп + маршрут по островам. Каждую ночь — марина или защищённая бухта."
+            }
+          },
+          {
+            "duration": {
+              "en": "1.5 days",
+              "ru": "1,5 дня"
+            },
+            "place": {
+              "en": "on land, Saint Vincent",
+              "ru": "суша, Сент-Винсент"
+            },
+            "text": {
+              "en": "Rest, a debrief of the results, an unhurried flight home.",
+              "ru": "Отдых, разбор итогов, спокойный вылет домой."
+            }
+          }
+        ]
+      },
+      "route": {
+        "intro": {
+          "en": "The exact route is adjusted for the wind, but these are the anchor points.",
+          "ru": "Точный маршрут корректируется по ветру, но опорные точки — такие."
+        },
+        "days": [
+          {
+            "number": 1,
+            "date": {
+              "en": "Nov 12",
+              "ru": "12 ноя"
+            },
+            "place": {
+              "en": "Grenada, St. George's",
+              "ru": "Гренада, Сент-Джорджес"
+            },
+            "text": {
+              "en": "Arrival, check-in on land, dinner, an unhurried introduction.",
+              "ru": "Прилёт, заселение на суше, ужин, знакомство без спешки."
+            }
+          },
+          {
+            "number": 2,
+            "date": {
+              "en": "Nov 13",
+              "ru": "13 ноя"
+            },
+            "place": {
+              "en": "Grenada",
+              "ru": "Гренада"
+            },
+            "text": {
+              "en": "Half a day of kick-off session, the second half — moving aboard the catamaran.",
+              "ru": "Полдня установочная сессия, вторая половина — переход на катамаран."
+            }
+          },
+          {
+            "number": 3,
+            "date": {
+              "en": "Nov 14",
+              "ru": "14 ноя"
+            },
+            "place": {
+              "en": "Carriacou",
+              "ru": "Кариаку"
+            },
+            "text": {
+              "en": "First passage at sea, evening workshop at anchor.",
+              "ru": "Первый морской переход, вечерний воркшоп на якоре."
+            }
+          },
+          {
+            "number": 4,
+            "date": {
+              "en": "Nov 15",
+              "ru": "15 ноя"
+            },
+            "place": {
+              "en": "Union Island",
+              "ru": "Юнион-Айленд"
+            },
+            "text": {
+              "en": "Work from the morning, lunch on the water, case reviews in the marina.",
+              "ru": "Работа с утра, обед на воде, разбор кейсов в марине."
+            }
+          },
+          {
+            "number": 5,
+            "date": {
+              "en": "Nov 16",
+              "ru": "16 ноя"
+            },
+            "place": {
+              "en": "Tobago Cays",
+              "ru": "Тобаго-Кейс"
+            },
+            "text": {
+              "en": "A day in the marine reserve: snorkelling + focus sessions.",
+              "ru": "День в морском заповеднике: снорклинг + фокус-сессии."
+            }
+          },
+          {
+            "number": 6,
+            "date": {
+              "en": "Nov 17",
+              "ru": "17 ноя"
+            },
+            "place": {
+              "en": "Canouan",
+              "ru": "Кануан"
+            },
+            "text": {
+              "en": "Prototype sprint, evening in the bay.",
+              "ru": "Спринт по прототипам, вечер в бухте."
+            }
+          },
+          {
+            "number": 7,
+            "date": {
+              "en": "Nov 18",
+              "ru": "18 ноя"
+            },
+            "place": {
+              "en": "Mustique / Bequia",
+              "ru": "Мустик / Бекия"
+            },
+            "text": {
+              "en": "Final product assembly, presentations on board.",
+              "ru": "Финальная сборка продукта, презентации на борту."
+            }
+          },
+          {
+            "number": 8,
+            "date": {
+              "en": "Nov 19",
+              "ru": "19 ноя"
+            },
+            "place": {
+              "en": "Bequia",
+              "ru": "Бекия"
+            },
+            "text": {
+              "en": "Retro, a buffer day in case of wind, dinner ashore.",
+              "ru": "Ретро, буферный день на случай ветра, ужин на суше."
+            }
+          },
+          {
+            "number": 9,
+            "date": {
+              "en": "Nov 20",
+              "ru": "20 ноя"
+            },
+            "place": {
+              "en": "Saint Vincent",
+              "ru": "Сент-Винсент"
+            },
+            "text": {
+              "en": "Passage to Kingstown, going ashore, hotel.",
+              "ru": "Переход в Кингстаун, сход на берег, отель."
+            }
+          },
+          {
+            "number": 10,
+            "date": {
+              "en": "Nov 21–22",
+              "ru": "21–22 ноя"
+            },
+            "place": {
+              "en": "Saint Vincent",
+              "ru": "Сент-Винсент"
+            },
+            "text": {
+              "en": "Quiet rest and the flight home.",
+              "ru": "Спокойный отдых и вылет домой."
+            }
+          }
+        ]
+      },
+      "map": {
+        "images": [
+          {
+            "url": "/assets/map-wide.jpg",
+            "height": 1053,
+            "width": 1920,
+            "storagePath": "",
+            "alt": {
+              "en": "Overview of the Caribbean basin with the route from Grenada to Saint Vincent",
+              "ru": "Общий вид Карибского бассейна с маршрутом от Гренады до Сент-Винсента"
+            }
+          },
+          {
+            "url": "/assets/map-close.jpg",
+            "height": 1276,
+            "width": 1376,
+            "storagePath": "",
+            "alt": {
+              "en": "Close-up of the route: Grenada → Grenadines → Saint Vincent",
+              "ru": "Крупный план маршрута: Гренада → Гренадины → Сент-Винсент"
+            }
+          }
+        ],
+        "caption": {
+          "en": "The route on a real nautical chart — a straight-line distance of ≈108 nautical miles.",
+          "ru": "Маршрут на реальной морской карте — прямая дистанция ≈108 морских миль."
+        }
+      },
+      "crewPersonIds": [
+        "ivan",
+        "yasha"
+      ],
+      "rules": {
+        "title": {
+          "en": "This is not a party on the water.",
+          "ru": "Это не вечеринка на воде."
+        },
+        "text": {
+          "en": "Minimum alcohol, maximum value. We are here to actually build a working AI tool in 10 days, not to sleep off cocktails until lunchtime. Wine or beer with dinner is up to you, but the day's programme is built around a clear head and focus, not around the bar.",
+          "ru": "Минимум алкоголя, максимум пользы. Мы здесь, чтобы за 10 дней реально построить рабочий AI-инструмент, а не чтобы отходить от коктейлей до обеда. Вино или пиво за ужином — по желанию, но программа дня строится вокруг ясной головы и фокуса, а не вокруг бара."
+        }
+      },
+      "faq": [
+        {
+          "question": {
+            "en": "Do I need programming experience?",
+            "ru": "Нужен ли опыт в программировании?"
+          },
+          "answer": {
+            "en": "No. The format is designed for entrepreneurs without code. We work through vibe coding — you describe what you want to get, and you assemble the product with AI tools.",
+            "ru": "Нет. Формат рассчитан на предпринимателей без кода. Мы работаем через vibe-коддинг — ты описываешь, что хочешь получить, и собираешь продукт с помощью AI-инструментов."
+          }
+        },
+        {
+          "question": {
+            "en": "What is included in the $3,500?",
+            "ru": "Что входит в стоимость $3,500?"
+          },
+          "answer": {
+            "en": "7 days on the catamaran, the bootcamp programme, the captain's work, marina berths, fuel, and basic meals on board. Flights and accommodation on the buffer days ashore are separate — we'll confirm the final list closer to the date.",
+            "ru": "7 дней на катамаране, программа буткемпа, работа капитана, стоянки в маринах, топливо, базовое питание на борту. Перелёты и проживание в буферные дни на суше — отдельно, финальный список уточним ближе к делу."
+          }
+        },
+        {
+          "question": {
+            "en": "Do I need a visa?",
+            "ru": "Нужна ли виза?"
+          },
+          "answer": {
+            "en": "Grenada and Saint Vincent are visa-free for holders of many passports, including Russian ones. We'll send a document checklist once your application is confirmed.",
+            "ru": "Для граждан РФ въезд в Гренаду и Сент-Винсент — безвизовый. Мы пришлём чек-лист по документам после подтверждения заявки."
+          }
+        },
+        {
+          "question": {
+            "en": "How safe is it?",
+            "ru": "Насколько это безопасно?"
+          },
+          "answer": {
+            "en": "The captain is Yasha, an engineer with long-passage experience. The catamaran carries standard certification, there is safety equipment on board, and we keep the route flexible in case of wind.",
+            "ru": "Капитан — Яша, инженер с опытом дальних переходов. Катамаран проходит стандартную сертификацию, на борту спасательное оборудование, у нас гибкий маршрут на случай ветра."
+          }
+        },
+        {
+          "question": {
+            "en": "What about hurricane season?",
+            "ru": "А как же сезон ураганов?"
+          },
+          "answer": {
+            "en": "The programme sits in a statistically safe window for this region. The official hurricane season in the southern Caribbean winds down by mid-November — we chose these dates deliberately.",
+            "ru": "Программа стоит в статистически безопасном окне для этого региона. Официальный сезон ураганов в южных Карибах заканчивается к середине ноября — мы намеренно выбрали эти даты."
+          }
+        },
+        {
+          "question": {
+            "en": "Can I drink? Can I not?",
+            "ru": "Можно ли с алкоголем? Без него?"
+          },
+          "answer": {
+            "en": "Both are fine. Wine or beer with dinner is up to you. But the day's programme is built around a clear head, not around the bar. This is not a party on the water.",
+            "ru": "И то, и то — окей. Вино или пиво за ужином — по желанию. Но программа дня строится вокруг ясной головы, а не вокруг бара. Это не вечеринка на воде."
+          }
+        }
+      ],
+      "social": {
+        "title": {
+          "en": "AI Yacht — AI bootcamp on a catamaran in the Caribbean",
+          "ru": "AI Yacht — AI-буткемп на катамаране в Карибском море"
+        },
+        "description": {
+          "en": "10 days in the Caribbean, 7 of them aboard a catamaran. A closed group of 6 entrepreneurs builds a working AI tool. November 12–22, 2026.",
+          "ru": "10 дней в Карибском море, 7 из них на катамаране. Закрытая группа из 6 предпринимателей строит рабочий AI-инструмент. 12–22 ноября 2026."
+        }
+      }
+    }
+  ]
+}

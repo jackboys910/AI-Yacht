@@ -20,7 +20,7 @@ import {
 } from "@/components/trip/trip-journey";
 import type { Locale } from "@/i18n/config";
 import type { NavLink } from "@/lib/content/nav";
-import type { Person, Trip } from "@/lib/content/types";
+import type { Person, Settings, Trip } from "@/lib/content/types";
 
 /** Header and footer. Absent in the admin preview, which brings its own bar. */
 export interface SiteChrome {
@@ -46,6 +46,7 @@ export function TripPage({
   locale,
   today,
   interestSlug,
+  thresholds,
   chrome,
 }: {
   trip: Trip;
@@ -53,6 +54,8 @@ export function TripPage({
   locale: Locale;
   today: string;
   interestSlug: string;
+  /** From the settings; the defaults of §6.3 apply when they are not set. */
+  thresholds?: Settings["counterThresholds"];
   /** Absent in the admin preview, which has nowhere to navigate to. */
   chrome?: SiteChrome;
 }) {
@@ -69,7 +72,7 @@ export function TripPage({
       )}
 
       <TripHero trip={trip} locale={locale} today={today} />
-      <TripSeats trip={trip} locale={locale} today={today} />
+      <TripSeats trip={trip} locale={locale} today={today} thresholds={thresholds} />
       <TripPrice trip={trip} locale={locale} />
       <TripPlace trip={trip} locale={locale} />
       <TripAudience trip={trip} locale={locale} />

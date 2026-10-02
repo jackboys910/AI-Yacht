@@ -60,6 +60,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       locale="ru"
       today={todayUtc()}
       interestSlug={interest}
+      thresholds={content.settings?.counterThresholds}
       chrome={{
         interests: interestLinks(content.interests, "ru"),
         solutionsHref: pagePath("itSolutions", "ru"),
