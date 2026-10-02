@@ -14,6 +14,7 @@ import {
   stripTripIds,
   type TripDraft,
 } from "@/lib/firebase/trips";
+import { rebuildSoon } from "@/lib/rebuild";
 import { PrimaryButton, SecondaryButton } from "../fields";
 import { TripForm } from "./trip-form";
 
@@ -244,6 +245,7 @@ export function TripsView() {
                       onClick={() =>
                         void act(trip, async () => {
                           await setTripStatus(trip, "restore");
+                        if (trip.statusBeforeArchive === "published") rebuildSoon();
                           return trip.statusBeforeArchive === "published"
                             ? "Поездка вернулась на сайт."
                             : "Поездка вернулась в черновики.";
@@ -258,6 +260,7 @@ export function TripsView() {
                       onClick={() =>
                         void act(trip, async () => {
                           await setTripStatus(trip, "archived");
+                        if (trip.status === "published") rebuildSoon();
                           return "Поездка убрана с сайта в архив.";
                         })
                       }

@@ -63,6 +63,19 @@ export function watchUser(listener: (user: User | null) => void): () => void {
 }
 
 /**
+ * The signed-in owner's ID token, for the one request that does not go to
+ * Firebase: `/api/rebuild` on the Cloudflare Worker, which hands the token
+ * back to Firestore to find out whether the caller is the owner.
+ *
+ * Firebase refreshes the token when it is close to expiring, so this is asked
+ * for at the moment of the call rather than kept anywhere.
+ */
+export async function idToken(): Promise<string | null> {
+  const user = auth().currentUser;
+  return user ? user.getIdToken() : null;
+}
+
+/**
  * Whether this account is the owner.
  *
  * Being signed in is not enough. The project's API key is public and the

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { rebuildSoon } from "@/lib/rebuild";
 import type { Interest } from "@/lib/content/types";
 import {
   blankInterest,
@@ -169,6 +170,8 @@ async function swap(
     saveInterest(a.id, { ...stripIds(a), order: b.order }),
     saveInterest(b.id, { ...stripIds(b), order: a.order }),
   ]);
+  // The order decides where the tab sits in the header and among the tiles.
+  rebuildSoon();
   reload();
 }
 
