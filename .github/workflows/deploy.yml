@@ -1,7 +1,15 @@
 name: Deploy to Cloudflare
 
-# Manual-only. Open the Actions tab, pick this workflow, press "Run workflow",
-# choose the branch you want to ship and the target environment.
+# Three ways in, one build:
+#
+#   - by hand, from the Actions tab, choosing the branch and the target;
+#   - from the admin panel, which asks the Cloudflare Worker to start this
+#     workflow when the owner publishes something (А-08, А-09);
+#   - once a day, so a trip whose end date has passed moves from "Upcoming"
+#     to "Past" on its own (§6.2) without anyone pressing anything.
+#
+# The scheduled run has no inputs, so every use of `inputs.environment` falls
+# back to production.
 on:
   workflow_dispatch:
     inputs:
@@ -13,14 +21,18 @@ on:
         options:
           - production
           - preview
+  schedule:
+    # 01:00 UTC — an hour after the date rolls over, since the site decides
+    # what is past by the UTC date.
+    - cron: "0 1 * * *"
 
 concurrency:
-  group: deploy-${{ inputs.environment }}
+  group: deploy-${{ inputs.environment || 'production' }}
   cancel-in-progress: false
 
 jobs:
   deploy:
-    name: Build and deploy (${{ inputs.environment }})
+    name: Build and deploy (${{ inputs.environment || 'production' }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -63,7 +75,7 @@ jobs:
           # A preview run deploys to a named version that does NOT take over
           # the live domain, so you can check it before promoting.
           command: >-
-            ${{ inputs.environment == 'production'
+            ${{ (inputs.environment || 'production') == 'production'
                 && 'deploy'
                 || 'versions upload' }}
 
@@ -73,4 +85,4 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- Branch: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- Target: \`${{ inputs.environment }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Target: \`${{ inputs.environment || 'production' }}\`" >> $GITHUB_STEP_SUMMARY
