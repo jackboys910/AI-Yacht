@@ -6,15 +6,23 @@
   "name": "ai-yacht",
   "compatibility_date": "2026-09-18",
 
-  // No "main" entry: this is an assets-only Worker. Cloudflare serves the
-  // statically exported files directly from its edge, with no JS execution
-  // and no request billing for asset hits.
+  // The Worker exists for one thing: /api/rebuild, which lets the admin panel
+  // start a build without the owner ever opening GitHub (А-08, А-09). The site
+  // itself is still served as files from the edge — "run_worker_first" below
+  // lists the only paths that reach this code, so a page view costs no
+  // invocation and the site is served exactly as before.
+  "main": "src/worker/index.ts",
+
   "assets": {
     "directory": "./out",
 
     // `next build` with `trailingSlash: true` emits out/404.html, which
     // Cloudflare returns (with a 404 status) for unknown paths.
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+
+    // Without this, a request that matches no file would be answered with the
+    // 404 page instead of reaching the Worker.
+    "run_worker_first": ["/api/*"]
   },
 
   "observability": {
