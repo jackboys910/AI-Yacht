@@ -1,4 +1,4 @@
-import { Eyebrow } from "@/components/eyebrow";
+import { SectionHead } from "@/components/section-head";
 import type { Locale } from "@/i18n/config";
 import type { HomeTile } from "@/lib/content/home";
 import { pickOrOther } from "@/lib/content/trip-view";
@@ -29,9 +29,9 @@ export function InterestTiles({
   return (
     <section id="interests" className="bg-background py-16 sm:py-24">
       <div className="container-narrow">
-        <Eyebrow>{COPY.heading[locale]}</Eyebrow>
+        <SectionHead>{COPY.heading[locale]}</SectionHead>
 
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {tiles.map((tile) => (
             <a
               key={tile.slug}

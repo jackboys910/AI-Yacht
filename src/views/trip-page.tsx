@@ -81,6 +81,7 @@ export function TripPage({
         block={trip.whatYouGet}
         heading={cardHeadings.whatYouGet(locale)}
         locale={locale}
+        numbered
       />
       <TripCards
         id="prepare"
