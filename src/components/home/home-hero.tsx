@@ -46,7 +46,11 @@ export function HomeHero({ locale }: { locale: Locale }) {
       <div className="absolute inset-0 bg-gradient-to-b from-primary/60 via-primary/40 to-primary" />
       <div className="absolute inset-0 bg-gradient-to-r from-primary/70 via-transparent to-transparent" />
 
-      <div className="container-narrow relative flex min-h-[100svh] flex-col justify-end pb-16 pt-32 sm:pb-24 sm:pt-40">
+      {/* Centred rather than sitting on the floor: this block is half the
+          height of the landing's that the full-screen photo was built around,
+          and bottom-aligning a short block leaves the top of the screen
+          empty. */}
+      <div className="container-narrow relative flex min-h-[100svh] flex-col justify-center pb-16 pt-28 sm:pb-24 sm:pt-32">
         <div className="max-w-3xl">
           <h1 className="font-display text-4xl leading-[1.05] sm:text-6xl md:text-7xl">
             {COPY.title[locale]}
