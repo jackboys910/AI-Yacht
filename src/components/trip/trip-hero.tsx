@@ -37,7 +37,7 @@ export function TripHero({
   return (
     <section
       id="top"
-      className="relative isolate min-h-[100svh] overflow-hidden bg-primary text-white"
+      className="relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-primary text-white"
     >
       {cover && (
         <img
@@ -51,7 +51,7 @@ export function TripHero({
       <div className="absolute inset-0 bg-gradient-to-b from-primary/60 via-primary/40 to-primary" />
       <div className="absolute inset-0 bg-gradient-to-r from-primary/70 via-transparent to-transparent" />
 
-      <div className="container-narrow relative flex min-h-[100svh] flex-col justify-end pb-16 pt-32 sm:pb-24 sm:pt-40">
+      <div className="container-narrow relative flex flex-1 flex-col justify-center pb-10 pt-28 sm:pt-32">
         <div className="max-w-3xl">
           <div className="mb-6 flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/5 px-4 py-1.5 text-xs uppercase tracking-[0.18em] text-white/85 backdrop-blur">
@@ -89,7 +89,7 @@ export function TripHero({
       </div>
 
       {rest.length > 0 && (
-        <div className="relative pb-10">
+        <div className="relative shrink-0 pb-10">
           <div className="container-narrow flex snap-x snap-mandatory gap-4 overflow-x-auto scrollbar-hide pb-2">
             {rest.map((photo) => (
               <img
