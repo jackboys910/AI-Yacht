@@ -1,4 +1,4 @@
-import { Eyebrow } from "@/components/eyebrow";
+import { SectionHead } from "@/components/section-head";
 import type { Locale } from "@/i18n/config";
 import type { Person, Trip } from "@/lib/content/types";
 import { pick, pickOrOther } from "@/lib/content/trip-view";
@@ -29,15 +29,15 @@ export function TripRouteDays({ trip, locale }: { trip: Trip; locale: Locale }) 
   return (
     <section id="route" className="bg-background py-20 sm:py-28">
       <div className="container-narrow">
-        <Eyebrow>{say("route", locale)}</Eyebrow>
+        <SectionHead>{say("route", locale)}</SectionHead>
         {intro && (
-          <p className="mt-4 max-w-2xl text-muted-foreground">{intro}</p>
+          <p className="mt-6 max-w-2xl text-muted-foreground">{intro}</p>
         )}
 
         {days.length > 0 && (
           // Horizontally scrolled on a phone, a grid once there is room — the
           // same pattern the existing route section uses.
-          <div className="mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto scrollbar-hide pb-4 md:grid md:grid-cols-2 md:gap-5 md:overflow-visible lg:grid-cols-3">
+          <div className="mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto scrollbar-hide pb-4 md:grid md:grid-cols-2 md:gap-5 md:overflow-visible lg:grid-cols-5">
             {days.map((day) => (
               <article
                 key={day.number}
@@ -92,9 +92,9 @@ export function TripMap({ trip, locale }: { trip: Trip; locale: Locale }) {
   return (
     <section id="map" className="bg-muted/40 py-20 sm:py-28">
       <div className="container-narrow">
-        <Eyebrow>{say("map", locale)}</Eyebrow>
+        <SectionHead>{say("map", locale)}</SectionHead>
         {images.length > 0 && (
-          <div className="mt-8 grid gap-5 sm:gap-6">
+          <div className="mt-10 grid gap-5 sm:gap-6">
             {images.map((image) => (
               <div
                 key={image.url}
@@ -130,10 +130,10 @@ export function TripMedia({ trip, locale }: { trip: Trip; locale: Locale }) {
   return (
     <section id="media" className="bg-background py-20 sm:py-28">
       <div className="container-narrow">
-        <Eyebrow>{say("media", locale)}</Eyebrow>
+        <SectionHead>{say("media", locale)}</SectionHead>
 
         {photos.length > 0 && (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {photos.map((photo) => (
               <img
                 key={photo.url}
@@ -206,7 +206,7 @@ export function TripCrew({
   return (
     <section id="crew" className="bg-muted/40 py-20 sm:py-32">
       <div className="container-narrow">
-        <Eyebrow>{say("crew", locale)}</Eyebrow>
+        <SectionHead>{say("crew", locale)}</SectionHead>
 
         <div className="mt-12 flex flex-col gap-6 md:grid md:grid-cols-2 md:gap-8">
           {crew.map((person) => (

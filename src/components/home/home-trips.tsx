@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eyebrow } from "@/components/eyebrow";
+import { SectionHead } from "@/components/section-head";
 import { ALL_CHIP, FilterChips } from "@/components/filter-chips";
 import { TripGrid } from "@/components/trip-grid";
 import type { Locale } from "@/i18n/config";
@@ -55,7 +55,7 @@ export function HomeTrips({
   return (
     <section id="upcoming" className="bg-muted/40 py-16 sm:py-24">
       <div className="container-narrow">
-        <Eyebrow>{COPY.heading[locale]}</Eyebrow>
+        <SectionHead>{COPY.heading[locale]}</SectionHead>
 
         {trips.length === 0 ? (
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">

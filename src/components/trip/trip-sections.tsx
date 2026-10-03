@@ -1,10 +1,11 @@
 import { Eyebrow } from "@/components/eyebrow";
 import { FaqList } from "@/components/faq-list";
+import { SectionHead } from "@/components/section-head";
 import type { Locale } from "@/i18n/config";
 import { effectiveBookingStatus, goingCount } from "@/lib/content/schedule";
 import type { CardsBlock, Settings, Trip } from "@/lib/content/types";
+import { bookingLabel, pick, pickList, pickOrOther } from "@/lib/content/trip-view";
 import { DEFAULT_COUNTER_THRESHOLDS } from "@/lib/content/visibility";
-import { bookingLabel, pick, pickList } from "@/lib/content/trip-view";
 
 /**
  * The text blocks of a trip page (§6.3).
@@ -16,6 +17,10 @@ import { bookingLabel, pick, pickList } from "@/lib/content/trip-view";
  * Headings are fixed English strings from Appendix В on the English side and
  * their Russian counterparts on the other; they are the page's furniture, not
  * content the owner types.
+ *
+ * The look is the AI Yacht page's, which §6.3 asks this template to repeat:
+ * the same cards, the same numbering, the same gold-edged note, the same two
+ * columns under the questions.
  */
 
 const HEADINGS = {
@@ -28,6 +33,7 @@ const HEADINGS = {
   whatYouGet: { en: "What you get", ru: "Что получишь" },
   prepare: { en: "How to prepare", ru: "Подготовка" },
   program: { en: "Program", ru: "Программа" },
+  stage: { en: "stage", ru: "этап" },
   rules: { en: "Rules & safety", ru: "Формат и правила" },
   faq: { en: "FAQ", ru: "Вопросы и ответы" },
   seatsLeft: { en: "spots left", ru: "мест свободно" },
@@ -158,8 +164,8 @@ export function TripPlace({ trip, locale }: { trip: Trip; locale: Locale }) {
   return (
     <section id="place" className="bg-background py-20 sm:py-28">
       <div className="container-narrow">
-        <Eyebrow>{say("place", locale)}</Eyebrow>
-        <div className="mt-6 max-w-3xl space-y-5 text-[15px] leading-relaxed text-foreground/85 sm:text-base">
+        <SectionHead>{say("place", locale)}</SectionHead>
+        <div className="mt-8 max-w-3xl space-y-5 text-[15px] leading-relaxed text-foreground/85 sm:text-base">
           {paragraphs.map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
           ))}
@@ -169,35 +175,51 @@ export function TripPlace({ trip, locale }: { trip: Trip; locale: Locale }) {
   );
 }
 
+/** The gold-edged aside the AI Yacht page uses for a block's closing remark. */
+function Note({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-8 rounded-2xl border-l-4 border-[color:var(--gold)] bg-muted/60 p-6 text-[15px] leading-relaxed text-foreground/85">
+      {children}
+    </div>
+  );
+}
+
 export function TripAudience({ trip, locale }: { trip: Trip; locale: Locale }) {
   const items = pickList(trip.audience?.items, locale);
   const note = pick(trip.audience?.note, locale);
   if (items.length === 0 && !note) return null;
 
   return (
-    <section id="audience" className="bg-muted/40 py-20 sm:py-28">
-      <div className="container-narrow">
-        <Eyebrow>{say("audience", locale)}</Eyebrow>
-        {items.length > 0 && (
-          <ul className="mt-8 grid max-w-4xl gap-4 sm:grid-cols-2">
-            {items.map((item) => (
-              <li
-                key={item}
-                className="flex gap-3 rounded-2xl border border-border bg-card p-5 text-[15px] leading-relaxed"
-              >
-                <span aria-hidden="true" className="text-[color:var(--teal)]">
-                  ✓
-                </span>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-        {note && (
-          <p className="mt-6 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            {note}
-          </p>
-        )}
+    <section id="audience" className="bg-background py-20 sm:py-32">
+      <div className="container-narrow grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-20">
+        <SectionHead>{say("audience", locale)}</SectionHead>
+
+        <div>
+          {items.length > 0 && (
+            <ul className="space-y-4">
+              {items.map((item) => (
+                <li
+                  key={item}
+                  className="flex gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm"
+                >
+                  <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[color:var(--teal)] text-white">
+                    <svg
+                      viewBox="0 0 20 20"
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                    >
+                      <path d="M4 10.5l4 4 8-9" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                  <span className="text-[15px] leading-relaxed text-foreground/90">{item}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {note && <Note>{note}</Note>}
+        </div>
       </div>
     </section>
   );
@@ -209,12 +231,15 @@ export function TripCards({
   id,
   locale,
   dark = false,
+  numbered = false,
 }: {
   block: CardsBlock | undefined;
   heading: string;
   id: string;
   locale: Locale;
   dark?: boolean;
+  /** "01 02 03" down the cards, as on the "What you get" block. */
+  numbered?: boolean;
 }) {
   const cards = (block?.cards ?? []).filter(
     (card) => pick(card.title, locale) || pick(card.text, locale),
@@ -225,24 +250,33 @@ export function TripCards({
   return (
     <section
       id={id}
-      className={dark ? "bg-muted/40 py-20 sm:py-28" : "bg-background py-20 sm:py-28"}
+      className={dark ? "bg-muted/40 py-20 sm:py-32" : "bg-background py-20 sm:py-32"}
     >
       <div className="container-narrow">
-        <Eyebrow>{heading}</Eyebrow>
+        <SectionHead>{heading}</SectionHead>
         {cards.length > 0 && (
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            className={`mt-12 grid gap-6 ${
+              cards.length === 1 ? "" : cards.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"
+            }`}
+          >
             {cards.map((card, index) => (
               <article
                 key={index}
-                className="rounded-2xl border border-border bg-card p-6 shadow-sm"
+                className="group flex flex-col rounded-3xl border border-border bg-card p-8 shadow-card transition hover:-translate-y-1 hover:border-[color:var(--teal)]"
               >
+                {numbered && (
+                  <span className="font-display text-4xl text-[color:var(--gold)]">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                )}
                 {pick(card.title, locale) && (
-                  <h3 className="font-display text-xl leading-snug">
+                  <h3 className={`fit-words font-display text-2xl ${numbered ? "mt-6" : ""}`}>
                     {pick(card.title, locale)}
                   </h3>
                 )}
                 {pick(card.text, locale) && (
-                  <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                  <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground">
                     {pick(card.text, locale)}
                   </p>
                 )}
@@ -250,11 +284,7 @@ export function TripCards({
             ))}
           </div>
         )}
-        {note && (
-          <p className="mt-6 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            {note}
-          </p>
-        )}
+        {note && <Note>{note}</Note>}
       </div>
     </section>
   );
@@ -273,28 +303,35 @@ export function TripProgram({ trip, locale }: { trip: Trip; locale: Locale }) {
   if (stages.length === 0 && !note) return null;
 
   return (
-    <section id="program" className="bg-background py-20 sm:py-28">
+    <section id="program" className="bg-muted/40 py-20 sm:py-32">
       <div className="container-narrow">
-        <Eyebrow>{say("program", locale)}</Eyebrow>
+        <SectionHead>{say("program", locale)}</SectionHead>
         {stages.length > 0 && (
-          <ol className="mt-10 space-y-5">
+          <ol
+            className={`mt-12 grid gap-4 md:gap-6 ${
+              stages.length === 1 ? "" : stages.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"
+            }`}
+          >
             {stages.map((stage, index) => (
               <li
                 key={index}
-                className="grid gap-3 rounded-2xl border border-border bg-card p-6 sm:grid-cols-[10rem_1fr] sm:gap-8"
+                className="relative rounded-3xl border border-border bg-card p-8"
               >
-                <div>
+                <div className="flex flex-wrap items-baseline gap-3">
                   {pick(stage.duration, locale) && (
-                    <p className="font-display text-xl">{pick(stage.duration, locale)}</p>
+                    <span className="font-display text-3xl text-[color:var(--teal)]">
+                      {pick(stage.duration, locale)}
+                    </span>
                   )}
-                  {pick(stage.place, locale) && (
-                    <p className="mt-1 text-sm font-medium text-[color:var(--teal)]">
-                      {pick(stage.place, locale)}
-                    </p>
-                  )}
+                  <span className="text-xs uppercase tracking-widest text-muted-foreground">
+                    {say("stage", locale)} {index + 1}
+                  </span>
                 </div>
+                {pick(stage.place, locale) && (
+                  <div className="mt-4 font-medium">{pick(stage.place, locale)}</div>
+                )}
                 {pick(stage.text, locale) && (
-                  <p className="text-[15px] leading-relaxed text-muted-foreground">
+                  <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
                     {pick(stage.text, locale)}
                   </p>
                 )}
@@ -302,11 +339,7 @@ export function TripProgram({ trip, locale }: { trip: Trip; locale: Locale }) {
             ))}
           </ol>
         )}
-        {note && (
-          <p className="mt-6 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            {note}
-          </p>
-        )}
+        {note && <Note>{note}</Note>}
       </div>
     </section>
   );
@@ -317,22 +350,60 @@ export function TripRules({ trip, locale }: { trip: Trip; locale: Locale }) {
   const text = pick(trip.rules?.text, locale);
   if (!title && !text) return null;
 
+  // The AI Yacht page sets this block against a dimmed photograph; the trip's
+  // own last picture stands in for the one that used to be hardcoded.
+  const backdrop = trip.gallery.at(-1);
+
   return (
-    <section id="rules" className="bg-muted/40 py-20 sm:py-28">
-      <div className="container-narrow">
-        <Eyebrow>{say("rules", locale)}</Eyebrow>
-        {title && (
-          <h2 className="mt-4 max-w-3xl font-display text-3xl leading-tight sm:text-4xl">
-            {title}
-          </h2>
-        )}
-        {text && (
-          <div className="mt-6 max-w-3xl space-y-4 text-[15px] leading-relaxed text-foreground/85">
-            {text.split("\n").filter(Boolean).map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
-          </div>
-        )}
+    <section
+      id="rules"
+      className="relative overflow-hidden bg-primary py-20 text-white sm:py-28"
+    >
+      {backdrop?.url && (
+        <img
+          src={backdrop.url}
+          alt=""
+          width={backdrop.width || 1400}
+          height={backdrop.height || 1000}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover opacity-20"
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-primary/70" />
+
+      <div className="container-narrow relative grid gap-10 md:grid-cols-[auto_1fr] md:items-center md:gap-14">
+        <div className="grid h-24 w-24 shrink-0 place-items-center rounded-full border border-[color:var(--gold)]/50 bg-white/5 backdrop-blur">
+          <svg
+            viewBox="0 0 48 48"
+            className="h-12 w-12"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            aria-hidden="true"
+          >
+            <path d="M14 8h20l-3 14a7 7 0 01-7 5.5A7 7 0 0117 22L14 8z" strokeLinejoin="round" />
+            <path d="M24 27.5V38" strokeLinecap="round" />
+            <path d="M17 40h14" strokeLinecap="round" />
+            <path d="M10 10l28 28" stroke="#C99A3C" strokeLinecap="round" />
+          </svg>
+        </div>
+
+        <div>
+          <Eyebrow tone="light">{say("rules", locale)}</Eyebrow>
+          {title && (
+            <h2 className="mt-4 font-display text-3xl leading-tight sm:text-5xl">{title}</h2>
+          )}
+          {text && (
+            <div className="mt-6 max-w-2xl space-y-4 text-white/85">
+              {text
+                .split("\n")
+                .filter(Boolean)
+                .map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
@@ -340,17 +411,41 @@ export function TripRules({ trip, locale }: { trip: Trip; locale: Locale }) {
 
 export function TripFaq({ trip, locale }: { trip: Trip; locale: Locale }) {
   const items = trip.faq
-    .map((item) => ({ q: pick(item.question, locale), a: pick(item.answer, locale) }))
-    .filter((item) => item.q && item.a);
+    .filter((item) => pick(item.question, locale) || pick(item.answer, locale))
+    .map((item) => ({
+      q: pick(item.question, locale),
+      a: pick(item.answer, locale),
+    }));
   if (items.length === 0) return null;
 
+  // The questions sit beside a photograph on the AI Yacht page. Any picture
+  // but the cover will do — the cover is already the first thing on the page.
+  const aside = trip.gallery.find((_, index) => index !== trip.coverIndex);
+
   return (
-    <section id="faq" className="bg-background py-20 sm:py-28">
-      <div className="container-narrow max-w-4xl">
-        <Eyebrow>{say("faq", locale)}</Eyebrow>
-        <div className="mt-8">
-          <FaqList items={items} />
+    <section id="faq" className="bg-background py-20 sm:py-32">
+      <div
+        className={`container-narrow grid gap-12 lg:gap-20 ${
+          aside ? "lg:grid-cols-[1fr_1.4fr]" : ""
+        }`}
+      >
+        <div>
+          <SectionHead>{say("faq", locale)}</SectionHead>
+          {aside && (
+            <div className="mt-8 aspect-[4/5] overflow-hidden rounded-3xl">
+              <img
+                src={aside.url}
+                alt={pickOrOther(aside.alt, locale)}
+                width={aside.width || 1400}
+                height={aside.height || 1000}
+                loading="lazy"
+                className="h-full w-full object-cover"
+              />
+            </div>
+          )}
         </div>
+
+        <FaqList items={items} />
       </div>
     </section>
   );

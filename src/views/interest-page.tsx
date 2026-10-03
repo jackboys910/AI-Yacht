@@ -1,4 +1,4 @@
-import { Eyebrow } from "@/components/eyebrow";
+import { SectionHead } from "@/components/section-head";
 import { SiteFoot } from "@/components/site-foot";
 import { SiteNav } from "@/components/site-nav";
 import { TripList } from "@/components/interest/trip-list";
@@ -85,7 +85,7 @@ export function InterestPage({
 
       <section id="upcoming" className="bg-background py-16 sm:py-24">
         <div className="container-narrow">
-          <Eyebrow>{COPY.upcoming[locale]}</Eyebrow>
+          <SectionHead>{COPY.upcoming[locale]}</SectionHead>
 
           {upcoming.length > 0 ? (
             <TripList
@@ -120,7 +120,7 @@ export function InterestPage({
               </summary>
 
               <div className="mt-8">
-                <Eyebrow>{COPY.past[locale]}</Eyebrow>
+                <SectionHead>{COPY.past[locale]}</SectionHead>
                 <TripList
                   trips={past}
                   locale={locale}
