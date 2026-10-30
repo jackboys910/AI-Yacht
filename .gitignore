@@ -43,3 +43,7 @@ next-env.d.ts
 # cloudflare / wrangler
 .wrangler
 .dev.vars
+
+# screenshots taken while checking pages in a browser
+/.playwright-mcp/
+/*.png
