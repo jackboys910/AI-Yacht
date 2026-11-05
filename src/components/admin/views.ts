@@ -1,10 +1,10 @@
 /**
  * The sections of the admin panel, in menu order.
  *
- * They follow §7 of the spec: trips, interests, people, subscribers,
- * applications, settings. Each one is filled in by a later plan item, and
- * `comingIn` names that item so the placeholder says what is missing rather
- * than looking broken.
+ * They follow §7 of the spec, with the moderation queue §3.4 of ТЗ v4 adds:
+ * trips, interests, people, suggestions, applications, subscribers, settings.
+ * Each one is filled in by a later plan item, and `comingIn` names that item so
+ * the placeholder says what is missing rather than looking broken.
  */
 export const ADMIN_VIEWS = [
   {
@@ -26,22 +26,28 @@ export const ADMIN_VIEWS = [
     comingIn: "1.3",
   },
   {
-    id: "subscribers",
-    label: "Подписчики",
-    description: "Списки по направлениям и выгрузка в CSV.",
-    comingIn: "2.6",
+    id: "suggestions",
+    label: "Идеи поездок",
+    description: "Предложенные посетителями поездки: рассмотреть, одобрить, отклонить.",
+    comingIn: "2.5",
   },
   {
     id: "applications",
     label: "Заявки",
-    description: "Заявки на поездки и заявки Solutions.",
-    comingIn: "2.6",
+    description: "Заявки на участие в поездках и заявки Solutions.",
+    comingIn: "2.8",
+  },
+  {
+    id: "subscribers",
+    label: "Подписчики",
+    description: "Списки по направлениям и выгрузка в CSV.",
+    comingIn: "3.4",
   },
   {
     id: "settings",
     label: "Настройки",
-    description: "Story, тексты Solutions, пороги счётчиков, адрес отправителя.",
-    comingIn: "3.1 и 3.3",
+    description: "Story, About, тексты Solutions, Calendly, пороги счётчиков.",
+    comingIn: "4.3",
   },
 ] as const;
 
