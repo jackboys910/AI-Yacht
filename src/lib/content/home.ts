@@ -13,28 +13,104 @@ import { homeTrips, visibleInterests } from "./visibility";
  * which interests exist.
  */
 
-/** One tile in the "My interests" block: a photo, a name and a line under it. */
-export interface HomeTile {
-  slug: string;
+/**
+ * One section of the S the home page is built on (ТЗ v4, §4.2).
+ *
+ * A picture, a name whose first letter carries the whole idea, and one line
+ * saying what happens there. The sections are laid out in a serpentine that
+ * draws the letter, so their order is the order of the letter — which is the
+ * order the owner arranged the interests in.
+ */
+export interface HomeLane {
+  id: string;
   label: string;
   caption: string;
   href: string;
-  cover?: StoredImage;
+  image?: LaneImage;
+}
+
+export interface LaneImage {
+  url: string;
+  alt: string;
+  width: number;
+  height: number;
 }
 
 /**
- * The tiles, in the order the owner arranged the interests. A new interest
- * added in the panel gets a tile without a developer (А-14), and a hidden one
- * loses it along with its tab (§7.3).
+ * The fifth section.
+ *
+ * Software is not an interest: it has no trips, no tab and no row in the
+ * database, and it leads to Solutions. Composing it here rather than leaving
+ * the renderer to invent it keeps the S one list, built in one place, wherever
+ * it is drawn.
+ *
+ * The word itself is still open (ТЗ v4, §13): the concept document says Studio,
+ * the mock-up the owner sent says Software, the header says Solutions. Software
+ * is what the mock-up says, and the choice moves to settings with item 4.3.
  */
-export function homeTiles(interests: Interest[], locale: Locale): HomeTile[] {
-  return visibleInterests(interests).map((interest) => ({
-    slug: interest.slug,
+const SOFTWARE = {
+  id: "software",
+  label: "Software",
+  // Short enough to hold to two lines on a narrow phone, where the section
+  // has a fixed height and a third line would simply be cut off.
+  caption: {
+    en: "Build digital products. Turn ideas into tools.",
+    ru: "Цифровые продукты. Из идеи — в инструмент.",
+  },
+  image: {
+    url: "/assets/laptop-deck.jpg",
+    width: 1400,
+    height: 1000,
+    alt: {
+      en: "A laptop on the deck of a yacht",
+      ru: "Ноутбук на палубе яхты",
+    },
+  },
+} as const;
+
+/**
+ * The sections of the S, in the order the owner arranged the interests, with
+ * Software last.
+ *
+ * An interest added in the panel gets its section without a developer (А-14),
+ * and a hidden one loses it along with its tab (§7.3) — which is also why the
+ * letter is drawn from the number of sections rather than sitting behind them
+ * as a picture of an S with exactly five lobes.
+ */
+export function homeLanes(
+  interests: Interest[],
+  locale: Locale,
+  solutionsHref: string,
+): HomeLane[] {
+  const fromInterests = visibleInterests(interests).map((interest) => ({
+    id: interest.slug,
     label: interestLabel(interest),
     caption: interest.tileCaption[locale] || interest.tileCaption.en || "",
     href: localized(`/${interest.slug}/`, locale),
-    cover: interest.cover,
+    image: laneImage(interest.cover, locale),
   }));
+
+  return [
+    ...fromInterests,
+    {
+      id: SOFTWARE.id,
+      label: SOFTWARE.label,
+      caption: SOFTWARE.caption[locale],
+      href: solutionsHref,
+      image: { ...SOFTWARE.image, alt: SOFTWARE.image.alt[locale] },
+    },
+  ];
+}
+
+/** The cover as the section needs it: one resolved URL, one resolved caption. */
+function laneImage(cover: StoredImage | undefined, locale: Locale): LaneImage | undefined {
+  if (!cover?.url) return undefined;
+  return {
+    url: cover.thumbUrl || cover.url,
+    alt: cover.alt[locale] || cover.alt.en || "",
+    width: cover.width || 640,
+    height: cover.height || 480,
+  };
 }
 
 /** An upcoming trip together with every filter chip it answers to. */

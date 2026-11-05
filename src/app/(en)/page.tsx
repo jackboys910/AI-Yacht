@@ -1,6 +1,6 @@
 import { localeHrefs, pagePath } from "@/i18n/config";
 import { buildMetadata } from "@/i18n/metadata";
-import { homeTiles, homeUpcoming } from "@/lib/content/home";
+import { homeLanes, homeUpcoming } from "@/lib/content/home";
 import { interestLinks } from "@/lib/content/nav";
 import { todayUtc } from "@/lib/content/schedule";
 import { getSiteContent } from "@/lib/firebase/content";
@@ -15,7 +15,7 @@ export default async function Page() {
 
   return (
     <HomePage
-      tiles={homeTiles(content.interests, "en")}
+      lanes={homeLanes(content.interests, "en", pagePath("itSolutions", "en"))}
       trips={trips}
       chips={chips}
       locale="en"
