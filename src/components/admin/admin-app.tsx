@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { User } from "firebase/auth";
 import { isOwner, signOutOwner, watchUser } from "@/lib/firebase/auth";
 import { AdminShell } from "./admin-shell";
+import { AdminLanguageProvider, useAdmin } from "./i18n";
 import { SignInForm } from "./sign-in-form";
 
 /**
@@ -24,7 +25,20 @@ type State =
   | { kind: "ready"; user: User }
   | { kind: "error" };
 
+/**
+ * The panel's language wraps every screen, the sign-in form included: someone
+ * who cannot read the interface cannot be asked to sign in first to change it.
+ */
 export function AdminApp() {
+  return (
+    <AdminLanguageProvider>
+      <AdminScreens />
+    </AdminLanguageProvider>
+  );
+}
+
+function AdminScreens() {
+  const { t } = useAdmin();
   const [state, setState] = useState<State>({ kind: "loading" });
 
   useEffect(() => {
@@ -60,7 +74,7 @@ export function AdminApp() {
 
   switch (state.kind) {
     case "loading":
-      return <Centered>Загрузка…</Centered>;
+      return <Centered>{t.app.loading}</Centered>;
 
     case "signedOut":
       return <SignInForm />;
@@ -72,19 +86,15 @@ export function AdminApp() {
       return (
         <Centered>
           <p className="font-medium text-foreground">
-            Аккаунт {state.user.email} не является владельцем сайта.
+            {t.app.notOwner(state.user.email ?? "—")}
           </p>
-          <p className="mt-2 max-w-md">
-            Войдите под аккаунтом владельца. Если это ваш аккаунт, его нужно
-            добавить в список владельцев в базе — коллекция «owners», документ с
-            идентификатором {state.user.uid}.
-          </p>
+          <p className="mt-2 max-w-md">{t.app.notOwnerHow(state.user.uid)}</p>
           <button
             type="button"
             onClick={() => void signOutOwner()}
             className="mt-6 rounded-full border border-border px-5 py-2.5 text-sm font-medium transition hover:border-foreground"
           >
-            Выйти
+            {t.shell.signOut}
           </button>
         </Centered>
       );
@@ -92,11 +102,8 @@ export function AdminApp() {
     case "error":
       return (
         <Centered>
-          <p className="font-medium text-foreground">Не удалось связаться с базой.</p>
-          <p className="mt-2 max-w-md">
-            Проверьте интернет и обновите страницу. Если не помогает — возможно,
-            не опубликованы правила доступа Firestore.
-          </p>
+          <p className="font-medium text-foreground">{t.app.unreachable}</p>
+          <p className="mt-2 max-w-md">{t.app.unreachableHow}</p>
         </Centered>
       );
   }

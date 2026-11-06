@@ -7,6 +7,7 @@ import type { Person } from "@/lib/content/types";
 import type { TripDraft } from "@/lib/firebase/trips";
 import { TripPage } from "@/views/trip-page";
 import { LocaleTabs } from "../fields";
+import { useAdmin } from "../i18n";
 
 /**
  * А-07: the trip as visitors will see it, drawn from the draft.
@@ -33,6 +34,7 @@ export function TripPreview({
   interestSlug: string;
   onClose: () => void;
 }) {
+  const { t } = useAdmin();
   const [locale, setLocale] = useState<Locale>("en");
 
   const trip = { ...draft, id: id ?? "preview", createdAt: "", updatedAt: "" };
@@ -44,19 +46,19 @@ export function TripPreview({
     <div className="fixed inset-0 z-50 overflow-y-auto bg-background">
       <div className="sticky top-0 z-[60] flex flex-wrap items-center justify-between gap-3 bg-[color:var(--primary)] px-4 py-3 text-white">
         <span className="text-sm">
-          Предпросмотр — так поездку увидят посетители.{" "}
-          <span className="text-white/60">Черновик, на сайте его ещё нет.</span>
+          {t.preview.banner}{" "}
+          <span className="text-white/60">{t.preview.draft}</span>
         </span>
         <div className="flex items-center gap-3">
-          <div className="rounded-full bg-white/10 p-0.5">
-            <LocaleTabs value={locale} onChange={setLocale} />
+          <div className="rounded-full bg-white/10 px-2 py-0.5">
+            <LocaleTabs value={locale} onChange={setLocale} tone="dark" />
           </div>
           <button
             type="button"
             onClick={onClose}
             className="rounded-full border border-white/30 px-4 py-1.5 text-sm font-medium transition hover:border-white"
           >
-            Вернуться к форме
+            {t.preview.back}
           </button>
         </div>
       </div>

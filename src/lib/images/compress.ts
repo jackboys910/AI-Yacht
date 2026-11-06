@@ -12,6 +12,8 @@
  * 320px-wide card is most of a page's weight.
  */
 
+import { LocalizedError } from "../localized-error";
+
 export interface RenderedImage {
   blob: Blob;
   width: number;
@@ -30,7 +32,8 @@ const FULL_MAX_WIDTH = 1920;
 const THUMB_MAX_WIDTH = 640;
 const QUALITY = 0.82;
 
-export class UnsupportedImageError extends Error {}
+/** A picture the browser cannot work with, said in the panel's two languages. */
+export class UnsupportedImageError extends LocalizedError {}
 
 /**
  * Decodes a file, straightens it, and renders both sizes.
@@ -57,7 +60,10 @@ export async function compressImage(file: File): Promise<CompressedImage> {
 
 async function decode(file: File): Promise<ImageBitmap> {
   if (!file.type.startsWith("image/")) {
-    throw new UnsupportedImageError("Это не картинка. Нужен файл JPEG, PNG или WebP.");
+    throw new UnsupportedImageError({
+      en: "That is not a picture. A JPEG, PNG or WebP file is needed.",
+      ru: "Это не картинка. Нужен файл JPEG, PNG или WebP.",
+    });
   }
 
   try {
@@ -68,8 +74,20 @@ async function decode(file: File): Promise<ImageBitmap> {
     // cannot be decoded by Chrome or Firefox at all.
     throw new UnsupportedImageError(
       /heic|heif/i.test(file.type) || /\.heic$/i.test(file.name)
-        ? "Формат HEIC браузер открыть не может. Пересохраните фото в JPEG — на iPhone это происходит само, если выбирать фото через «Фотогалерею»."
-        : "Не удалось открыть эту картинку. Попробуйте JPEG или PNG.",
+        ? {
+            en:
+              "A browser cannot open the HEIC format. Save the photo again as a " +
+              "JPEG — on an iPhone that happens by itself when the photo is " +
+              "picked through Photo Library.",
+            ru:
+              "Формат HEIC браузер открыть не может. Пересохраните фото в JPEG " +
+              "— на iPhone это происходит само, если выбирать фото через " +
+              "«Фотогалерею».",
+          }
+        : {
+            en: "Could not open this picture. Try a JPEG or a PNG.",
+            ru: "Не удалось открыть эту картинку. Попробуйте JPEG или PNG.",
+          },
       { cause },
     );
   }
@@ -101,20 +119,24 @@ async function render(
   canvas.height = height;
 
   const context = canvas.getContext("2d");
-  if (!context) throw new UnsupportedImageError("Браузер не смог обработать картинку.");
+  if (!context) {
+    throw new UnsupportedImageError({
+      en: "The browser could not process the picture.",
+      ru: "Браузер не смог обработать картинку.",
+    });
+  }
   context.drawImage(bitmap, 0, 0, width, height);
 
   const blob = await new Promise<Blob | null>((resolve) =>
     canvas.toBlob(resolve, type, QUALITY),
   );
-  if (!blob) throw new UnsupportedImageError("Не удалось сжать картинку.");
+  if (!blob) {
+    throw new UnsupportedImageError({
+      en: "Could not compress the picture.",
+      ru: "Не удалось сжать картинку.",
+    });
+  }
 
   return { blob, width, height };
 }
 
-/** "2.4 МБ" — shown next to a photo so oversized originals are obvious. */
-export function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} Б`;
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} КБ`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
-}

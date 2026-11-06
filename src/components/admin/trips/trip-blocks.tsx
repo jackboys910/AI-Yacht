@@ -7,6 +7,7 @@ import {
   LocalizedLines,
   LocalizedTextarea,
 } from "../fields";
+import { useAdmin } from "../i18n";
 import { Repeatable } from "../repeatable";
 import { OptionalSection } from "./section";
 
@@ -29,12 +30,14 @@ export function TripBlocks({
   draft: TripDraft;
   set: <K extends keyof TripDraft>(key: K, value: TripDraft[K]) => void;
 }) {
+  const { t } = useAdmin();
+
   return (
     <>
       <OptionalSection
         id="block-price"
-        title="Цена"
-        subtitle="Заголовок на сайте — «Price»."
+        title={t.tripForm.price.title}
+        subtitle={t.tripForm.price.subtitle}
         value={draft.price}
         onChange={(value) => set("price", value)}
         create={() => ({ amount: noText(), included: noLines(), notIncluded: noLines() })}
@@ -43,22 +46,22 @@ export function TripBlocks({
           <>
             <LocalizedInput
               id="price-amount"
-              label="Сумма"
+              label={t.tripForm.priceAmount}
               value={price.amount}
               onChange={(amount) => update({ ...price, amount })}
               placeholder="$3,500"
-              hint="Обычный текст, а не число: «$3,500» и «3500 $» пишутся по-разному."
+              hint={t.tripForm.priceAmountHint}
             />
             <LocalizedLines
               id="price-included"
-              label="Что входит в цену"
+              label={t.tripForm.priceIncluded}
               value={price.included}
               onChange={(included) => update({ ...price, included })}
-              hint="По одному пункту на строку."
+              hint={t.tripForm.priceIncludedHint}
             />
             <LocalizedLines
               id="price-not-included"
-              label="Что не входит"
+              label={t.tripForm.priceNotIncluded}
               value={price.notIncluded}
               onChange={(notIncluded) => update({ ...price, notIncluded })}
             />
@@ -68,8 +71,8 @@ export function TripBlocks({
 
       <OptionalSection
         id="block-place"
-        title="Место"
-        subtitle="Заголовок на сайте — «The place». Два-четыре абзаца."
+        title={t.tripForm.placeBlock.title}
+        subtitle={t.tripForm.placeBlock.subtitle}
         value={draft.placeDetails}
         onChange={(value) => set("placeDetails", value)}
         create={() => ({ paragraphs: noLines() })}
@@ -77,19 +80,19 @@ export function TripBlocks({
         {(place, update) => (
           <LocalizedLines
             id="place-paragraphs"
-            label="Описание места"
+            label={t.tripForm.placeParagraphs}
             rows={8}
             value={place.paragraphs}
             onChange={(paragraphs) => update({ paragraphs })}
-            hint="Пустая строка разделяет абзацы не нужна — каждый абзац на своей строке."
+            hint={t.tripForm.placeParagraphsHint}
           />
         )}
       </OptionalSection>
 
       <OptionalSection
         id="block-audience"
-        title="Кому подходит"
-        subtitle="Заголовок на сайте — «Is this trip for you?»."
+        title={t.tripForm.audience.title}
+        subtitle={t.tripForm.audience.subtitle}
         value={draft.audience}
         onChange={(value) => set("audience", value)}
         create={(): AudienceBlock => ({ items: noLines() })}
@@ -98,14 +101,14 @@ export function TripBlocks({
           <>
             <LocalizedLines
               id="audience-items"
-              label="Пункты списка"
+              label={t.tripForm.audienceItems}
               rows={7}
               value={audience.items}
               onChange={(items) => update({ ...audience, items })}
             />
             <LocalizedTextarea
               id="audience-note"
-              label="Примечание"
+              label={t.tripForm.note}
               rows={3}
               value={audience.note ?? noText()}
               onChange={(note) => update({ ...audience, note })}
@@ -116,8 +119,7 @@ export function TripBlocks({
 
       <CardsBlock
         id="block-what-you-get"
-        title="Что получишь"
-        subtitle="Заголовок на сайте — «What you get». От одной до шести карточек."
+        copy={t.tripForm.whatYouGet}
         max={6}
         value={draft.whatYouGet}
         onChange={(value) => set("whatYouGet", value)}
@@ -126,8 +128,7 @@ export function TripBlocks({
 
       <CardsBlock
         id="block-prepare"
-        title="Подготовка"
-        subtitle="Заголовок на сайте — «How to prepare»."
+        copy={t.tripForm.howToPrepare}
         value={draft.howToPrepare}
         onChange={(value) => set("howToPrepare", value)}
         prefix="prep"
@@ -135,8 +136,8 @@ export function TripBlocks({
 
       <OptionalSection
         id="block-program"
-        title="Программа по этапам"
-        subtitle="Заголовок на сайте — «Program»."
+        title={t.tripForm.program.title}
+        subtitle={t.tripForm.program.subtitle}
         value={draft.program}
         onChange={(value) => set("program", value)}
         create={() => ({ stages: [] })}
@@ -147,27 +148,27 @@ export function TripBlocks({
               items={program.stages}
               onChange={(stages) => update({ ...program, stages })}
               create={() => ({ duration: noText(), place: noText(), text: noText() })}
-              itemLabel={(index) => `Этап ${index + 1}`}
-              addLabel="Добавить этап"
-              empty="Этапов пока нет."
+              itemLabel={(index) => t.tripForm.stage(index + 1)}
+              addLabel={t.tripForm.stageAdd}
+              empty={t.tripForm.stagesEmpty}
               render={(stage, update2, index) => (
                 <>
                   <LocalizedInput
                     id={`stage-${index}-duration`}
-                    label="Длительность"
+                    label={t.tripForm.stageDuration}
                     value={stage.duration}
                     onChange={(duration) => update2({ ...stage, duration })}
                     placeholder="Days 1–3"
                   />
                   <LocalizedInput
                     id={`stage-${index}-place`}
-                    label="Место"
+                    label={t.tripForm.stagePlace}
                     value={stage.place}
                     onChange={(place) => update2({ ...stage, place })}
                   />
                   <LocalizedTextarea
                     id={`stage-${index}-text`}
-                    label="Описание"
+                    label={t.tripForm.stageText}
                     rows={3}
                     value={stage.text}
                     onChange={(text) => update2({ ...stage, text })}
@@ -177,7 +178,7 @@ export function TripBlocks({
             />
             <LocalizedTextarea
               id="program-note"
-              label="Примечание к программе"
+              label={t.tripForm.programNote}
               rows={2}
               value={program.note ?? noText()}
               onChange={(note) => update({ ...program, note })}
@@ -202,12 +203,14 @@ export function TripClosingBlocks({
   draft: TripDraft;
   set: <K extends keyof TripDraft>(key: K, value: TripDraft[K]) => void;
 }) {
+  const { t } = useAdmin();
+
   return (
     <>
       <OptionalSection
         id="block-rules"
-        title="Формат и правила"
-        subtitle="Заголовок на сайте — «Rules & safety»."
+        title={t.tripForm.rules.title}
+        subtitle={t.tripForm.rules.subtitle}
         value={draft.rules}
         onChange={(value) => set("rules", value)}
         create={() => ({ title: noText(), text: noText() })}
@@ -216,13 +219,13 @@ export function TripClosingBlocks({
           <>
             <LocalizedInput
               id="rules-title"
-              label="Заголовок"
+              label={t.tripForm.rulesTitle}
               value={rules.title}
               onChange={(title) => update({ ...rules, title })}
             />
             <LocalizedTextarea
               id="rules-text"
-              label="Текст"
+              label={t.tripForm.rulesText}
               rows={6}
               value={rules.text}
               onChange={(text) => update({ ...rules, text })}
@@ -235,29 +238,27 @@ export function TripClosingBlocks({
         id="block-faq"
         className="scroll-mt-6 rounded-2xl border border-border bg-card p-5 sm:p-6"
       >
-        <h3 className="font-display text-lg">Вопросы и ответы</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Заголовок на сайте — «FAQ». Если пар нет, блок не появится.
-        </p>
+        <h3 className="font-display text-lg">{t.tripForm.faq.title}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{t.tripForm.faq.subtitle}</p>
         <div className="mt-5">
           <Repeatable
             items={draft.faq}
             onChange={(faq) => set("faq", faq)}
             create={() => ({ question: noText(), answer: noText() })}
-            itemLabel={(index) => `Вопрос ${index + 1}`}
-            addLabel="Добавить вопрос"
-            empty="Вопросов пока нет."
+            itemLabel={(index) => t.tripForm.question(index + 1)}
+            addLabel={t.tripForm.questionAdd}
+            empty={t.tripForm.questionsEmpty}
             render={(item, update, index) => (
               <>
                 <LocalizedInput
                   id={`faq-${index}-question`}
-                  label="Вопрос"
+                  label={t.tripForm.faqQuestion}
                   value={item.question}
                   onChange={(question) => update({ ...item, question })}
                 />
                 <LocalizedTextarea
                   id={`faq-${index}-answer`}
-                  label="Ответ"
+                  label={t.tripForm.faqAnswer}
                   rows={3}
                   value={item.answer}
                   onChange={(answer) => update({ ...item, answer })}
@@ -274,26 +275,27 @@ export function TripClosingBlocks({
 /** "What you get" and "How to prepare" are the same shape with different copy. */
 function CardsBlock({
   id,
-  title,
-  subtitle,
+  copy,
   value,
   onChange,
   prefix,
   max,
 }: {
   id: string;
-  title: string;
-  subtitle: string;
+  /** This block's heading and explanation, in the panel's language. */
+  copy: { title: string; subtitle: string };
   value: TripDraft["whatYouGet"];
   onChange: (value: TripDraft["whatYouGet"]) => void;
   prefix: string;
   max?: number;
 }) {
+  const { t } = useAdmin();
+
   return (
     <OptionalSection
       id={id}
-      title={title}
-      subtitle={subtitle}
+      title={copy.title}
+      subtitle={copy.subtitle}
       value={value}
       onChange={onChange}
       create={() => ({ cards: [] })}
@@ -304,21 +306,21 @@ function CardsBlock({
             items={block.cards}
             onChange={(cards) => update({ ...block, cards })}
             create={() => ({ title: noText(), text: noText() })}
-            itemLabel={(index) => `Карточка ${index + 1}`}
-            addLabel="Добавить карточку"
-            empty="Карточек пока нет."
+            itemLabel={(index) => t.tripForm.card(index + 1)}
+            addLabel={t.tripForm.cardAdd}
+            empty={t.tripForm.cardsEmpty}
             max={max}
             render={(card, update2, index) => (
               <>
                 <LocalizedInput
                   id={`${prefix}-${index}-title`}
-                  label="Заголовок"
+                  label={t.tripForm.cardTitle}
                   value={card.title}
                   onChange={(cardTitle) => update2({ ...card, title: cardTitle })}
                 />
                 <LocalizedTextarea
                   id={`${prefix}-${index}-text`}
-                  label="Текст"
+                  label={t.tripForm.cardText}
                   rows={3}
                   value={card.text}
                   onChange={(text) => update2({ ...card, text })}
@@ -328,7 +330,7 @@ function CardsBlock({
           />
           <LocalizedTextarea
             id={`${prefix}-note`}
-            label="Примечание"
+            label={t.tripForm.note}
             rows={2}
             value={block.note ?? noText()}
             onChange={(note) => update({ ...block, note })}

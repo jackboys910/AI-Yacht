@@ -16,6 +16,7 @@ import {
 } from "@/lib/firebase/trips";
 import { rebuildSoon } from "@/lib/rebuild";
 import { PrimaryButton, SecondaryButton } from "../fields";
+import { failureText, useAdmin, type AdminCopy } from "../i18n";
 import { TripForm } from "./trip-form";
 
 /**
@@ -25,15 +26,11 @@ import { TripForm } from "./trip-form";
 
 type StatusFilter = "all" | "draft" | "published" | "past" | "archived";
 
-const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
-  { value: "all", label: "Все" },
-  { value: "draft", label: "Черновики" },
-  { value: "published", label: "Опубликованные" },
-  { value: "past", label: "Прошедшие" },
-  { value: "archived", label: "Архив" },
-];
+/** Only the values: the words for them live in the copy files, keyed the same. */
+const STATUS_FILTERS: StatusFilter[] = ["all", "draft", "published", "past", "archived"];
 
 export function TripsView() {
+  const { locale, t } = useAdmin();
   const router = useRouter();
   const params = useSearchParams();
   const editing = params.get("edit");
@@ -63,13 +60,16 @@ export function TripsView() {
       (cause: unknown) => {
         if (!active) return;
         setData({ trips: [], interests: [], people: [] });
-        setError(describe(cause));
+        setError(failureText(cause, locale, t, t.trips.loadFailed));
       },
     );
 
     return () => {
       active = false;
     };
+    // The copy is only read in the failure path, so changing the panel's
+    // language must not re-run this — that would be three wasted requests.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reloadToken]);
 
   const today = todayUtc();
@@ -104,14 +104,14 @@ export function TripsView() {
       if (message) setNotice(message);
       reload();
     } catch (cause) {
-      setError(describe(cause));
+      setError(failureText(cause, locale, t, t.trips.loadFailed));
     } finally {
       setBusyId(null);
     }
   }
 
   if (data === null) {
-    return <p className="text-sm text-muted-foreground">Загружаем поездки…</p>;
+    return <p className="text-sm text-muted-foreground">{t.trips.loading}</p>;
   }
 
   const { trips, interests, people } = data;
@@ -120,17 +120,17 @@ export function TripsView() {
     const current = editing === "new" ? null : trips.find((t) => t.id === editing);
     if (editing !== "new" && !current) {
       return (
-        <Empty text="Поездка не найдена.">
-          <PrimaryButton onClick={() => go(null)}>К списку</PrimaryButton>
+        <Empty text={t.trips.notFound}>
+          <PrimaryButton onClick={() => go(null)}>{t.field.toList}</PrimaryButton>
         </Empty>
       );
     }
 
     if (interests.length === 0) {
       return (
-        <Empty text="Сначала заведите хотя бы одно направление — поездка должна куда-то попасть.">
+        <Empty text={t.trips.noInterests}>
           <PrimaryButton onClick={() => router.push("/admin/?view=interests&edit=new")}>
-            К направлениям
+            {t.trips.toInterests}
           </PrimaryButton>
         </Empty>
       );
@@ -166,17 +166,20 @@ export function TripsView() {
         <div className="flex flex-wrap gap-3">
           <Filter
             id="filter-status"
-            label="Статус"
+            label={t.trips.filterStatus}
             value={status}
-            options={STATUS_FILTERS}
+            options={STATUS_FILTERS.map((value) => ({
+              value,
+              label: t.trips.statuses[value],
+            }))}
             onChange={(value) => setStatus(value as StatusFilter)}
           />
           <Filter
             id="filter-interest"
-            label="Направление"
+            label={t.trips.filterInterest}
             value={interestId}
             options={[
-              { value: "all", label: "Все" },
+              { value: "all", label: t.trips.statuses.all },
               ...interests.map((interest) => ({
                 value: interest.id,
                 label: interest.name.en || interest.slug,
@@ -185,13 +188,13 @@ export function TripsView() {
             onChange={setInterestId}
           />
         </div>
-        <PrimaryButton onClick={() => go("new")}>Новая поездка</PrimaryButton>
+        <PrimaryButton onClick={() => go("new")}>{t.trips.create}</PrimaryButton>
       </div>
 
       <p className="mt-5 text-sm text-muted-foreground">
         {trips.length === 0
-          ? "Поездок пока нет."
-          : `Показано ${visible.length} из ${trips.length}.`}
+          ? t.trips.none
+          : t.trips.showing(visible.length, trips.length)}
       </p>
 
       {visible.length > 0 && (
@@ -209,22 +212,24 @@ export function TripsView() {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium">
-                      {trip.title.en || trip.title.ru || "Без названия"}
+                      {trip.title.en || trip.title.ru || t.trips.untitled}
                     </span>
-                    <StatusBadge status={trip.status} past={past} />
-                    {trip.kidFriendly && <Badge>с детьми</Badge>}
-                    {past && !trip.showInPast && <Badge tone="warn">скрыта в прошедших</Badge>}
+                    <StatusBadge status={trip.status} past={past} t={t} />
+                    {trip.kidFriendly && <Badge>{t.trips.badges.kidFriendly}</Badge>}
+                    {past && !trip.showInPast && (
+                      <Badge tone="warn">{t.trips.badges.hiddenInPast}</Badge>
+                    )}
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {interest?.name.en ?? "направление не задано"} · {trip.startDate} — {trip.endDate}
+                    {interest?.name.en ?? t.trips.noInterest} · {trip.startDate} — {trip.endDate}
                     {trip.status === "published" &&
-                      ` · ${labelForBooking(effectiveBookingStatus(trip, today))}`}
+                      ` · ${t.trips.booking[effectiveBookingStatus(trip, today)]}`}
                   </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
                   <SecondaryButton onClick={() => go(trip.id)} disabled={busy}>
-                    Изменить
+                    {t.trips.edit}
                   </SecondaryButton>
 
                   <SecondaryButton
@@ -232,11 +237,11 @@ export function TripsView() {
                     onClick={() =>
                       void act(trip, async () => {
                         await duplicateTrip(trip, trips);
-                        return "Копия создана как черновик. Фотографии у копии те же — файлы общие с оригиналом.";
+                        return t.trips.duplicated;
                       })
                     }
                   >
-                    {busy ? "…" : "Дублировать"}
+                    {busy ? "…" : t.trips.duplicate}
                   </SecondaryButton>
 
                   {trip.status === "archived" ? (
@@ -247,12 +252,12 @@ export function TripsView() {
                           await setTripStatus(trip, "restore");
                         if (trip.statusBeforeArchive === "published") rebuildSoon();
                           return trip.statusBeforeArchive === "published"
-                            ? "Поездка вернулась на сайт."
-                            : "Поездка вернулась в черновики.";
+                            ? t.trips.restoredLive
+                            : t.trips.restoredDraft;
                         })
                       }
                     >
-                      Вернуть
+                      {t.trips.restore}
                     </SecondaryButton>
                   ) : (
                     <SecondaryButton
@@ -261,11 +266,11 @@ export function TripsView() {
                         void act(trip, async () => {
                           await setTripStatus(trip, "archived");
                         if (trip.status === "published") rebuildSoon();
-                          return "Поездка убрана с сайта в архив.";
+                          return t.trips.archived;
                         })
                       }
                     >
-                      В архив
+                      {t.trips.archive}
                     </SecondaryButton>
                   )}
                 </div>
@@ -276,14 +281,14 @@ export function TripsView() {
       )}
 
       {trips.length > 0 && visible.length === 0 && (
-        <Empty text="По этому фильтру поездок нет.">
+        <Empty text={t.trips.emptyFilter}>
           <SecondaryButton
             onClick={() => {
               setStatus("all");
               setInterestId("all");
             }}
           >
-            Показать все
+            {t.trips.showAll}
           </SecondaryButton>
         </Empty>
       )}
@@ -325,21 +330,26 @@ function Filter({
   );
 }
 
-function labelForBooking(status: Trip["bookingStatus"]): string {
-  return {
-    open: "набор открыт",
-    fewSpots: "мест мало",
-    soldOut: "мест нет",
-    completed: "прошла",
-  }[status];
-}
-
-function StatusBadge({ status, past }: { status: Trip["status"]; past: boolean }) {
-  if (status === "archived") return <Badge tone="warn">в архиве</Badge>;
-  if (status === "published") {
-    return past ? <Badge>прошедшая</Badge> : <Badge tone="live">опубликована</Badge>;
+function StatusBadge({
+  status,
+  past,
+  t,
+}: {
+  status: Trip["status"];
+  past: boolean;
+  t: AdminCopy;
+}) {
+  if (status === "archived") {
+    return <Badge tone="warn">{t.trips.badges.archived}</Badge>;
   }
-  return <Badge>черновик</Badge>;
+  if (status === "published") {
+    return past ? (
+      <Badge>{t.trips.badges.past}</Badge>
+    ) : (
+      <Badge tone="live">{t.trips.badges.published}</Badge>
+    );
+  }
+  return <Badge>{t.trips.badges.draft}</Badge>;
 }
 
 function Badge({
@@ -387,9 +397,3 @@ function Empty({ text, children }: { text: string; children: React.ReactNode }) 
   );
 }
 
-function describe(cause: unknown): string {
-  const text = cause instanceof Error ? cause.message : String(cause);
-  return /permission|insufficient/i.test(text)
-    ? "База отказала в доступе. Правила Firestore ещё не опубликованы, либо этот аккаунт не внесён в список владельцев."
-    : `Не удалось загрузить поездки: ${text}`;
-}

@@ -5,11 +5,12 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import type { User } from "firebase/auth";
 import { signOutOwner } from "@/lib/firebase/auth";
+import { PanelLanguage, useAdmin } from "./i18n";
 import { InterestsView } from "./interests/interests-view";
 import { RebuildBar } from "./rebuild-bar";
 import { PeopleView } from "./people/people-view";
 import { TripsView } from "./trips/trips-view";
-import { ADMIN_VIEWS, resolveView } from "./views";
+import { ADMIN_VIEW_IDS, COMING_IN, resolveView } from "./views";
 
 /**
  * The frame every admin screen sits in: a menu down the left on a desktop, a
@@ -22,13 +23,20 @@ import { ADMIN_VIEWS, resolveView } from "./views";
  * The way back to the site (ТЗ v4, §9) opens in a new tab on purpose: a trip
  * form holds unsaved work, and a link that navigated away from it would throw
  * that work out every time someone wanted to check how a page looks.
+ *
+ * The panel's language switch lives down here with the account, not up beside
+ * the heading. A form has its own EN/RU tabs for the trip's text, and two
+ * identical-looking pairs within reach of each other is exactly how someone
+ * ends up typing an English subtitle into the Russian field.
  */
 export function AdminShell({ user }: { user: User }) {
+  const { t } = useAdmin();
   const params = useSearchParams();
   const active = resolveView(params.get("view"));
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const current = ADMIN_VIEWS.find((view) => view.id === active)!;
+  const current = t.views[active];
+  const comingIn = COMING_IN[active];
 
   return (
     <div className="min-h-dvh bg-[color:var(--muted)] text-foreground lg:flex">
@@ -38,7 +46,7 @@ export function AdminShell({ user }: { user: User }) {
         </span>
         <button
           type="button"
-          aria-label="Меню"
+          aria-label={t.shell.menu}
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((open) => !open)}
           className="grid h-10 w-10 place-items-center rounded-full border border-white/30"
@@ -63,15 +71,15 @@ export function AdminShell({ user }: { user: User }) {
             NAZAROV
           </span>
           <p className="mt-0.5 text-[11px] uppercase tracking-[0.18em] text-[color:var(--gold)]/85">
-            Панель управления
+            {t.shell.panel}
           </p>
         </div>
 
         <ul className="mt-0 flex flex-col gap-1 lg:mt-8">
-          {ADMIN_VIEWS.map((view) => (
-            <li key={view.id}>
+          {ADMIN_VIEW_IDS.map((view) => (
+            <li key={view}>
               <Link
-                href={`/admin/?view=${view.id}`}
+                href={`/admin/?view=${view}`}
                 // Every item is the same route with a different query string,
                 // so there is nothing to fetch ahead of time. Left on, the
                 // prefetch asks for an RSC payload under a flattened name that
@@ -81,25 +89,27 @@ export function AdminShell({ user }: { user: User }) {
                 // Picking an item is what closes the menu on a phone; left
                 // open it would cover the screen the tap just asked for.
                 onClick={() => setMenuOpen(false)}
-                aria-current={view.id === active ? "page" : undefined}
+                aria-current={view === active ? "page" : undefined}
                 className={`block rounded-lg px-3 py-2.5 text-sm font-medium transition ${
-                  view.id === active
+                  view === active
                     ? "bg-[color:var(--gold)] text-[color:var(--gold-foreground)]"
                     : "text-white/80 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                {view.label}
+                {t.views[view].label}
               </Link>
             </li>
           ))}
         </ul>
 
         <div className="mt-6 border-t border-white/10 pt-4 lg:absolute lg:bottom-6 lg:left-4 lg:right-4 lg:mt-0">
+          <PanelLanguage />
+
           <a
             href="/"
             target="_blank"
             rel="noopener"
-            className="mb-3 flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
+            className="mb-3 mt-4 flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
           >
             <svg
               viewBox="0 0 24 24"
@@ -113,7 +123,7 @@ export function AdminShell({ user }: { user: User }) {
             >
               <path d="M14 4h6v6M20 4l-8 8M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
             </svg>
-            На сайт
+            {t.shell.toSite}
           </a>
 
           <p className="truncate px-3 text-xs text-white/50" title={user.email ?? ""}>
@@ -124,7 +134,7 @@ export function AdminShell({ user }: { user: User }) {
             onClick={() => void signOutOwner()}
             className="mt-2 w-full rounded-lg px-3 py-2 text-left text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
           >
-            Выйти
+            {t.shell.signOut}
           </button>
         </div>
       </nav>
@@ -148,7 +158,7 @@ export function AdminShell({ user }: { user: User }) {
           ) : (
             <div className="rounded-2xl border border-dashed border-border bg-card p-6 sm:p-10">
               <p className="text-sm text-muted-foreground">
-                Раздел появится на пункте {current.comingIn} плана работ.
+                {t.shell.comingSoon(comingIn ?? "—")}
               </p>
             </div>
           )}

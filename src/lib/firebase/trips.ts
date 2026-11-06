@@ -10,6 +10,7 @@ import { todayUtc } from "@/lib/content/schedule";
 import { uniqueSlug } from "@/lib/content/slug";
 import type { Trip } from "@/lib/content/types";
 import { canPublish } from "@/lib/content/validation";
+import { LocalizedError } from "@/lib/localized-error";
 import { firestore } from "./app";
 import { collections } from "./config";
 import { stripUndefined, toTrip } from "./mappers";
@@ -61,7 +62,7 @@ export async function listTrips(): Promise<Trip[]> {
     .sort((a, b) => b.startDate.localeCompare(a.startDate));
 }
 
-export class TripValidationError extends Error {}
+export class TripValidationError extends LocalizedError {}
 
 /**
  * Saves a trip.
@@ -85,15 +86,17 @@ export async function saveTrip(
       trip.id !== id && trip.interestId === draft.interestId && trip.slug === draft.slug,
   );
   if (clash) {
-    throw new TripValidationError(
-      `В этом направлении уже есть поездка с адресом «${draft.slug}».`,
-    );
+    throw new TripValidationError({
+      en: `This direction already has a trip at the address “${draft.slug}”.`,
+      ru: `В этом направлении уже есть поездка с адресом «${draft.slug}».`,
+    });
   }
 
   if (draft.status === "published" && !canPublish({ ...draft, id: id ?? "new", createdAt: "", updatedAt: "" })) {
-    throw new TripValidationError(
-      "Поездку нельзя опубликовать: не заполнены обязательные блоки.",
-    );
+    throw new TripValidationError({
+      en: "The trip cannot be published: some mandatory blocks are empty.",
+      ru: "Поездку нельзя опубликовать: не заполнены обязательные блоки.",
+    });
   }
 
   const now = new Date().toISOString();
@@ -121,7 +124,7 @@ export async function deleteTrip(tripId: string): Promise<void> {
 /**
  * Publish, unpublish, archive and bring back (А-10).
  *
- * Archiving remembers what the trip was, so "Вернуть" restores that state in
+ * Archiving remembers what the trip was, so Restore brings that state back in
  * one action rather than always producing a draft the owner then has to
  * publish again.
  */
@@ -140,9 +143,10 @@ export async function setTripStatus(
     patch.statusBeforeArchive = deleteField();
   } else {
     if (next === "published" && !canPublish(trip)) {
-      throw new TripValidationError(
-        "Поездку нельзя опубликовать: не заполнены обязательные блоки.",
-      );
+      throw new TripValidationError({
+        en: "The trip cannot be published: some mandatory blocks are empty.",
+        ru: "Поездку нельзя опубликовать: не заполнены обязательные блоки.",
+      });
     }
     patch.status = next;
     if (next === "published" && !trip.publishedAt) patch.publishedAt = now;

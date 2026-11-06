@@ -7,7 +7,8 @@ import {
   setDoc,
   where,
 } from "firebase/firestore/lite";
-import type { Person } from "@/lib/content/types";
+import type { Localized, Person } from "@/lib/content/types";
+import { LocalizedError } from "@/lib/localized-error";
 import { firestore } from "./app";
 import { collections } from "./config";
 import { stripUndefined, toPerson } from "./mappers";
@@ -38,10 +39,21 @@ export async function listPeople(): Promise<Person[]> {
     .sort((a, b) => a.name.en.localeCompare(b.name.en, "en"));
 }
 
-export function validatePerson(draft: PersonDraft): string[] {
-  const problems: string[] = [];
-  if (!draft.name.en.trim()) problems.push("Не заполнено имя на английском.");
-  if (!draft.name.ru.trim()) problems.push("Не заполнено имя на русском.");
+/** Everything wrong with a draft, in both of the panel's languages (§6 of ТЗ v4). */
+export function validatePerson(draft: PersonDraft): Localized<string>[] {
+  const problems: Localized<string>[] = [];
+  if (!draft.name.en.trim()) {
+    problems.push({
+      en: "The English name is empty.",
+      ru: "Не заполнено имя на английском.",
+    });
+  }
+  if (!draft.name.ru.trim()) {
+    problems.push({
+      en: "The Russian name is empty.",
+      ru: "Не заполнено имя на русском.",
+    });
+  }
   return problems;
 }
 
@@ -77,7 +89,7 @@ export async function tripsWithPerson(personId: string): Promise<string[]> {
   return snapshot.docs.map((d) => d.id);
 }
 
-export class PersonInUseError extends Error {}
+export class PersonInUseError extends LocalizedError {}
 
 /**
  * Removing someone still listed on a trip would leave that trip pointing at a
@@ -87,10 +99,15 @@ export class PersonInUseError extends Error {}
 export async function deletePerson(personId: string): Promise<void> {
   const trips = await tripsWithPerson(personId);
   if (trips.length > 0) {
-    throw new PersonInUseError(
-      `Этот человек указан в поездках (${trips.length}). Сначала уберите его из них — ` +
+    throw new PersonInUseError({
+      en:
+        `This person is listed on ${trips.length} ${trips.length === 1 ? "trip" : "trips"}. Take them ` +
+        "off those first — otherwise their crew card would quietly disappear " +
+        "from the pages.",
+      ru:
+        `Этот человек указан в поездках (${trips.length}). Сначала уберите его из них — ` +
         "иначе на их страницах пропадёт карточка команды.",
-    );
+    });
   }
 
   await deleteDoc(doc(firestore(), collections.people, personId));

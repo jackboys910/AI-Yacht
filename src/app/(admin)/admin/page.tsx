@@ -3,7 +3,10 @@ import { Suspense } from "react";
 import { AdminApp } from "@/components/admin/admin-app";
 
 export const metadata: Metadata = {
-  title: "Админка — nazarov.net",
+  // English, because that is the panel default (ТЗ v4, §6). A Russian session
+  // replaces it from the browser — the title is set alongside `lang` when the
+  // remembered choice is read.
+  title: "Admin — nazarov.net",
   // The panel is behind a password, but a stray link should not put it in
   // search results either. It is also kept out of sitemap.xml (Т-06).
   robots: { index: false, follow: false },
@@ -30,7 +33,7 @@ export default function Page() {
 function Loading() {
   return (
     <div className="grid min-h-dvh place-items-center bg-[color:var(--muted)] text-sm text-muted-foreground">
-      Загрузка…
+      Loading…
     </div>
   );
 }

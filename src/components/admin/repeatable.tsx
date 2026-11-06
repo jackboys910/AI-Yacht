@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useAdmin } from "./i18n";
 
 /**
  * A block the owner can have any number of: route days, FAQ pairs, programme
@@ -25,11 +26,13 @@ export function Repeatable<T>({
   create: () => T;
   render: (item: T, update: (next: T) => void, index: number) => ReactNode;
   addLabel: string;
-  /** Heading for one entry, e.g. "День" → "День 1". */
+  /** Heading for one entry, e.g. "Day" → "Day 1". The caller translates it. */
   itemLabel: (index: number, item: T) => string;
   max?: number;
   empty?: string;
 }) {
+  const { t } = useAdmin();
+
   const move = (from: number, to: number) => {
     if (to < 0 || to >= items.length) return;
     const next = [...items];
@@ -57,20 +60,20 @@ export function Repeatable<T>({
             <span className="text-sm font-medium">{itemLabel(index, item)}</span>
             <div className="flex items-center gap-1">
               <IconButton
-                label="Выше"
+                label={t.field.up}
                 disabled={index === 0}
                 onClick={() => move(index, index - 1)}
               >
                 ↑
               </IconButton>
               <IconButton
-                label="Ниже"
+                label={t.field.down}
                 disabled={index === items.length - 1}
                 onClick={() => move(index, index + 1)}
               >
                 ↓
               </IconButton>
-              <IconButton label="Убрать" onClick={() => remove(index)} tone="danger">
+              <IconButton label={t.field.remove} onClick={() => remove(index)} tone="danger">
                 ✕
               </IconButton>
             </div>
@@ -90,7 +93,7 @@ export function Repeatable<T>({
       )}
 
       {max !== undefined && items.length >= max && (
-        <p className="text-xs text-muted-foreground">Больше {max} добавить нельзя.</p>
+        <p className="text-xs text-muted-foreground">{t.field.noMoreThan(max)}</p>
       )}
     </div>
   );

@@ -9,7 +9,8 @@ import {
   where,
 } from "firebase/firestore/lite";
 import { RESERVED_SLUGS, isValidSlug } from "@/lib/content/slug";
-import type { Interest } from "@/lib/content/types";
+import type { Interest, Localized } from "@/lib/content/types";
+import { LocalizedError } from "@/lib/localized-error";
 import { firestore } from "./app";
 import { collections } from "./config";
 import { stripUndefined, toInterest } from "./mappers";
@@ -48,26 +49,51 @@ export async function listInterests(): Promise<Interest[]> {
     .sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
 }
 
-/** Everything wrong with a draft, in the admin panel's language. */
+/**
+ * Everything wrong with a draft, in both of the panel's languages.
+ *
+ * Bilingual rather than one string because §6 of ТЗ v4 lets the owner read the
+ * panel in either language, and this module cannot know which is on screen.
+ */
 export function validateInterest(
   draft: InterestDraft,
   others: Interest[],
-): string[] {
-  const problems: string[] = [];
+): Localized<string>[] {
+  const problems: Localized<string>[] = [];
 
-  if (!draft.name.en.trim()) problems.push("Не заполнено название на английском.");
-  if (!draft.name.ru.trim()) problems.push("Не заполнено название на русском.");
+  if (!draft.name.en.trim()) {
+    problems.push({
+      en: "The English name is empty.",
+      ru: "Не заполнено название на английском.",
+    });
+  }
+  if (!draft.name.ru.trim()) {
+    problems.push({
+      en: "The Russian name is empty.",
+      ru: "Не заполнено название на русском.",
+    });
+  }
 
   if (!draft.slug.trim()) {
-    problems.push("Не заполнен адрес вкладки.");
+    problems.push({
+      en: "The tab address is empty.",
+      ru: "Не заполнен адрес вкладки.",
+    });
   } else if (!isValidSlug(draft.slug)) {
-    problems.push(
-      "Адрес может состоять только из латинских букв, цифр и дефисов между ними.",
-    );
+    problems.push({
+      en: "The address may only contain Latin letters, digits and hyphens between them.",
+      ru: "Адрес может состоять только из латинских букв, цифр и дефисов между ними.",
+    });
   } else if (RESERVED_SLUGS.has(draft.slug)) {
-    problems.push(`Адрес «${draft.slug}» занят служебной страницей сайта.`);
+    problems.push({
+      en: `The address “${draft.slug}” belongs to one of the site's own pages.`,
+      ru: `Адрес «${draft.slug}» занят служебной страницей сайта.`,
+    });
   } else if (others.some((other) => other.slug === draft.slug)) {
-    problems.push(`Адрес «${draft.slug}» уже занят другим направлением.`);
+    problems.push({
+      en: `The address “${draft.slug}” is already taken by another direction.`,
+      ru: `Адрес «${draft.slug}» уже занят другим направлением.`,
+    });
   }
 
   return problems;
@@ -115,20 +141,26 @@ export async function countTripsIn(interestId: string): Promise<number> {
   return snapshot.size;
 }
 
-export class InterestInUseError extends Error {}
+export class InterestInUseError extends LocalizedError {}
 
 export async function deleteInterest(interestId: string): Promise<void> {
   const trips = await countTripsIn(interestId);
   if (trips > 0) {
-    throw new InterestInUseError(
-      `В этом направлении ${trips} ${plural(trips)}. Удалите или перенесите их, ` +
+    throw new InterestInUseError({
+      en:
+        `This direction has ${trips} ${trips === 1 ? "trip" : "trips"} in it. Delete them or ` +
+        "move them elsewhere, or hide the direction instead — then the tab " +
+        "disappears from the site and the trips survive.",
+      ru:
+        `В этом направлении ${trips} ${plural(trips)}. Удалите или перенесите их, ` +
         "либо скройте направление — тогда вкладка исчезнет с сайта, а поездки останутся.",
-    );
+    });
   }
 
   await deleteDoc(doc(firestore(), collections.interests, interestId));
 }
 
+/** "1 поездка", "2 поездки", "5 поездок" — the three forms Russian needs. */
 function plural(count: number): string {
   const tens = count % 100;
   const ones = count % 10;

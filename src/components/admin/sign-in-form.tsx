@@ -2,9 +2,11 @@
 
 import { useState, type FormEvent } from "react";
 import { SignInError, signIn } from "@/lib/firebase/auth";
+import { PanelLanguage, useAdmin } from "./i18n";
 
 /** А-01: without this screen nothing else in the panel exists. */
 export function SignInForm() {
+  const { t } = useAdmin();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +21,9 @@ export function SignInForm() {
       // No redirect: the auth listener in AdminApp swaps the screen.
     } catch (cause) {
       setError(
-        cause instanceof SignInError ? cause.message : "Не удалось войти.",
+        t.signIn.failed[
+          cause instanceof SignInError ? cause.reason : "unknown"
+        ],
       );
       setBusy(false);
     }
@@ -31,13 +35,21 @@ export function SignInForm() {
         onSubmit={onSubmit}
         className="w-full max-w-sm rounded-2xl bg-card p-7 shadow-xl"
       >
-        <div className="font-display text-2xl font-bold tracking-[0.14em] text-foreground">
-          NAZAROV
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="font-display text-2xl font-bold tracking-[0.14em] text-foreground">
+              NAZAROV
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">{t.signIn.subtitle}</p>
+          </div>
+          {/* The switch belongs on this screen too: the panel's language is
+              remembered per browser, so a first visit arrives in English and
+              there would otherwise be nothing to change before signing in. */}
+          <PanelLanguage tone="light" />
         </div>
-        <p className="mt-1 text-sm text-muted-foreground">Панель управления сайтом</p>
 
         <label className="mt-7 block text-sm font-medium" htmlFor="admin-email">
-          Почта
+          {t.signIn.email}
         </label>
         <input
           id="admin-email"
@@ -51,7 +63,7 @@ export function SignInForm() {
         />
 
         <label className="mt-4 block text-sm font-medium" htmlFor="admin-password">
-          Пароль
+          {t.signIn.password}
         </label>
         <input
           id="admin-password"
@@ -75,7 +87,7 @@ export function SignInForm() {
           disabled={busy}
           className="mt-6 w-full rounded-full bg-[color:var(--gold)] px-5 py-3 text-sm font-semibold text-[color:var(--gold-foreground)] transition hover:brightness-95 disabled:opacity-60"
         >
-          {busy ? "Входим…" : "Войти"}
+          {busy ? t.signIn.submitting : t.signIn.submit}
         </button>
       </form>
     </div>
