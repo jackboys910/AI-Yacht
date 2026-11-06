@@ -1,10 +1,13 @@
 import type { DocumentData } from "firebase/firestore/lite";
 import { locales, type Locale } from "@/i18n/config";
 import type {
+  AdventureSuggestion,
+  ExperienceLevel,
   Interest,
   Localized,
   Person,
   Settings,
+  SuggestionStatus,
   Trip,
   WorkProject,
 } from "@/lib/content/types";
@@ -78,6 +81,14 @@ export function toInterest(id: string, data: DocumentData): Interest {
     showPastTrips: bool(data.showPastTrips, true),
     hidden: bool(data.hidden),
     collectsKidFriendly: bool(data.collectsKidFriendly),
+    // A direction that exists is offered in the idea form unless the owner
+    // says otherwise — the same reasoning as showPastTrips above. Defaulting
+    // the four existing directions to false would ship an idea form with an
+    // empty category list and no sign of why.
+    suggestable: bool(data.suggestable, true),
+    // Not defaulted: exactly one direction should be the "Other" bucket, and
+    // guessing which would put the wrong question in front of people.
+    suggestOther: bool(data.suggestOther),
     createdAt: str(data.createdAt),
     updatedAt: str(data.updatedAt),
   };
@@ -180,6 +191,10 @@ export function toTrip(id: string, data: DocumentData): Trip {
       title: text(data.social?.title),
       description: text(data.social?.description),
     },
+    organizerEmail: data.organizerEmail || undefined,
+    organizerPersonId: data.organizerPersonId || undefined,
+    suggestionId: data.suggestionId || undefined,
+
     announcementSentAt: data.announcementSentAt || undefined,
     statusBeforeArchive:
       data.statusBeforeArchive === "draft" || data.statusBeforeArchive === "published"
@@ -199,6 +214,76 @@ function cards(data: DocumentData) {
       text: text(card.text),
     })),
     note: data.note ? text(data.note) : undefined,
+  };
+}
+
+const SUGGESTION_STATUSES: SuggestionStatus[] = [
+  "new",
+  "underReview",
+  "needsInfo",
+  "approved",
+  "published",
+  "declined",
+];
+
+const EXPERIENCE_LEVELS: ExperienceLevel[] = [
+  "beginner",
+  "intermediate",
+  "advanced",
+  "allLevels",
+];
+
+/** Keeps a list of plain strings, dropping anything that is not one. */
+function strings(value: unknown): string[] {
+  return list<unknown>(value).filter(
+    (item): item is string => typeof item === "string" && item.trim() !== "",
+  );
+}
+
+/**
+ * An idea somebody sent in (ТЗ v4, §3).
+ *
+ * Read defensively even by the standards of this file: unlike every other
+ * collection, these documents are written from outside the panel, by the
+ * Worker on behalf of a stranger filling in a form. A status or an experience
+ * level that is not one of ours falls back to a safe value rather than
+ * reaching a component that assumes the union holds.
+ */
+export function toSuggestion(id: string, data: DocumentData): AdventureSuggestion {
+  const status = SUGGESTION_STATUSES.includes(data.status) ? data.status : "new";
+  const level = EXPERIENCE_LEVELS.includes(data.experienceLevel)
+    ? (data.experienceLevel as ExperienceLevel)
+    : undefined;
+
+  return {
+    id,
+    status,
+    interestId: str(data.interestId),
+    categoryOther: data.categoryOther || undefined,
+
+    title: str(data.title),
+    description: str(data.description),
+    place: data.place || undefined,
+    when: data.when || undefined,
+    budget: data.budget || undefined,
+    groupSize: data.groupSize || undefined,
+    experienceLevel: level,
+
+    name: str(data.name),
+    email: str(data.email),
+    links: strings(data.links),
+    experience: data.experience || undefined,
+    audience: data.audience || undefined,
+    photoLinks: strings(data.photoLinks),
+
+    locale: locales.includes(data.locale) ? data.locale : "en",
+    source: data.source || undefined,
+
+    adminNote: data.adminNote || undefined,
+    tripId: data.tripId || undefined,
+
+    createdAt: str(data.createdAt),
+    updatedAt: str(data.updatedAt),
   };
 }
 

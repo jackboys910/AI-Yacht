@@ -97,6 +97,15 @@ service cloud.firestore {
       allow read, write: if isOwner();
     }
 
+    // Ideas sent through Suggest an Adventure (ТЗ v4, §3). Written by the
+    // Worker through a service account, which bypasses these rules, so no
+    // browser needs any access at all — and this is the collection where
+    // opening one up would hurt most: it holds email addresses and what
+    // people wrote about themselves to be allowed on a trip.
+    match /adventureSuggestions/{id} {
+      allow read, write: if isOwner();
+    }
+
     match /solutionsInquiries/{id} {
       allow read, write: if isOwner();
     }

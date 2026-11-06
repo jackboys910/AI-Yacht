@@ -84,6 +84,23 @@ export interface Interest {
    * point it elsewhere without a developer.
    */
   collectsKidFriendly: boolean;
+  /**
+   * Offer this direction as a category in the Suggest an Adventure form
+   * (ТЗ v4, §3.5).
+   *
+   * Separate from `hidden` on purpose. The Functional Specification lists
+   * seven categories and the site has four tabs: Hiking & Camping and Road
+   * Trips should be suggestable before either has a single trip to show, and a
+   * tab with nothing under it is worse than no tab.
+   */
+  suggestable: boolean;
+  /**
+   * "Other Adventures": ask the author to name their own category.
+   *
+   * A flag rather than a hardcoded slug, so the owner can move it — the same
+   * reason `collectsKidFriendly` is one.
+   */
+  suggestOther: boolean;
   createdAt: IsoDateTime;
   updatedAt: IsoDateTime;
 }
@@ -251,6 +268,21 @@ export interface Trip {
   faq: FaqItem[];
 
   social: SocialPreview;
+
+  /**
+   * The person this trip is opened to besides the owner (ТЗ v4, §2.3).
+   *
+   * An email rather than an account id, because the organizer has no account
+   * when the owner approves their idea — they create one afterwards, and the
+   * verified address in their sign-in token is what matches them to this
+   * field. Plan item 2.6 is where `firestore.rules` starts enforcing it.
+   */
+  organizerEmail?: string;
+  /** Who is shown as the organizer on the page, from the people directory. */
+  organizerPersonId?: string;
+  /** The idea this trip grew out of, so the queue knows it is dealt with. */
+  suggestionId?: string;
+
   /** Set once the announcement went out; a resend needs its own confirmation. */
   announcementSentAt?: IsoDateTime;
   /**
@@ -277,6 +309,73 @@ export interface TripCounters {
   interested: number;
   /** Up to five faces shown next to the numbers. */
   avatarUrls: string[];
+}
+
+/* -------------------------------------------------------------------------
+   Suggest an Adventure — the idea queue (ТЗ v4, §3)
+   ------------------------------------------------------------------------- */
+
+/** Where an idea stands. §5 of the Functional Specification fixes this list. */
+export type SuggestionStatus =
+  | "new"
+  | "underReview"
+  | "needsInfo"
+  | "approved"
+  | "published"
+  | "declined";
+
+export type ExperienceLevel = "beginner" | "intermediate" | "advanced" | "allLevels";
+
+/**
+ * A trip somebody proposed.
+ *
+ * Almost every field is optional and almost every one is free text. That is
+ * the point of the form: at the idea stage nobody knows the dates, and a
+ * required field is a reason not to send it at all. Only the title, the
+ * category, the description, a name and an email are insisted on, because
+ * without them there is nothing to judge and nobody to answer.
+ *
+ * Nothing here is localized. The author writes in one language, theirs, and
+ * translating their words into a second column would be inventing them.
+ */
+export interface AdventureSuggestion {
+  id: string;
+  status: SuggestionStatus;
+  /** The direction it belongs to. */
+  interestId: string;
+  /** The author's own category, when the chosen direction asks for one. */
+  categoryOther?: string;
+
+  title: string;
+  description: string;
+  place?: string;
+  /** "Late spring", "September-ish" — a time of year, not a date. */
+  when?: string;
+  budget?: string;
+  groupSize?: string;
+  experienceLevel?: ExperienceLevel;
+
+  name: string;
+  email: string;
+  /** Instagram, Facebook, LinkedIn — the owner looks at who he lets in. */
+  links: string[];
+  experience?: string;
+  audience?: string;
+  /** Links, never uploads: see ТЗ v4 §3.2. */
+  photoLinks: string[];
+
+  /** Which language version of the site the form was filled in on. */
+  locale: Locale;
+  /** The page the form was opened from. */
+  source?: string;
+
+  /** The owner's note to himself. The author never sees it. */
+  adminNote?: string;
+  /** The trip made from this idea, so a second press cannot make another. */
+  tripId?: string;
+
+  createdAt: IsoDateTime;
+  updatedAt: IsoDateTime;
 }
 
 /* -------------------------------------------------------------------------

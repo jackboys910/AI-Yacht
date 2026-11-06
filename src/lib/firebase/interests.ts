@@ -39,6 +39,8 @@ export function blankInterest(order: number): InterestDraft {
     showPastTrips: true,
     hidden: false,
     collectsKidFriendly: false,
+    suggestable: true,
+    suggestOther: false,
   };
 }
 

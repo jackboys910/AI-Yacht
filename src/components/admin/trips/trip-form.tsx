@@ -379,6 +379,24 @@ export function TripForm({
                 hint={`nazarov.net/${interestSlug(interests, draft.interestId)}/${draft.slug || "…"}/`}
               />
 
+              <TextInput
+                id="trip-organizer"
+                label={t.tripForm.organizer}
+                type="email"
+                value={draft.organizerEmail ?? ""}
+                onChange={(value) => set("organizerEmail", value.trim() || undefined)}
+                placeholder="name@example.com"
+                hint={
+                  draft.suggestionId ? (
+                    <>
+                      {t.tripForm.organizerHint} {t.tripForm.fromIdea}
+                    </>
+                  ) : (
+                    t.tripForm.organizerHint
+                  )
+                }
+              />
+
               <Checkbox
                 id="trip-kid-friendly"
                 label={t.tripForm.kidFriendly}
