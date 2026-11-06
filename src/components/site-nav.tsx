@@ -17,8 +17,13 @@ import { LanguageSwitcher } from "./language-switcher";
  * versions — §16.1 fixes that, and Appendix В lists them as strings to carry
  * across verbatim.
  *
- * "+ Subscribe" joins this header with plan item 2.1, together with the dialog
+ * "+ Subscribe" joins this header with plan item 2.7, together with the dialog
  * it opens. A button that does nothing yet would be worse than its absence.
+ *
+ * The way into the panel sits here too (ТЗ v4, §9). It is not hidden, because
+ * hiding it protects nothing — the panel is behind a sign-in either way — and
+ * because the people who most need it are organizers, who have no reason to
+ * guess that typing /admin/ leads anywhere.
  */
 export function SiteNav({
   locale,
@@ -48,6 +53,11 @@ export function SiteNav({
   }, []);
 
   const home = locale === "en" ? "/" : `/${locale}/`;
+  const panelLabel = locale === "en" ? "Panel" : "Панель";
+  const panelTitle =
+    locale === "en"
+      ? "For the owner and trip organizers"
+      : "Для владельца и организаторов поездок";
 
   return (
     <header
@@ -109,6 +119,20 @@ export function SiteNav({
               About
             </a>
           )}
+
+          {/* Обычная ссылка, а не next/link: вход в панель — полная
+              загрузка страницы. Клиентский переход потянул бы RSC-ответ
+              маршрута, которого при статическом экспорте по ожидаемому адресу
+              нет (та же причина, что у prefetch={false} в меню панели), и
+              начинал бы работу с унаследованным состоянием входа. */}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+          <a
+            href="/admin/"
+            title={panelTitle}
+            className="rounded-full border border-white/25 px-3 py-1 text-xs font-medium text-white/70 transition hover:border-[color:var(--gold)] hover:text-[color:var(--gold)]"
+          >
+            {panelLabel}
+          </a>
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
@@ -181,6 +205,16 @@ export function SiteNav({
                 About
               </a>
             )}
+
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            <a
+              href="/admin/"
+              onClick={() => setMenuOpen(false)}
+              className="border-t border-white/10 py-3 text-base font-medium text-white/60"
+            >
+              {panelLabel}
+              <span className="ml-2 text-xs text-white/35">{panelTitle}</span>
+            </a>
 
             <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-4 pb-1 min-[401px]:hidden">
               <span className="text-sm text-white/60">

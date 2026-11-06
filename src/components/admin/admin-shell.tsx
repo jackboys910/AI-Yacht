@@ -18,6 +18,10 @@ import { ADMIN_VIEWS, resolveView } from "./views";
  * §7.8 asks for the whole owner's workflow to be possible from a phone, so the
  * menu is not merely narrower there — it collapses out of the way, because a
  * trip form (item 1.4) needs the full width of a phone screen to be usable.
+ *
+ * The way back to the site (ТЗ v4, §9) opens in a new tab on purpose: a trip
+ * form holds unsaved work, and a link that navigated away from it would throw
+ * that work out every time someone wanted to check how a page looks.
  */
 export function AdminShell({ user }: { user: User }) {
   const params = useSearchParams();
@@ -91,6 +95,27 @@ export function AdminShell({ user }: { user: User }) {
         </ul>
 
         <div className="mt-6 border-t border-white/10 pt-4 lg:absolute lg:bottom-6 lg:left-4 lg:right-4 lg:mt-0">
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener"
+            className="mb-3 flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M14 4h6v6M20 4l-8 8M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+            </svg>
+            На сайт
+          </a>
+
           <p className="truncate px-3 text-xs text-white/50" title={user.email ?? ""}>
             {user.email}
           </p>
