@@ -24,19 +24,41 @@ function auth(): Auth {
   return getAuth(firebaseApp());
 }
 
-/** Wording for the failures a person can actually cause, in the admin's language. */
-const MESSAGES: Record<string, string> = {
-  "auth/invalid-email": "Неверный адрес почты.",
-  "auth/invalid-credential": "Неверная почта или пароль.",
-  "auth/wrong-password": "Неверная почта или пароль.",
-  "auth/user-not-found": "Неверная почта или пароль.",
-  "auth/user-disabled": "Этот аккаунт отключён.",
-  "auth/too-many-requests":
-    "Слишком много попыток входа. Подождите несколько минут и попробуйте снова.",
-  "auth/network-request-failed": "Нет связи с сервером. Проверьте интернет.",
+/**
+ * Why a sign-in failed, as something the panel can translate.
+ *
+ * The reason is carried rather than a sentence: §6 of ТЗ v4 makes the panel
+ * bilingual, and this module has no idea which language is on screen. Only the
+ * failures a person can actually cause are named; everything else is "unknown",
+ * because a Firebase code the owner cannot act on is not worth a sentence of
+ * its own.
+ */
+export type SignInReason =
+  | "invalidEmail"
+  | "invalidCredential"
+  | "disabled"
+  | "tooManyAttempts"
+  | "offline"
+  | "unknown";
+
+const REASONS: Record<string, SignInReason> = {
+  "auth/invalid-email": "invalidEmail",
+  "auth/invalid-credential": "invalidCredential",
+  "auth/wrong-password": "invalidCredential",
+  "auth/user-not-found": "invalidCredential",
+  "auth/user-disabled": "disabled",
+  "auth/too-many-requests": "tooManyAttempts",
+  "auth/network-request-failed": "offline",
 };
 
-export class SignInError extends Error {}
+export class SignInError extends Error {
+  readonly reason: SignInReason;
+
+  constructor(reason: SignInReason, options?: ErrorOptions) {
+    super(reason, options);
+    this.reason = reason;
+  }
+}
 
 export async function signIn(email: string, password: string): Promise<void> {
   try {
@@ -46,10 +68,7 @@ export async function signIn(email: string, password: string): Promise<void> {
     await signInWithEmailAndPassword(auth(), email.trim(), password);
   } catch (cause) {
     const code = (cause as { code?: string }).code ?? "";
-    throw new SignInError(
-      MESSAGES[code] ?? "Не удалось войти. Попробуйте ещё раз.",
-      { cause },
-    );
+    throw new SignInError(REASONS[code] ?? "unknown", { cause });
   }
 }
 

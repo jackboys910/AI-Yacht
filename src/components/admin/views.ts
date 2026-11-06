@@ -3,60 +3,41 @@
  *
  * They follow §7 of the spec, with the moderation queue §3.4 of ТЗ v4 adds:
  * trips, interests, people, suggestions, applications, subscribers, settings.
- * Each one is filled in by a later plan item, and `comingIn` names that item so
- * the placeholder says what is missing rather than looking broken.
+ *
+ * Only the ids live here. What each section is *called* is interface text and
+ * belongs with the rest of it in `i18n/copy-en.ts`, keyed by these ids — so a
+ * section added here fails to compile until both languages name it.
  */
-export const ADMIN_VIEWS = [
-  {
-    id: "trips",
-    label: "Поездки",
-    description: "Создание, публикация, архив и рассылка анонсов.",
-    comingIn: "1.4 и 1.7",
-  },
-  {
-    id: "interests",
-    label: "Направления",
-    description: "Вкладки Sailing, Snowboarding, Skydiving, Son и новые.",
-    comingIn: "1.2",
-  },
-  {
-    id: "people",
-    label: "Люди",
-    description: "Справочник команды: фото, роль и описание на двух языках.",
-    comingIn: "1.3",
-  },
-  {
-    id: "suggestions",
-    label: "Идеи поездок",
-    description: "Предложенные посетителями поездки: рассмотреть, одобрить, отклонить.",
-    comingIn: "2.5",
-  },
-  {
-    id: "applications",
-    label: "Заявки",
-    description: "Заявки на участие в поездках и заявки Solutions.",
-    comingIn: "2.8",
-  },
-  {
-    id: "subscribers",
-    label: "Подписчики",
-    description: "Списки по направлениям и выгрузка в CSV.",
-    comingIn: "3.4",
-  },
-  {
-    id: "settings",
-    label: "Настройки",
-    description: "Story, About, тексты Solutions, Calendly, пороги счётчиков.",
-    comingIn: "4.3",
-  },
+export const ADMIN_VIEW_IDS = [
+  "trips",
+  "interests",
+  "people",
+  "suggestions",
+  "applications",
+  "subscribers",
+  "settings",
 ] as const;
 
-export type AdminViewId = (typeof ADMIN_VIEWS)[number]["id"];
+export type AdminViewId = (typeof ADMIN_VIEW_IDS)[number];
 
 export const DEFAULT_VIEW: AdminViewId = "trips";
 
+/**
+ * The plan item that fills a section in, for the ones not built yet.
+ *
+ * A section listed in the menu with nothing behind it looks broken, so the
+ * placeholder says which item brings it instead. A section missing from this
+ * table is one that works.
+ */
+export const COMING_IN: Partial<Record<AdminViewId, string>> = {
+  suggestions: "2.5",
+  applications: "2.8",
+  subscribers: "3.4",
+  settings: "4.3",
+};
+
 /** The view named by `?view=`, or the default when it names nothing valid. */
 export function resolveView(value: string | null): AdminViewId {
-  const match = ADMIN_VIEWS.find((view) => view.id === value);
-  return match ? match.id : DEFAULT_VIEW;
+  const match = ADMIN_VIEW_IDS.find((view) => view === value);
+  return match ?? DEFAULT_VIEW;
 }

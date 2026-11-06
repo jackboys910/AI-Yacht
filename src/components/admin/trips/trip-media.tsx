@@ -9,6 +9,7 @@ import {
   NumberInput,
   TextInput,
 } from "../fields";
+import { useAdmin } from "../i18n";
 import { ImageField } from "../image-field";
 import { Repeatable } from "../repeatable";
 import { OptionalSection, Section } from "./section";
@@ -39,11 +40,13 @@ export function TripGallery({
   draft: TripDraft;
   set: <K extends keyof TripDraft>(key: K, value: TripDraft[K]) => void;
 }) {
+  const { t } = useAdmin();
+
   return (
     <Section
       id="block-gallery"
-      title="Фото первого экрана"
-      subtitle="От трёх до десяти фото. Последним слайдом обычно ставят карту. Обложка — то фото, которое видно в карточке поездки и в превью ссылки."
+      title={t.tripForm.gallery.title}
+      subtitle={t.tripForm.gallery.subtitle}
     >
       <Repeatable
         items={draft.gallery}
@@ -55,29 +58,31 @@ export function TripGallery({
         }}
         create={blankImage}
         itemLabel={(index) =>
-          index === draft.coverIndex ? `Фото ${index + 1} · обложка` : `Фото ${index + 1}`
+          index === draft.coverIndex
+            ? t.tripForm.galleryCover(index + 1)
+            : t.tripForm.galleryPhoto(index + 1)
         }
-        addLabel="Добавить фото"
+        addLabel={t.tripForm.galleryAdd}
         max={10}
-        empty="Фотографий пока нет. Без трёх штук поездку опубликовать нельзя."
+        empty={t.tripForm.galleryEmpty}
         render={(image, update, index) => (
           <>
             <ImageField
               id={`gallery-${index}`}
-              label="Адрес фото"
+              label={t.tripForm.photoAddress}
               value={image.url ? image : undefined}
               onChange={(next) => update(next ?? blankImage())}
               placeholder="/assets/hero-catamaran.jpg"
             />
             <LocalizedInput
               id={`gallery-${index}-alt`}
-              label="Описание для незрячих и для поиска"
+              label={t.tripForm.photoAlt}
               value={image.alt}
               onChange={(alt) => update({ ...image, alt })}
             />
             <Checkbox
               id={`gallery-${index}-cover`}
-              label="Сделать обложкой"
+              label={t.tripForm.makeCover}
               checked={draft.coverIndex === index}
               onChange={(checked) => checked && set("coverIndex", index)}
             />
@@ -95,12 +100,14 @@ export function TripRoute({
   draft: TripDraft;
   set: <K extends keyof TripDraft>(key: K, value: TripDraft[K]) => void;
 }) {
+  const { t } = useAdmin();
+
   return (
     <>
       <OptionalSection
         id="block-route"
-        title="Маршрут по дням"
-        subtitle="Заголовок на сайте — «Day by day»."
+        title={t.tripForm.route.title}
+        subtitle={t.tripForm.route.subtitle}
         value={draft.route}
         onChange={(value) => set("route", value)}
         create={() => ({ days: [] })}
@@ -109,7 +116,7 @@ export function TripRoute({
           <>
             <LocalizedTextarea
               id="route-intro"
-              label="Вступление"
+              label={t.tripForm.routeIntro}
               rows={2}
               value={route.intro ?? noText()}
               onChange={(intro) => update({ ...route, intro })}
@@ -122,35 +129,35 @@ export function TripRoute({
                 update({ ...route, days: days.map((day, i) => ({ ...day, number: i + 1 })) })
               }
               create={(): RouteDay => ({ number: route.days.length + 1, place: noText(), text: noText() })}
-              itemLabel={(index) => `День ${index + 1}`}
-              addLabel="Добавить день"
-              empty="Дней пока нет."
+              itemLabel={(index) => t.tripForm.day(index + 1)}
+              addLabel={t.tripForm.dayAdd}
+              empty={t.tripForm.daysEmpty}
               render={(day, updateDay, index) => (
                 <>
                   <LocalizedInput
                     id={`day-${index}-date`}
-                    label="Дата, как её показать"
+                    label={t.tripForm.dayDate}
                     value={day.date ?? noText()}
                     onChange={(date) => updateDay({ ...day, date })}
                     placeholder="Nov 12"
-                    hint="Обычный текст: по-английски и по-русски месяц пишется по-разному."
+                    hint={t.tripForm.dayDateHint}
                   />
                   <LocalizedInput
                     id={`day-${index}-place`}
-                    label="Место"
+                    label={t.tripForm.dayPlace}
                     value={day.place}
                     onChange={(place) => updateDay({ ...day, place })}
                   />
                   <LocalizedTextarea
                     id={`day-${index}-text`}
-                    label="Что в этот день"
+                    label={t.tripForm.dayText}
                     rows={3}
                     value={day.text}
                     onChange={(text) => updateDay({ ...day, text })}
                   />
                   <ImageField
                     id={`day-${index}-photo`}
-                    label="Фото дня"
+                    label={t.tripForm.dayPhoto}
                     value={day.photo}
                     onChange={(photo) => updateDay({ ...day, photo })}
                   />
@@ -163,8 +170,8 @@ export function TripRoute({
 
       <OptionalSection
         id="block-map"
-        title="Карта"
-        subtitle="Заголовок на сайте — «Route map». Картинки маршрута и, если нужно, точка на карте."
+        title={t.tripForm.map.title}
+        subtitle={t.tripForm.map.subtitle}
         value={draft.map}
         onChange={(value) => set("map", value)}
         create={() => ({ images: [] })}
@@ -175,13 +182,13 @@ export function TripRoute({
               items={map.images}
               onChange={(images) => update({ ...map, images })}
               create={blankImage}
-              itemLabel={(index) => `Картинка ${index + 1}`}
-              addLabel="Добавить картинку"
-              empty="Картинок пока нет."
+              itemLabel={(index) => t.tripForm.mapImage(index + 1)}
+              addLabel={t.tripForm.mapImageAdd}
+              empty={t.tripForm.mapImagesEmpty}
               render={(image, updateImage, index) => (
                 <ImageField
                   id={`map-${index}`}
-                  label="Адрес картинки"
+                  label={t.tripForm.mapImageAddress}
                   value={image.url ? image : undefined}
                   onChange={(next) => updateImage(next ?? blankImage())}
                   placeholder="/assets/map-wide.jpg"
@@ -190,21 +197,21 @@ export function TripRoute({
             />
             <LocalizedInput
               id="map-caption"
-              label="Подпись под картой"
+              label={t.tripForm.mapCaption}
               value={map.caption ?? noText()}
               onChange={(caption) => update({ ...map, caption })}
             />
             <div className="grid gap-4 sm:grid-cols-2">
               <NumberInput
                 id="map-lat"
-                label="Широта"
+                label={t.tripForm.latitude}
                 min={-90}
                 value={map.latitude}
                 onChange={(latitude) => update({ ...map, latitude })}
               />
               <NumberInput
                 id="map-lng"
-                label="Долгота"
+                label={t.tripForm.longitude}
                 min={-180}
                 value={map.longitude}
                 onChange={(longitude) => update({ ...map, longitude })}
@@ -216,8 +223,8 @@ export function TripRoute({
 
       <OptionalSection
         id="block-media"
-        title="Фото и видео"
-        subtitle="Заголовок на сайте — «Photos & videos»."
+        title={t.tripForm.media.title}
+        subtitle={t.tripForm.media.subtitle}
         value={draft.media}
         onChange={(value) => set("media", value)}
         create={() => ({ photos: [], youtubeUrls: [] })}
@@ -228,13 +235,13 @@ export function TripRoute({
               items={media.photos}
               onChange={(photos) => update({ ...media, photos })}
               create={blankImage}
-              itemLabel={(index) => `Фото ${index + 1}`}
-              addLabel="Добавить фото"
-              empty="Фотографий пока нет."
+              itemLabel={(index) => t.tripForm.galleryPhoto(index + 1)}
+              addLabel={t.tripForm.galleryAdd}
+              empty={t.tripForm.mediaPhotosEmpty}
               render={(image, updateImage, index) => (
                 <ImageField
                   id={`media-${index}`}
-                  label="Адрес фото"
+                  label={t.tripForm.photoAddress}
                   value={image.url ? image : undefined}
                   onChange={(next) => updateImage(next ?? blankImage())}
                 />
@@ -244,13 +251,13 @@ export function TripRoute({
               items={media.youtubeUrls}
               onChange={(youtubeUrls) => update({ ...media, youtubeUrls })}
               create={() => ""}
-              itemLabel={(index) => `Видео ${index + 1}`}
-              addLabel="Добавить видео"
-              empty="Ссылок на видео пока нет."
+              itemLabel={(index) => t.tripForm.video(index + 1)}
+              addLabel={t.tripForm.videoAdd}
+              empty={t.tripForm.videosEmpty}
               render={(url, updateUrl, index) => (
                 <TextInput
                   id={`video-${index}`}
-                  label="Ссылка на YouTube"
+                  label={t.tripForm.videoUrl}
                   type="url"
                   value={url}
                   onChange={updateUrl}
@@ -278,6 +285,8 @@ export function TripCrew({
   set: <K extends keyof TripDraft>(key: K, value: TripDraft[K]) => void;
   people: Person[];
 }) {
+  const { t } = useAdmin();
+
   const chosen = draft.crewPersonIds
     .map((id) => people.find((person) => person.id === id))
     .filter((person): person is Person => Boolean(person));
@@ -294,18 +303,15 @@ export function TripCrew({
   return (
     <Section
       id="block-crew"
-      title="Команда"
-      subtitle="Заголовок на сайте — «Your crew». Люди берутся из справочника, заново вводить их не нужно."
+      title={t.tripForm.crew.title}
+      subtitle={t.tripForm.crew.subtitle}
     >
       {people.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          Справочник пуст. Заведите людей в разделе «Люди» — потом их можно будет
-          добавлять в любые поездки.
-        </p>
+        <p className="text-sm text-muted-foreground">{t.tripForm.crewNoDirectory}</p>
       ) : (
         <>
           {chosen.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Никто не добавлен.</p>
+            <p className="text-sm text-muted-foreground">{t.tripForm.crewNobody}</p>
           ) : (
             <ul className="space-y-2">
               {chosen.map((person, index) => (
@@ -327,18 +333,22 @@ export function TripCrew({
                     )}
                   </span>
                   <div className="flex items-center gap-1">
-                    <SmallButton label="Выше" disabled={index === 0} onClick={() => move(index, index - 1)}>
+                    <SmallButton
+                      label={t.field.up}
+                      disabled={index === 0}
+                      onClick={() => move(index, index - 1)}
+                    >
                       ↑
                     </SmallButton>
                     <SmallButton
-                      label="Ниже"
+                      label={t.field.down}
                       disabled={index === chosen.length - 1}
                       onClick={() => move(index, index + 1)}
                     >
                       ↓
                     </SmallButton>
                     <SmallButton
-                      label="Убрать"
+                      label={t.field.remove}
                       onClick={() =>
                         set(
                           "crewPersonIds",
@@ -357,7 +367,7 @@ export function TripCrew({
           {available.length > 0 && (
             <div>
               <label htmlFor="crew-add" className="block text-sm font-medium">
-                Добавить из справочника
+                {t.tripForm.crewAdd}
               </label>
               <select
                 id="crew-add"
@@ -368,7 +378,7 @@ export function TripCrew({
                 }}
                 className="mt-1.5 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-base outline-none transition focus:border-[color:var(--ring)] focus:ring-2 focus:ring-[color:var(--ring)]/25"
               >
-                <option value="">Выберите человека…</option>
+                <option value="">{t.tripForm.crewChoose}</option>
                 {available.map((person) => (
                   <option key={person.id} value={person.id}>
                     {person.name.en || person.name.ru}

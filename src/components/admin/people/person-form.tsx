@@ -3,8 +3,8 @@
 import { rebuildSoon } from "@/lib/rebuild";
 import { useState } from "react";
 import type { Locale } from "@/i18n/config";
+import type { Localized } from "@/lib/content/types";
 import {
-  PersonInUseError,
   deletePerson,
   savePerson,
   validatePerson,
@@ -19,6 +19,7 @@ import {
   Problems,
   SecondaryButton,
 } from "../fields";
+import { failureText, useAdmin } from "../i18n";
 import { ImageField } from "../image-field";
 
 export function PersonForm({
@@ -32,9 +33,13 @@ export function PersonForm({
   onDone: () => void;
   onCancel: () => void;
 }) {
+  const { locale: panelLocale, t } = useAdmin();
   const [draft, setDraft] = useState(initial);
+  // The content language, not the panel's: both names have to be reachable
+  // from either interface (§6, А-03).
   const [locale, setLocale] = useState<Locale>("en");
-  const [problems, setProblems] = useState<string[]>([]);
+  const [problems, setProblems] = useState<Localized<string>[]>([]);
+  const [failure, setFailure] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -44,6 +49,7 @@ export function PersonForm({
   const incomplete = (["en", "ru"] as const).filter((l) => !draft.name[l].trim());
 
   async function save() {
+    setFailure(null);
     const found = validatePerson(draft);
     setProblems(found);
     if (found.length > 0) return;
@@ -54,23 +60,20 @@ export function PersonForm({
       rebuildSoon();
       onDone();
     } catch (error) {
-      setProblems([`Не удалось сохранить: ${describe(error)}`]);
+      setFailure(failureText(error, panelLocale, t, t.people.saveFailed));
       setBusy(false);
     }
   }
 
   async function remove() {
+    setFailure(null);
     setBusy(true);
     try {
       await deletePerson(id!);
       rebuildSoon();
       onDone();
     } catch (error) {
-      setProblems([
-        error instanceof PersonInUseError
-          ? error.message
-          : `Не удалось удалить: ${describe(error)}`,
-      ]);
+      setFailure(failureText(error, panelLocale, t, t.people.deleteFailed));
       setBusy(false);
       setConfirmDelete(false);
     }
@@ -81,7 +84,7 @@ export function PersonForm({
       <div className="max-w-2xl">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-display text-xl">
-            {id ? "Изменить человека" : "Новый человек"}
+            {id ? t.people.editTitle : t.people.createTitle}
           </h2>
           <LocaleTabs value={locale} onChange={setLocale} incomplete={incomplete} />
         </div>
@@ -89,7 +92,7 @@ export function PersonForm({
         <div className="mt-6 space-y-5 rounded-2xl border border-border bg-card p-5 sm:p-6">
           <LocalizedInput
             id="person-name"
-            label="Имя"
+            label={t.people.name}
             required
             value={draft.name}
             onChange={(value) => set("name", value)}
@@ -98,16 +101,16 @@ export function PersonForm({
 
           <LocalizedInput
             id="person-role"
-            label="Роль"
+            label={t.people.role}
             value={draft.role}
             onChange={(value) => set("role", value)}
             placeholder="Skipper"
-            hint="Как подписан человек в блоке «Your crew» на странице поездки."
+            hint={t.people.roleHint}
           />
 
           <LocalizedTextarea
             id="person-bio"
-            label="Описание"
+            label={t.people.bio}
             rows={4}
             value={draft.bio}
             onChange={(value) => set("bio", value)}
@@ -115,7 +118,7 @@ export function PersonForm({
 
           <ImageField
             id="person-photo"
-            label="Фото"
+            label={t.people.photo}
             placeholder="/assets/ivan.jpg"
             value={draft.photo}
             onChange={(photo) => set("photo", photo)}
@@ -124,27 +127,32 @@ export function PersonForm({
         </div>
 
         <div className="mt-5">
-          <Problems items={problems} />
+          <Problems
+            items={[
+              ...problems.map((problem) => problem[panelLocale]),
+              ...(failure ? [failure] : []),
+            ]}
+          />
         </div>
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <PrimaryButton onClick={save} disabled={busy}>
-            {busy ? "Сохраняем…" : "Сохранить"}
+            {busy ? t.field.saving : t.field.save}
           </PrimaryButton>
           <SecondaryButton onClick={onCancel} disabled={busy}>
-            Отмена
+            {t.field.cancel}
           </SecondaryButton>
 
           {id && (
             <div className="ml-auto">
               {confirmDelete ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Удалить?</span>
+                  <span className="text-sm text-muted-foreground">{t.field.deleteConfirm}</span>
                   <SecondaryButton onClick={remove} disabled={busy} tone="danger">
-                    Да, удалить
+                    {t.field.deleteYes}
                   </SecondaryButton>
                   <SecondaryButton onClick={() => setConfirmDelete(false)} disabled={busy}>
-                    Нет
+                    {t.field.deleteNo}
                   </SecondaryButton>
                 </div>
               ) : (
@@ -153,7 +161,7 @@ export function PersonForm({
                   disabled={busy}
                   tone="danger"
                 >
-                  Удалить
+                  {t.field.delete}
                 </SecondaryButton>
               )}
             </div>
@@ -164,9 +172,3 @@ export function PersonForm({
   );
 }
 
-function describe(error: unknown): string {
-  const text = error instanceof Error ? error.message : String(error);
-  return /permission|insufficient/i.test(text)
-    ? "база отказала в доступе. Проверьте, что правила Firestore опубликованы."
-    : text;
-}

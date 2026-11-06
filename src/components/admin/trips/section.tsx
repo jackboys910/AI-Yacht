@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useAdmin } from "../i18n";
 
 /** One block of the trip form, with an anchor the table of contents jumps to. */
 export function Section({
@@ -48,6 +49,8 @@ export function OptionalSection<T>({
   create: () => T;
   children: (value: T, update: (next: T) => void) => ReactNode;
 }) {
+  const { t } = useAdmin();
+
   return (
     <section id={id} className="scroll-mt-6 rounded-2xl border border-border bg-card p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -65,14 +68,12 @@ export function OptionalSection<T>({
               : "border-border text-red-600 hover:border-red-400"
           }`}
         >
-          {value === undefined ? "+ Добавить блок" : "Убрать блок"}
+          {value === undefined ? t.field.addBlock : t.field.removeBlock}
         </button>
       </div>
 
       {value === undefined ? (
-        <p className="mt-4 text-sm text-muted-foreground">
-          Блока нет — на странице поездки он не появится.
-        </p>
+        <p className="mt-4 text-sm text-muted-foreground">{t.field.blockAbsent}</p>
       ) : (
         <div className="mt-5 space-y-5">{children(value, onChange)}</div>
       )}

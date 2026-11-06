@@ -256,7 +256,7 @@ export interface Trip {
   /**
    * What the trip was before it went to the archive.
    *
-   * А-10 wants "В архив" and "Вернуть" to be one action each. Without this,
+   * А-10 wants Archive and Restore to be one action each. Without this,
    * returning an archived trip could only ever produce a draft, and the owner
    * would have to publish it again — two steps where the spec promises one.
    */

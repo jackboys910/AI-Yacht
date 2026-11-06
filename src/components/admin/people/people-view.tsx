@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { Person } from "@/lib/content/types";
 import { blankPerson, listPeople, type PersonDraft } from "@/lib/firebase/people";
 import { PrimaryButton, SecondaryButton } from "../fields";
+import { failureText, useAdmin } from "../i18n";
 import { PersonForm } from "./person-form";
 
 /**
@@ -12,6 +13,7 @@ import { PersonForm } from "./person-form";
  * (`?view=people&edit=…`), so a reload keeps the owner where they were.
  */
 export function PeopleView() {
+  const { locale, t } = useAdmin();
   const router = useRouter();
   const params = useSearchParams();
   const editing = params.get("edit");
@@ -35,20 +37,23 @@ export function PeopleView() {
       (cause: unknown) => {
         if (!active) return;
         setPeople([]);
-        setError(describe(cause));
+        setError(failureText(cause, locale, t, t.people.loadFailed));
       },
     );
 
     return () => {
       active = false;
     };
+    // The copy is only read in the failure path; reloading the directory
+    // because the panel's language changed would be a wasted request.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reloadToken]);
 
   const go = (edit: string | null) =>
     router.push(`/admin/?view=people${edit ? `&edit=${edit}` : ""}`);
 
   if (people === null) {
-    return <p className="text-sm text-muted-foreground">Загружаем справочник…</p>;
+    return <p className="text-sm text-muted-foreground">{t.people.loading}</p>;
   }
 
   if (editing) {
@@ -56,9 +61,9 @@ export function PeopleView() {
     if (editing !== "new" && !current) {
       return (
         <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
-          <p className="text-sm text-muted-foreground">Человек не найден.</p>
+          <p className="text-sm text-muted-foreground">{t.people.notFound}</p>
           <div className="mt-4">
-            <PrimaryButton onClick={() => go(null)}>К списку</PrimaryButton>
+            <PrimaryButton onClick={() => go(null)}>{t.field.toList}</PrimaryButton>
           </div>
         </div>
       );
@@ -92,11 +97,9 @@ export function PeopleView() {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          {people.length === 0
-            ? "Пока никого. Людей из справочника можно добавлять в любые поездки, не вводя заново."
-            : `Людей: ${people.length}. Их можно добавлять в любые поездки, не вводя заново.`}
+          {people.length === 0 ? t.people.none : t.people.count(people.length)}
         </p>
-        <PrimaryButton onClick={() => go("new")}>Новый человек</PrimaryButton>
+        <PrimaryButton onClick={() => go("new")}>{t.people.create}</PrimaryButton>
       </div>
 
       {people.length > 0 && (
@@ -120,14 +123,16 @@ export function PeopleView() {
 
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">
-                  {person.name.en || person.name.ru || "Без имени"}
+                  {person.name.en || person.name.ru || t.people.unnamed}
                 </p>
                 {person.role.en && (
                   <p className="truncate text-sm text-muted-foreground">{person.role.en}</p>
                 )}
               </div>
 
-              <SecondaryButton onClick={() => go(person.id)}>Изменить</SecondaryButton>
+              <SecondaryButton onClick={() => go(person.id)}>
+                {t.people.edit}
+              </SecondaryButton>
             </li>
           ))}
         </ul>
@@ -161,9 +166,3 @@ function initials(name: string): string {
   );
 }
 
-function describe(cause: unknown): string {
-  const text = cause instanceof Error ? cause.message : String(cause);
-  return /permission|insufficient/i.test(text)
-    ? "База отказала в доступе. Правила Firestore ещё не опубликованы, либо этот аккаунт не внесён в список владельцев."
-    : `Не удалось загрузить справочник: ${text}`;
-}

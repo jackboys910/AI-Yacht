@@ -5,6 +5,7 @@ import type { StoredImage } from "@/lib/content/types";
 import { UnsupportedImageError } from "@/lib/images/compress";
 import { uploadImage, type UploadStage } from "@/lib/firebase/storage";
 import { TextInput } from "./fields";
+import { useAdmin, type AdminCopy } from "./i18n";
 
 /**
  * A picture: uploaded from a computer or a phone, or pointed at by address.
@@ -34,6 +35,7 @@ export function ImageField({
   placeholder?: string;
   previewClass?: string;
 }) {
+  const { locale, t } = useAdmin();
   const fileInput = useRef<HTMLInputElement>(null);
   const [stage, setStage] = useState<UploadStage | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -48,8 +50,10 @@ export function ImageField({
     } catch (cause) {
       setError(
         cause instanceof UnsupportedImageError
-          ? cause.message
-          : `Не удалось загрузить: ${cause instanceof Error ? cause.message : String(cause)}`,
+          ? cause.text[locale]
+          : t.image.uploadFailed(
+              cause instanceof Error ? cause.message : String(cause),
+            ),
       );
     } finally {
       setStage(null);
@@ -113,12 +117,12 @@ export function ImageField({
           }`}
         >
           {stage === "compressing"
-            ? "Сжимаем…"
+            ? t.image.compressing
             : stage === "uploading"
-              ? "Загружаем…"
+              ? t.image.uploading
               : value?.url
-                ? "Заменить фото"
-                : "Загрузить фото"}
+                ? t.image.replace
+                : t.image.upload}
         </label>
 
         {value?.url && !busy && (
@@ -127,7 +131,7 @@ export function ImageField({
             onClick={() => onChange(undefined)}
             className="rounded-full border border-border px-4 py-2 text-sm text-red-600 transition hover:border-red-400"
           >
-            Убрать
+            {t.image.clear}
           </button>
         )}
 
@@ -136,7 +140,7 @@ export function ImageField({
           onClick={() => setByAddress((open) => !open)}
           className="text-sm text-muted-foreground underline underline-offset-2 transition hover:text-foreground"
         >
-          {byAddress ? "скрыть адрес" : "указать адресом"}
+          {byAddress ? t.image.hideAddress : t.image.showAddress}
         </button>
       </div>
 
@@ -144,12 +148,12 @@ export function ImageField({
         <div className="mt-3">
           <TextInput
             id={`${id}-url`}
-            label="Адрес картинки"
+            label={t.image.address}
             type="url"
             value={value?.url ?? ""}
             onChange={applyAddress}
             placeholder={placeholder ?? "/assets/hero-catamaran.jpg"}
-            hint="Для картинок, которые уже лежат на сайте. Загруженные через кнопку выше сюда подставляются сами."
+            hint={t.image.addressHint}
           />
         </div>
       )}
@@ -162,20 +166,24 @@ export function ImageField({
 
       <p className="mt-1 text-xs text-muted-foreground">
         {probing
-          ? "Определяем размер картинки…"
+          ? t.image.measuring
           : value?.width
-            ? describe(value)
-            : "С телефона можно снять камерой или выбрать из галереи. Фото уменьшается и сжимается перед загрузкой."}
+            ? describe(value, t)
+            : t.image.advice}
       </p>
     </div>
   );
 }
 
-function describe(image: StoredImage): string {
+/**
+ * What is known about the picture, under the field.
+ *
+ * Whether we uploaded it matters enough to say out loud: a picture entered by
+ * address is served from /assets/ and deleting the trip must not touch it.
+ */
+function describe(image: StoredImage, t: AdminCopy): string {
   const size = `${image.width}×${image.height}`;
-  return image.storagePath
-    ? `Загружено, ${size}. Хранится уменьшенная копия для карточек и телефонов.`
-    : `Картинка с сайта, ${size}. Не загружалась в хранилище и не будет удалена.`;
+  return image.storagePath ? t.image.stored(size) : t.image.linked(size);
 }
 
 function measure(url: string): Promise<{ width: number; height: number } | null> {

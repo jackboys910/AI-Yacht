@@ -15,13 +15,18 @@ import type { Localized, Trip } from "./types";
  * empty on the other would render as a hole in one version of the page. That is
  * reported too, so the site never ships half a translation.
  *
- * Messages are Russian because the admin panel is (§7).
+ * Every message is itself bilingual (ТЗ v4, §6). Two languages are in play at
+ * once here and they are not the same thing: a message can be *about* the
+ * English text of a trip while being *written* in Russian, because the panel's
+ * own language is a separate choice. Hence `Localized<string>` messages that
+ * name a language inside them.
  */
 
 export interface ValidationIssue {
   /** Path of the offending field, for scrolling the form to it. */
   field: string;
-  message: string;
+  /** The problem, in both of the panel's languages. */
+  message: Localized<string>;
   /** Set when only one language is at fault. */
   locale?: Locale;
   /** A missing mandatory block blocks publication; a half-translation warns. */
@@ -32,7 +37,21 @@ export interface ValidationIssue {
 const MIN_GALLERY = 3;
 const MAX_GALLERY = 10;
 
-const LOCALE_NAMES: Record<Locale, string> = { en: "английском", ru: "русском" };
+/** A field's name, as the panel labels it. */
+type Label = Localized<string>;
+
+const label = (en: string, ru: string): Label => ({ en, ru });
+
+/**
+ * The name of a language, as each panel language writes it.
+ *
+ * Read as `LANGUAGE_NAMES[panelLanguage][languageAtFault]` — "нет текста на
+ * английском" needs the Russian name of English, which no single table gives.
+ */
+const LANGUAGE_NAMES: Record<Locale, Record<Locale, string>> = {
+  en: { en: "English", ru: "Russian" },
+  ru: { en: "английском", ru: "русском" },
+};
 
 function isBlank(value: string | undefined): boolean {
   return value === undefined || value.trim() === "";
@@ -52,7 +71,7 @@ function blankListLocales(value: Localized<string[]> | undefined): Locale[] {
 function requireText(
   issues: ValidationIssue[],
   field: string,
-  label: string,
+  name: Label,
   value: Localized<string> | undefined,
 ): void {
   for (const locale of blankLocales(value)) {
@@ -60,7 +79,32 @@ function requireText(
       field,
       locale,
       severity: "error",
-      message: `«${label}» не заполнено на ${LOCALE_NAMES[locale]}`,
+      message: {
+        en: `“${name.en}” has no ${LANGUAGE_NAMES.en[locale]} text`,
+        ru: `«${name.ru}» не заполнено на ${LANGUAGE_NAMES.ru[locale]}`,
+      },
+    });
+  }
+}
+
+/** The half-translation warning, shared by the two optional-field checks. */
+function halfTranslated(
+  issues: ValidationIssue[],
+  field: string,
+  name: Label,
+  blank: Locale[],
+): void {
+  if (blank.length === 0 || blank.length === locales.length) return;
+
+  for (const locale of blank) {
+    issues.push({
+      field,
+      locale,
+      severity: "warning",
+      message: {
+        en: `“${name.en}” is filled in for one language only — no ${LANGUAGE_NAMES.en[locale]} text`,
+        ru: `«${name.ru}» заполнено не на всех языках — нет текста на ${LANGUAGE_NAMES.ru[locale]}`,
+      },
     });
   }
 }
@@ -72,58 +116,44 @@ function requireText(
 function requireBothOrNeither(
   issues: ValidationIssue[],
   field: string,
-  label: string,
+  name: Label,
   value: Localized<string> | undefined,
 ): void {
-  const blank = blankLocales(value);
-  if (blank.length === 0 || blank.length === locales.length) return;
-
-  for (const locale of blank) {
-    issues.push({
-      field,
-      locale,
-      severity: "warning",
-      message: `«${label}» заполнено не на всех языках — нет текста на ${LOCALE_NAMES[locale]}`,
-    });
-  }
+  halfTranslated(issues, field, name, blankLocales(value));
 }
 
 /** The same rule for a list of bullet points. */
 function requireListBothOrNeither(
   issues: ValidationIssue[],
   field: string,
-  label: string,
+  name: Label,
   value: Localized<string[]> | undefined,
 ): void {
-  const blank = blankListLocales(value);
-  if (blank.length === 0 || blank.length === locales.length) return;
-
-  for (const locale of blank) {
-    issues.push({
-      field,
-      locale,
-      severity: "warning",
-      message: `«${label}» заполнено не на всех языках — нет текста на ${LOCALE_NAMES[locale]}`,
-    });
-  }
+  halfTranslated(issues, field, name, blankListLocales(value));
 }
 
 function checkMandatory(issues: ValidationIssue[], trip: Trip): void {
-  requireText(issues, "title", "Название поездки", trip.title);
-  requireText(issues, "subtitle", "Подзаголовок", trip.subtitle);
-  requireText(issues, "place", "Место", trip.place);
+  requireText(issues, "title", label("Trip title", "Название поездки"), trip.title);
+  requireText(issues, "subtitle", label("Subtitle", "Подзаголовок"), trip.subtitle);
+  requireText(issues, "place", label("Place", "Место"), trip.place);
 
   if (isBlank(trip.startDate) || isBlank(trip.endDate)) {
     issues.push({
       field: "startDate",
       severity: "error",
-      message: "Не указаны даты начала и окончания",
+      message: {
+        en: "The start and end dates are not set",
+        ru: "Не указаны даты начала и окончания",
+      },
     });
   } else if (trip.endDate < trip.startDate) {
     issues.push({
       field: "endDate",
       severity: "error",
-      message: "Дата окончания раньше даты начала",
+      message: {
+        en: "The end date is earlier than the start date",
+        ru: "Дата окончания раньше даты начала",
+      },
     });
   }
 
@@ -131,7 +161,10 @@ function checkMandatory(issues: ValidationIssue[], trip: Trip): void {
     issues.push({
       field: "slug",
       severity: "error",
-      message: "Адрес страницы пустой или содержит недопустимые символы",
+      message: {
+        en: "The page address is empty or contains characters that are not allowed",
+        ru: "Адрес страницы пустой или содержит недопустимые символы",
+      },
     });
   }
 
@@ -139,29 +172,49 @@ function checkMandatory(issues: ValidationIssue[], trip: Trip): void {
     issues.push({
       field: "gallery",
       severity: "error",
-      message: `В слайдере первого экрана нужно не меньше ${MIN_GALLERY} фото, сейчас ${trip.gallery.length}`,
+      message: {
+        en: `The first screen needs at least ${MIN_GALLERY} photos; there are ${trip.gallery.length}`,
+        ru: `В слайдере первого экрана нужно не меньше ${MIN_GALLERY} фото, сейчас ${trip.gallery.length}`,
+      },
     });
   } else if (trip.gallery.length > MAX_GALLERY) {
     issues.push({
       field: "gallery",
       severity: "error",
-      message: `В слайдере первого экрана не больше ${MAX_GALLERY} фото, сейчас ${trip.gallery.length}`,
+      message: {
+        en: `The first screen takes at most ${MAX_GALLERY} photos; there are ${trip.gallery.length}`,
+        ru: `В слайдере первого экрана не больше ${MAX_GALLERY} фото, сейчас ${trip.gallery.length}`,
+      },
     });
   }
 
   if (trip.coverIndex < 0 || trip.coverIndex >= trip.gallery.length) {
-    issues.push({ field: "coverIndex", severity: "error", message: "Не выбрана обложка" });
+    issues.push({
+      field: "coverIndex",
+      severity: "error",
+      message: { en: "No cover photo has been chosen", ru: "Не выбрана обложка" },
+    });
   }
 
   if (trip.totalSeats <= 0) {
-    issues.push({ field: "totalSeats", severity: "error", message: "Не указано, сколько всего мест" });
+    issues.push({
+      field: "totalSeats",
+      severity: "error",
+      message: {
+        en: "The total number of seats is not set",
+        ru: "Не указано, сколько всего мест",
+      },
+    });
   }
 
   if (trip.seatsLeft < 0 || trip.seatsLeft > trip.totalSeats) {
     issues.push({
       field: "seatsLeft",
       severity: "error",
-      message: "Свободных мест не может быть меньше нуля или больше, чем всего мест",
+      message: {
+        en: "Seats left cannot be below zero or above the total",
+        ru: "Свободных мест не может быть меньше нуля или больше, чем всего мест",
+      },
     });
   }
 
@@ -171,7 +224,10 @@ function checkMandatory(issues: ValidationIssue[], trip: Trip): void {
       issues.push({
         field: "kidAgeFrom",
         severity: "error",
-        message: "Возраст детей «от» больше, чем «до»",
+        message: {
+          en: "The children's age “from” is greater than “to”",
+          ru: "Возраст детей «от» больше, чем «до»",
+        },
       });
     }
   }
@@ -179,64 +235,166 @@ function checkMandatory(issues: ValidationIssue[], trip: Trip): void {
 
 function checkOptionalBlocks(issues: ValidationIssue[], trip: Trip): void {
   if (trip.price) {
-    requireBothOrNeither(issues, "price.amount", "Цена", trip.price.amount);
-    requireListBothOrNeither(issues, "price.included", "Что входит в цену", trip.price.included);
-    requireListBothOrNeither(issues, "price.notIncluded", "Что не входит в цену", trip.price.notIncluded);
+    requireBothOrNeither(issues, "price.amount", label("Price", "Цена"), trip.price.amount);
+    requireListBothOrNeither(
+      issues,
+      "price.included",
+      label("What the price includes", "Что входит в цену"),
+      trip.price.included,
+    );
+    requireListBothOrNeither(
+      issues,
+      "price.notIncluded",
+      label("What the price does not include", "Что не входит в цену"),
+      trip.price.notIncluded,
+    );
   }
 
   if (trip.placeDetails) {
-    requireListBothOrNeither(issues, "placeDetails.paragraphs", "Описание места", trip.placeDetails.paragraphs);
+    requireListBothOrNeither(
+      issues,
+      "placeDetails.paragraphs",
+      label("Description of the place", "Описание места"),
+      trip.placeDetails.paragraphs,
+    );
   }
 
   if (trip.audience) {
-    requireListBothOrNeither(issues, "audience.items", "Кому подходит", trip.audience.items);
-    requireBothOrNeither(issues, "audience.note", "Примечание к «Кому подходит»", trip.audience.note);
+    requireListBothOrNeither(
+      issues,
+      "audience.items",
+      label("Who it suits", "Кому подходит"),
+      trip.audience.items,
+    );
+    requireBothOrNeither(
+      issues,
+      "audience.note",
+      label("The note on “Who it suits”", "Примечание к «Кому подходит»"),
+      trip.audience.note,
+    );
   }
 
-  for (const [key, label] of [
-    ["whatYouGet", "Что получишь"],
-    ["howToPrepare", "Подготовка"],
+  for (const [key, name] of [
+    ["whatYouGet", label("What you get", "Что получишь")],
+    ["howToPrepare", label("How to prepare", "Подготовка")],
   ] as const) {
     const block = trip[key];
     if (!block) continue;
 
     block.cards.forEach((card, index) => {
-      requireBothOrNeither(issues, `${key}.cards.${index}.title`, `${label}: заголовок карточки ${index + 1}`, card.title);
-      requireBothOrNeither(issues, `${key}.cards.${index}.text`, `${label}: текст карточки ${index + 1}`, card.text);
+      requireBothOrNeither(
+        issues,
+        `${key}.cards.${index}.title`,
+        label(
+          `${name.en}: heading of card ${index + 1}`,
+          `${name.ru}: заголовок карточки ${index + 1}`,
+        ),
+        card.title,
+      );
+      requireBothOrNeither(
+        issues,
+        `${key}.cards.${index}.text`,
+        label(
+          `${name.en}: text of card ${index + 1}`,
+          `${name.ru}: текст карточки ${index + 1}`,
+        ),
+        card.text,
+      );
     });
-    requireBothOrNeither(issues, `${key}.note`, `Примечание к «${label}»`, block.note);
+
+    requireBothOrNeither(
+      issues,
+      `${key}.note`,
+      label(`The note on “${name.en}”`, `Примечание к «${name.ru}»`),
+      block.note,
+    );
   }
 
   if (trip.whatYouGet && trip.whatYouGet.cards.length > 6) {
     issues.push({
       field: "whatYouGet.cards",
       severity: "error",
-      message: `В блоке «Что получишь» не больше 6 карточек, сейчас ${trip.whatYouGet.cards.length}`,
+      message: {
+        en: `The “What you get” block takes at most 6 cards; there are ${trip.whatYouGet.cards.length}`,
+        ru: `В блоке «Что получишь» не больше 6 карточек, сейчас ${trip.whatYouGet.cards.length}`,
+      },
     });
   }
 
   trip.program?.stages.forEach((stage, index) => {
     const at = `program.stages.${index}`;
-    requireBothOrNeither(issues, `${at}.duration`, `Программа: длительность этапа ${index + 1}`, stage.duration);
-    requireBothOrNeither(issues, `${at}.place`, `Программа: место этапа ${index + 1}`, stage.place);
-    requireBothOrNeither(issues, `${at}.text`, `Программа: описание этапа ${index + 1}`, stage.text);
+    const n = index + 1;
+    requireBothOrNeither(
+      issues,
+      `${at}.duration`,
+      label(`Programme: length of stage ${n}`, `Программа: длительность этапа ${n}`),
+      stage.duration,
+    );
+    requireBothOrNeither(
+      issues,
+      `${at}.place`,
+      label(`Programme: place of stage ${n}`, `Программа: место этапа ${n}`),
+      stage.place,
+    );
+    requireBothOrNeither(
+      issues,
+      `${at}.text`,
+      label(`Programme: description of stage ${n}`, `Программа: описание этапа ${n}`),
+      stage.text,
+    );
   });
 
   trip.route?.days.forEach((day, index) => {
     const at = `route.days.${index}`;
-    requireBothOrNeither(issues, `${at}.place`, `Маршрут: место дня ${day.number}`, day.place);
-    requireBothOrNeither(issues, `${at}.text`, `Маршрут: описание дня ${day.number}`, day.text);
-    requireBothOrNeither(issues, `${at}.date`, `Маршрут: дата дня ${day.number}`, day.date);
+    const n = day.number;
+    requireBothOrNeither(
+      issues,
+      `${at}.place`,
+      label(`Route: place of day ${n}`, `Маршрут: место дня ${n}`),
+      day.place,
+    );
+    requireBothOrNeither(
+      issues,
+      `${at}.text`,
+      label(`Route: description of day ${n}`, `Маршрут: описание дня ${n}`),
+      day.text,
+    );
+    requireBothOrNeither(
+      issues,
+      `${at}.date`,
+      label(`Route: date of day ${n}`, `Маршрут: дата дня ${n}`),
+      day.date,
+    );
   });
 
   if (trip.rules) {
-    requireBothOrNeither(issues, "rules.title", "Правила: заголовок", trip.rules.title);
-    requireBothOrNeither(issues, "rules.text", "Правила: текст", trip.rules.text);
+    requireBothOrNeither(
+      issues,
+      "rules.title",
+      label("Rules: heading", "Правила: заголовок"),
+      trip.rules.title,
+    );
+    requireBothOrNeither(
+      issues,
+      "rules.text",
+      label("Rules: text", "Правила: текст"),
+      trip.rules.text,
+    );
   }
 
   trip.faq.forEach((item, index) => {
-    requireBothOrNeither(issues, `faq.${index}.question`, `Вопрос ${index + 1}`, item.question);
-    requireBothOrNeither(issues, `faq.${index}.answer`, `Ответ ${index + 1}`, item.answer);
+    requireBothOrNeither(
+      issues,
+      `faq.${index}.question`,
+      label(`Question ${index + 1}`, `Вопрос ${index + 1}`),
+      item.question,
+    );
+    requireBothOrNeither(
+      issues,
+      `faq.${index}.answer`,
+      label(`Answer ${index + 1}`, `Ответ ${index + 1}`),
+      item.answer,
+    );
   });
 }
 

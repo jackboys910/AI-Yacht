@@ -7,7 +7,6 @@ import type { Interest, Person, Trip } from "@/lib/content/types";
 import { validateTrip, type ValidationIssue } from "@/lib/content/validation";
 import { rebuildAfterTrip, rebuildSoon } from "@/lib/rebuild";
 import {
-  TripValidationError,
   deleteTrip,
   saveTrip,
   type TripDraft,
@@ -24,6 +23,7 @@ import {
   Select,
   TextInput,
 } from "../fields";
+import { failureText, useAdmin, type AdminCopy } from "../i18n";
 import { Section } from "./section";
 import { TripBlocks, TripClosingBlocks } from "./trip-blocks";
 import { TripCrew, TripGallery, TripRoute } from "./trip-media";
@@ -40,32 +40,39 @@ import { TripPreview } from "./trip-preview";
  * browser and offered back on the next visit.
  */
 
-const CONTENTS = [
-  { id: "block-basics", label: "Основное" },
-  { id: "block-seats", label: "Статус и места" },
-  { id: "block-gallery", label: "Фото первого экрана" },
-  { id: "block-price", label: "Цена" },
-  { id: "block-place", label: "Место" },
-  { id: "block-audience", label: "Кому подходит" },
-  { id: "block-what-you-get", label: "Что получишь" },
-  { id: "block-prepare", label: "Подготовка" },
-  { id: "block-program", label: "Программа" },
-  { id: "block-route", label: "Маршрут по дням" },
-  { id: "block-map", label: "Карта" },
-  { id: "block-media", label: "Фото и видео" },
-  { id: "block-crew", label: "Команда" },
-  { id: "block-rules", label: "Правила" },
-  { id: "block-faq", label: "Вопросы и ответы" },
-  { id: "block-flags", label: "Отметки и адрес" },
-  { id: "block-social", label: "Для соцсетей" },
+/**
+ * The blocks of the form, in page order, each paired with the copy key that
+ * names it. Written as pairs rather than as two lists so a block cannot be
+ * renamed in one place and keep its old anchor in the other.
+ */
+type TripBlockCopy = AdminCopy["tripForm"];
+
+/** The copy keys that name a block — the ones carrying a title and a subtitle. */
+type BlockKey = {
+  [K in keyof TripBlockCopy]: TripBlockCopy[K] extends { title: string } ? K : never;
+}[keyof TripBlockCopy];
+
+const CONTENTS: { id: string; key: BlockKey }[] = [
+  { id: "block-basics", key: "basics" },
+  { id: "block-seats", key: "seats" },
+  { id: "block-gallery", key: "gallery" },
+  { id: "block-price", key: "price" },
+  { id: "block-place", key: "placeBlock" },
+  { id: "block-audience", key: "audience" },
+  { id: "block-what-you-get", key: "whatYouGet" },
+  { id: "block-prepare", key: "howToPrepare" },
+  { id: "block-program", key: "program" },
+  { id: "block-route", key: "route" },
+  { id: "block-map", key: "map" },
+  { id: "block-media", key: "media" },
+  { id: "block-crew", key: "crew" },
+  { id: "block-rules", key: "rules" },
+  { id: "block-faq", key: "faq" },
+  { id: "block-flags", key: "flags" },
+  { id: "block-social", key: "social" },
 ];
 
-const STATUSES = [
-  { value: "open" as const, label: "Open for booking — набор открыт" },
-  { value: "fewSpots" as const, label: "Few spots left — мест мало" },
-  { value: "soldOut" as const, label: "Sold out — мест нет" },
-  { value: "completed" as const, label: "Completed — поездка прошла" },
-];
+const BOOKING_STATUSES = ["open", "fewSpots", "soldOut", "completed"] as const;
 
 const backupKey = (id: string | null) => `nazarov.admin.trip.${id ?? "new"}`;
 
@@ -86,7 +93,11 @@ export function TripForm({
   onDone: () => void;
   onCancel: () => void;
 }) {
+  const { locale: panelLocale, t } = useAdmin();
   const [draft, setDraft] = useState(initial);
+  // The content language. Separate from the panel's on purpose: А-03 blocks
+  // publication until both languages of the trip are filled in, so both have
+  // to be reachable from whichever interface the owner is working in.
   const [locale, setLocale] = useState<Locale>("en");
   const [busy, setBusy] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -151,9 +162,7 @@ export function TripForm({
       }
       onDone();
     } catch (error) {
-      setSaveError(
-        error instanceof TripValidationError ? error.message : describe(error),
-      );
+      setSaveError(failureText(error, panelLocale, t, t.tripForm.saveFailed));
       setBusy(false);
     }
   }
@@ -169,7 +178,7 @@ export function TripForm({
       }
       onDone();
     } catch (error) {
-      setSaveError(describe(error));
+      setSaveError(failureText(error, panelLocale, t, t.tripForm.saveFailed));
       setBusy(false);
       setConfirmDelete(false);
     }
@@ -193,10 +202,10 @@ export function TripForm({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-display text-xl">
-              {id ? "Изменить поездку" : "Новая поездка"}
+              {id ? t.tripForm.edit : t.tripForm.create}
               {draft.status === "published" && (
                 <span className="ml-3 rounded-full bg-[color:var(--teal)]/15 px-2.5 py-1 text-xs font-medium text-[color:var(--teal)]">
-                  опубликована
+                  {t.tripForm.live}
                 </span>
               )}
             </h2>
@@ -208,7 +217,7 @@ export function TripForm({
               role="alert"
               className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900"
             >
-              <p>В прошлый раз эта поездка осталась несохранённой.</p>
+              <p>{t.tripForm.backup}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <SecondaryButton
                   onClick={() => {
@@ -216,7 +225,7 @@ export function TripForm({
                     setBackupHandled(true);
                   }}
                 >
-                  Восстановить
+                  {t.tripForm.backupRestore}
                 </SecondaryButton>
                 <SecondaryButton
                   onClick={() => {
@@ -228,21 +237,25 @@ export function TripForm({
                     setBackupHandled(true);
                   }}
                 >
-                  Не нужно
+                  {t.tripForm.backupDiscard}
                 </SecondaryButton>
               </div>
             </div>
           )}
 
           <div className="mt-6 space-y-5">
-            <Section id="block-basics" title="Основное" subtitle="Первый экран страницы поездки.">
+            <Section
+              id="block-basics"
+              title={t.tripForm.basics.title}
+              subtitle={t.tripForm.basics.subtitle}
+            >
               <Select
                 id="trip-interest"
-                label="Направление"
+                label={t.tripForm.interest}
                 required
                 value={draft.interestId}
                 options={[
-                  { value: "", label: "Выберите направление…" },
+                  { value: "", label: t.tripForm.interestPlaceholder },
                   ...interests.map((interest) => ({
                     value: interest.id,
                     label: interest.name.en || interest.slug,
@@ -253,7 +266,7 @@ export function TripForm({
 
               <LocalizedInput
                 id="trip-title"
-                label="Название поездки"
+                label={t.tripForm.name}
                 required
                 value={draft.title}
                 onChange={(title) => {
@@ -269,7 +282,7 @@ export function TripForm({
 
               <LocalizedInput
                 id="trip-subtitle"
-                label="Подзаголовок"
+                label={t.tripForm.subtitle}
                 required
                 value={draft.subtitle}
                 onChange={(subtitle) => set("subtitle", subtitle)}
@@ -278,25 +291,25 @@ export function TripForm({
               <div className="grid gap-4 sm:grid-cols-2">
                 <TextInput
                   id="trip-start"
-                  label="Дата начала"
+                  label={t.tripForm.startDate}
                   required
                   value={draft.startDate}
                   onChange={(startDate) => set("startDate", startDate)}
-                  hint="В виде 2026-11-12."
+                  hint={t.tripForm.startDateHint}
                 />
                 <TextInput
                   id="trip-end"
-                  label="Дата окончания"
+                  label={t.tripForm.endDate}
                   required
                   value={draft.endDate}
                   onChange={(endDate) => set("endDate", endDate)}
-                  hint="После неё поездка сама уйдёт в «Past»."
+                  hint={t.tripForm.endDateHint}
                 />
               </div>
 
               <LocalizedInput
                 id="trip-place"
-                label="Место"
+                label={t.tripForm.place}
                 required
                 value={draft.place}
                 onChange={(place) => set("place", place)}
@@ -306,29 +319,32 @@ export function TripForm({
 
             <Section
               id="block-seats"
-              title="Статус и места"
-              subtitle="Показывается на карточке и на странице поездки."
+              title={t.tripForm.seats.title}
+              subtitle={t.tripForm.seats.subtitle}
             >
               <Select
                 id="trip-status"
-                label="Статус набора"
+                label={t.tripForm.bookingStatus}
                 required
                 value={draft.bookingStatus}
-                options={STATUSES}
+                options={BOOKING_STATUSES.map((value) => ({
+                  value,
+                  label: t.tripForm.bookingLabels[value],
+                }))}
                 onChange={(bookingStatus) => set("bookingStatus", bookingStatus)}
-                hint="После даты окончания статус сам станет «Completed», менять его вручную не нужно."
+                hint={t.tripForm.bookingStatusHint}
               />
               <div className="grid gap-4 sm:grid-cols-2">
                 <NumberInput
                   id="trip-total-seats"
-                  label="Всего мест"
+                  label={t.tripForm.totalSeats}
                   required
                   value={draft.totalSeats}
                   onChange={(value) => set("totalSeats", value ?? 0)}
                 />
                 <NumberInput
                   id="trip-seats-left"
-                  label="Свободно мест"
+                  label={t.tripForm.seatsLeft}
                   required
                   value={draft.seatsLeft}
                   onChange={(value) => set("seatsLeft", value ?? 0)}
@@ -336,10 +352,10 @@ export function TripForm({
               </div>
               <NumberInput
                 id="trip-going"
-                label="Сколько человек едет"
+                label={t.tripForm.going}
                 value={draft.goingOverride}
                 onChange={(value) => set("goingOverride", value)}
-                hint="Если оставить пустым, считается как «всего мест» минус «свободно». Заполните, чтобы поставить своё число."
+                hint={t.tripForm.goingHint}
               />
             </Section>
 
@@ -351,12 +367,12 @@ export function TripForm({
 
             <Section
               id="block-flags"
-              title="Отметки и адрес"
-              subtitle="Служебное — на странице поездки этого блока нет."
+              title={t.tripForm.flags.title}
+              subtitle={t.tripForm.flags.subtitle}
             >
               <TextInput
                 id="trip-slug"
-                label="Адрес страницы"
+                label={t.tripForm.slug}
                 required
                 value={draft.slug}
                 onChange={(slug) => set("slug", slugify(slug))}
@@ -365,23 +381,23 @@ export function TripForm({
 
               <Checkbox
                 id="trip-kid-friendly"
-                label="С детьми можно (kid-friendly)"
+                label={t.tripForm.kidFriendly}
                 checked={draft.kidFriendly}
                 onChange={(kidFriendly) => set("kidFriendly", kidFriendly)}
-                hint="Поездка получит значок «Kids welcome», в заявке появится поле про детей, и она покажется во вкладке Son."
+                hint={t.tripForm.kidFriendlyHint}
               />
 
               {draft.kidFriendly && (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <NumberInput
                     id="trip-kid-from"
-                    label="Возраст детей, от"
+                    label={t.tripForm.kidAgeFrom}
                     value={draft.kidAgeFrom}
                     onChange={(value) => set("kidAgeFrom", value)}
                   />
                   <NumberInput
                     id="trip-kid-to"
-                    label="Возраст детей, до"
+                    label={t.tripForm.kidAgeTo}
                     value={draft.kidAgeTo}
                     onChange={(value) => set("kidAgeTo", value)}
                   />
@@ -390,32 +406,32 @@ export function TripForm({
 
               <Checkbox
                 id="trip-show-in-past"
-                label="Показывать в прошедших"
+                label={t.tripForm.showInPast}
                 checked={draft.showInPast}
                 onChange={(showInPast) => set("showInPast", showInPast)}
-                hint="Выключено — после окончания поездка не появится в блоке «Past trips» этой вкладки."
+                hint={t.tripForm.showInPastHint}
               />
             </Section>
 
             <Section
               id="block-social"
-              title="Для соцсетей"
-              subtitle="Заголовок и описание, которые видно при отправке ссылки в Facebook, Telegram и WhatsApp."
+              title={t.tripForm.social.title}
+              subtitle={t.tripForm.social.subtitle}
             >
               <LocalizedInput
                 id="trip-social-title"
-                label="Заголовок превью"
+                label={t.tripForm.socialTitle}
                 value={draft.social.title}
                 onChange={(title) => set("social", { ...draft.social, title })}
-                hint="Если оставить пустым, возьмём название поездки."
+                hint={t.tripForm.socialTitleHint}
               />
               <LocalizedTextarea
                 id="trip-social-description"
-                label="Описание превью"
+                label={t.tripForm.socialDescription}
                 rows={2}
                 value={draft.social.description}
                 onChange={(description) => set("social", { ...draft.social, description })}
-                hint="Если оставить пустым, возьмём подзаголовок."
+                hint={t.tripForm.socialDescriptionHint}
               />
             </Section>
           </div>
@@ -431,57 +447,61 @@ export function TripForm({
             )}
 
             <IssueList
-              title="Не хватает для публикации"
+              title={t.tripForm.missing}
               tone="error"
               issues={errors}
-              empty="Всё обязательное заполнено — поездку можно публиковать."
+              locale={panelLocale}
+              empty={t.tripForm.missingNone}
             />
             <IssueList
-              title="Стоит доделать"
+              title={t.tripForm.worthFinishing}
               tone="warning"
               issues={warnings}
+              locale={panelLocale}
             />
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-3 pb-10">
             <PrimaryButton onClick={() => save(draft.status)} disabled={busy}>
               {busy
-                ? "Сохраняем…"
+                ? t.field.saving
                 : draft.status === "published"
-                  ? "Сохранить изменения"
-                  : "Сохранить черновик"}
+                  ? t.tripForm.saveChanges
+                  : t.tripForm.saveDraft}
             </PrimaryButton>
 
             {draft.status !== "published" ? (
               <SecondaryButton onClick={() => save("published")} disabled={busy || errors.length > 0}>
-                Опубликовать
+                {t.tripForm.publish}
               </SecondaryButton>
             ) : (
               // Back to a draft, which takes the trip off the site without
               // archiving it. Archiving and restoring live in the trip list.
               <SecondaryButton onClick={() => save("draft")} disabled={busy}>
-                Снять с публикации
+                {t.tripForm.unpublish}
               </SecondaryButton>
             )}
 
             <SecondaryButton onClick={() => setPreviewing(true)} disabled={busy}>
-              Предпросмотр
+              {t.tripForm.preview}
             </SecondaryButton>
 
             <SecondaryButton onClick={onCancel} disabled={busy}>
-              {dirty ? "Отменить изменения" : "Назад"}
+              {dirty ? t.tripForm.discard : t.tripForm.back}
             </SecondaryButton>
 
             {id && (
               <div className="ml-auto">
                 {confirmDelete ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Удалить поездку?</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t.tripForm.deleteConfirm}
+                    </span>
                     <SecondaryButton onClick={remove} disabled={busy} tone="danger">
-                      Да, удалить
+                      {t.field.deleteYes}
                     </SecondaryButton>
                     <SecondaryButton onClick={() => setConfirmDelete(false)} disabled={busy}>
-                      Нет
+                      {t.field.deleteNo}
                     </SecondaryButton>
                   </div>
                 ) : (
@@ -490,7 +510,7 @@ export function TripForm({
                     disabled={busy}
                     tone="danger"
                   >
-                    Удалить
+                    {t.field.delete}
                   </SecondaryButton>
                 )}
               </div>
@@ -504,7 +524,7 @@ export function TripForm({
         <nav className="hidden w-56 shrink-0 lg:block">
           <div className="sticky top-6">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-              Блоки
+              {t.tripForm.contents}
             </p>
             <ul className="mt-3 space-y-1">
               {CONTENTS.map((entry) => (
@@ -513,7 +533,7 @@ export function TripForm({
                     href={`#${entry.id}`}
                     className="block rounded px-2 py-1 text-sm text-muted-foreground transition hover:bg-[color:var(--muted)] hover:text-foreground"
                   >
-                    {entry.label}
+                    {t.tripForm[entry.key].title}
                   </a>
                 </li>
               ))}
@@ -529,11 +549,14 @@ function IssueList({
   title,
   issues,
   tone,
+  locale,
   empty,
 }: {
   title: string;
   issues: ValidationIssue[];
   tone: "error" | "warning";
+  /** The panel's language — each issue carries its text in both. */
+  locale: Locale;
   empty?: string;
 }) {
   if (issues.length === 0) {
@@ -554,7 +577,7 @@ function IssueList({
       <p className="font-medium">{title}</p>
       <ul className="mt-2 list-disc space-y-1 pl-5">
         {issues.map((issue) => (
-          <li key={`${issue.field}-${issue.locale ?? ""}`}>{issue.message}</li>
+          <li key={`${issue.field}-${issue.locale ?? ""}`}>{issue.message[locale]}</li>
         ))}
       </ul>
     </div>
@@ -574,9 +597,3 @@ function readBackup(key: string): TripDraft | null {
   }
 }
 
-function describe(error: unknown): string {
-  const text = error instanceof Error ? error.message : String(error);
-  return /permission|insufficient/i.test(text)
-    ? "База отказала в доступе. Проверьте, что правила Firestore опубликованы."
-    : `Не удалось сохранить: ${text}`;
-}

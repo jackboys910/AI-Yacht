@@ -3,6 +3,7 @@
 import { createContext, useContext, type ReactNode } from "react";
 import { locales, localeLabels, type Locale } from "@/i18n/config";
 import type { Localized } from "@/lib/content/types";
+import { useAdmin } from "./i18n";
 
 /**
  * The form controls every admin screen is built from.
@@ -17,6 +18,12 @@ import type { Localized } from "@/lib/content/types";
  * that it is empty. That is strictly more information than a tab, because a
  * gap is visible without switching to find it — and gaps are what blocks
  * publication under А-03.
+ *
+ * These tabs are about the content, not about the panel. ТЗ v4 §6 makes the
+ * interface itself switchable too, and the two are independent: a trip has to
+ * be filled in for both languages whichever one the buttons are written in. So
+ * the tabs carry a caption saying what they switch — without it, two identical
+ * EN/RU pairs on one screen are a trap.
  */
 
 const FormLocaleContext = createContext<Locale>("en");
@@ -35,43 +42,63 @@ export function FormLocaleProvider({
   );
 }
 
-/** The one language switch per form. A dot marks a language with empty fields. */
+/** The one content-language switch per form. A dot marks a language with gaps. */
 export function LocaleTabs({
   value,
   onChange,
   incomplete = [],
+  tone = "light",
 }: {
   value: Locale;
   onChange: (locale: Locale) => void;
   incomplete?: Locale[];
+  /** "dark" for the preview bar, where the surroundings are already dark. */
+  tone?: "light" | "dark";
 }) {
+  const { t } = useAdmin();
+  const dark = tone === "dark";
+
   return (
-    <div
-      role="group"
-      aria-label="Язык содержимого"
-      className="inline-flex h-9 items-stretch rounded-full border border-border p-[3px] text-xs font-semibold tracking-[0.08em]"
-    >
-      {locales.map((locale) => (
-        <button
-          key={locale}
-          type="button"
-          onClick={() => onChange(locale)}
-          aria-pressed={locale === value}
-          className={`inline-flex items-center gap-1.5 rounded-full px-3.5 leading-none transition ${
-            locale === value
-              ? "bg-[color:var(--gold)] text-[color:var(--gold-foreground)]"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          {localeLabels[locale]}
-          {incomplete.includes(locale) && (
-            <span
-              aria-label="есть незаполненные поля"
-              className="h-1.5 w-1.5 rounded-full bg-amber-500"
-            />
-          )}
-        </button>
-      ))}
+    <div className="flex items-center gap-2">
+      <span
+        className={`text-[10px] uppercase leading-tight tracking-[0.16em] ${
+          dark ? "text-white/50" : "text-muted-foreground"
+        }`}
+      >
+        {t.field.contentLanguage}
+      </span>
+      <div
+        role="group"
+        aria-label={t.field.contentLanguage}
+        title={t.field.contentLanguageHint}
+        className={`inline-flex h-9 items-stretch rounded-full border p-[3px] text-xs font-semibold tracking-[0.08em] ${
+          dark ? "border-white/25" : "border-border"
+        }`}
+      >
+        {locales.map((locale) => (
+          <button
+            key={locale}
+            type="button"
+            onClick={() => onChange(locale)}
+            aria-pressed={locale === value}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3.5 leading-none transition ${
+              locale === value
+                ? "bg-[color:var(--gold)] text-[color:var(--gold-foreground)]"
+                : dark
+                  ? "text-white/60 hover:text-white"
+                  : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {localeLabels[locale]}
+            {incomplete.includes(locale) && (
+              <span
+                aria-label={t.field.hasGaps}
+                className="h-1.5 w-1.5 rounded-full bg-amber-500"
+              />
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -102,6 +129,7 @@ function Hint({ children }: { children: ReactNode }) {
 
 /** What the field says in the language the form is not currently showing. */
 function OtherLocale({ locale, value }: { locale: Locale; value: string }) {
+  const { t } = useAdmin();
   const filled = value.trim().length > 0;
   return (
     <p
@@ -111,7 +139,7 @@ function OtherLocale({ locale, value }: { locale: Locale; value: string }) {
       title={filled ? value : undefined}
     >
       <span className="font-semibold">{localeLabels[locale]}:</span>{" "}
-      {filled ? value : "не заполнено"}
+      {filled ? value : t.field.empty}
     </p>
   );
 }
@@ -260,6 +288,7 @@ export function LocalizedLines({
   rows?: number;
   placeholder?: string;
 }) {
+  const { t } = useAdmin();
   const locale = useFormLocale();
   const other = locales.find((l) => l !== locale)!;
   const otherCount = value[other].filter((line) => line.trim()).length;
@@ -283,7 +312,7 @@ export function LocalizedLines({
       />
       <p className={`mt-1 text-xs ${otherCount ? "text-muted-foreground" : "text-amber-600"}`}>
         <span className="font-semibold">{localeLabels[other]}:</span>{" "}
-        {otherCount ? `${otherCount} стр.` : "не заполнено"}
+        {otherCount ? t.field.lineCount(otherCount) : t.field.empty}
       </p>
       {hint && <Hint>{hint}</Hint>}
     </div>
@@ -399,7 +428,13 @@ export function Checkbox({
   );
 }
 
-/** A list of problems that stops a save, or one that stops a publish. */
+/**
+ * A list of problems that stops a save, or one that stops a publish.
+ *
+ * Takes finished text: a validation problem arrives bilingual from the module
+ * that found it, a failed request arrives in one language only, and resolving
+ * that at the call site keeps this component from having to know the difference.
+ */
 export function Problems({ items }: { items: string[] }) {
   if (items.length === 0) return null;
   return (

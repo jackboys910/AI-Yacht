@@ -7,9 +7,9 @@ import type { Interest, IsoDate, Trip } from "./types";
  * §6.2 puts three separate switches on past trips and they stack, so the rules
  * live here once rather than in each page:
  *
- *  1. the interest's "Показывать прошедшие поездки" hides the whole Past block;
- *  2. a trip's own "Показывать в прошедших" hides just that trip;
- *  3. "В архив" takes the trip off the site altogether, and it can come back.
+ *  1. the interest's "Show past trips" hides the whole Past block;
+ *  2. a trip's own "Show among past trips" hides just that trip;
+ *  3. "Archive" takes the trip off the site altogether, and it can come back.
  *
  * Drafts and archived trips never reach a visitor (П-09), so every function
  * here starts from the published set.

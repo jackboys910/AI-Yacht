@@ -11,6 +11,7 @@ import {
   type InterestDraft,
 } from "@/lib/firebase/interests";
 import { PrimaryButton, SecondaryButton } from "../fields";
+import { failureText, useAdmin } from "../i18n";
 import { InterestForm } from "./interest-form";
 
 /**
@@ -21,6 +22,7 @@ import { InterestForm } from "./interest-form";
  * and the browser's Back button steps out of the form the way it should.
  */
 export function InterestsView() {
+  const { locale, t } = useAdmin();
   const router = useRouter();
   const params = useSearchParams();
   const editing = params.get("edit");
@@ -45,20 +47,23 @@ export function InterestsView() {
       (cause: unknown) => {
         if (!active) return;
         setInterests([]);
-        setError(describe(cause));
+        setError(failureText(cause, locale, t, t.interests.loadFailed));
       },
     );
 
     return () => {
       active = false;
     };
+    // The copy is only read inside the failure path; re-running the load
+    // because the panel's language changed would be a wasted request.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reloadToken]);
 
   const go = (edit: string | null) =>
     router.push(`/admin/?view=interests${edit ? `&edit=${edit}` : ""}`);
 
   if (interests === null) {
-    return <p className="text-sm text-muted-foreground">Загружаем направления…</p>;
+    return <p className="text-sm text-muted-foreground">{t.interests.loading}</p>;
   }
 
   if (editing) {
@@ -66,8 +71,10 @@ export function InterestsView() {
     if (editing !== "new" && !current) {
       return (
         <Empty
-          title="Направление не найдено"
-          action={<PrimaryButton onClick={() => go(null)}>К списку</PrimaryButton>}
+          title={t.interests.notFound}
+          action={
+            <PrimaryButton onClick={() => go(null)}>{t.field.toList}</PrimaryButton>
+          }
         />
       );
     }
@@ -98,10 +105,10 @@ export function InterestsView() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
           {interests.length === 0
-            ? "Пока ни одного направления."
-            : `Направлений: ${interests.length}. Порядок здесь — порядок в меню сайта.`}
+            ? t.interests.none
+            : t.interests.count(interests.length)}
         </p>
-        <PrimaryButton onClick={() => go("new")}>Новое направление</PrimaryButton>
+        <PrimaryButton onClick={() => go("new")}>{t.interests.create}</PrimaryButton>
       </div>
 
       {interests.length > 0 && (
@@ -117,9 +124,11 @@ export function InterestsView() {
                   <code className="rounded bg-[color:var(--muted)] px-1.5 py-0.5 text-xs text-muted-foreground">
                     /{interest.slug}/
                   </code>
-                  {interest.hidden && <Badge tone="warn">скрыто с сайта</Badge>}
-                  {!interest.showPastTrips && <Badge>без прошедших</Badge>}
-                  {interest.collectsKidFriendly && <Badge>собирает поездки с детьми</Badge>}
+                  {interest.hidden && <Badge tone="warn">{t.interests.hidden}</Badge>}
+                  {!interest.showPastTrips && <Badge>{t.interests.noPast}</Badge>}
+                  {interest.collectsKidFriendly && (
+                    <Badge>{t.interests.collector}</Badge>
+                  )}
                 </div>
                 {interest.description.en && (
                   <p className="mt-1 truncate text-sm text-muted-foreground">
@@ -130,14 +139,14 @@ export function InterestsView() {
 
               <div className="flex items-center gap-1">
                 <Move
-                  label="Выше"
+                  label={t.field.up}
                   disabled={index === 0}
                   onClick={() => void swap(interests, index, index - 1, reload)}
                 >
                   ↑
                 </Move>
                 <Move
-                  label="Ниже"
+                  label={t.field.down}
                   disabled={index === interests.length - 1}
                   onClick={() => void swap(interests, index, index + 1, reload)}
                 >
@@ -145,7 +154,9 @@ export function InterestsView() {
                 </Move>
               </div>
 
-              <SecondaryButton onClick={() => go(interest.id)}>Изменить</SecondaryButton>
+              <SecondaryButton onClick={() => go(interest.id)}>
+                {t.interests.edit}
+              </SecondaryButton>
             </li>
           ))}
         </ul>
@@ -262,9 +273,3 @@ function Empty({ title, action }: { title: string; action: React.ReactNode }) {
   );
 }
 
-function describe(cause: unknown): string {
-  const text = cause instanceof Error ? cause.message : String(cause);
-  return /permission|insufficient/i.test(text)
-    ? "База отказала в доступе. Правила Firestore ещё не опубликованы, либо этот аккаунт не внесён в список владельцев."
-    : `Не удалось загрузить направления: ${text}`;
-}
