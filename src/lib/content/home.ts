@@ -34,6 +34,9 @@ export interface LaneImage {
   alt: string;
   width: number;
   height: number;
+  /** Where to crop; see `StoredImage.focusX` and `focusY`. */
+  focusX?: number;
+  focusY?: number;
 }
 
 /**
@@ -54,16 +57,19 @@ const SOFTWARE = {
   // Short enough to hold to two lines on a narrow phone, where the section
   // has a fixed height and a third line would simply be cut off.
   caption: {
-    en: "Build digital products. Turn ideas into tools.",
-    ru: "Цифровые продукты. Из идеи — в инструмент.",
+    en: "Digital products, from idea to tool.",
+    ru: "Цифровые продукты из ваших идей.",
   },
   image: {
-    url: "/assets/laptop-deck.jpg",
-    width: 1400,
-    height: 1000,
+    url: "/assets/software-team.jpg",
+    width: 1600,
+    height: 1067,
+    // The code on the monitor is right of centre; a plain middle crop lands
+    // between the two people and shows the bezel.
+    focusX: 0.62,
     alt: {
-      en: "A laptop on the deck of a yacht",
-      ru: "Ноутбук на палубе яхты",
+      en: "Two people at their monitors, writing code",
+      ru: "Двое за мониторами пишут код",
     },
   },
 } as const;
@@ -110,6 +116,8 @@ function laneImage(cover: StoredImage | undefined, locale: Locale): LaneImage | 
     alt: cover.alt[locale] || cover.alt.en || "",
     width: cover.width || 640,
     height: cover.height || 480,
+    focusX: cover.focusX,
+    focusY: cover.focusY,
   };
 }
 
