@@ -24,14 +24,17 @@ export function SiteNav({
   locale,
   interests,
   solutionsHref,
+  aboutHref,
   languageHrefs,
   active,
 }: {
   locale: Locale;
   interests: NavLink[];
   solutionsHref: string;
+  /** Arrives with item 2.2; absent until then, and the link is not drawn. */
+  aboutHref?: string;
   languageHrefs: Record<Locale, string>;
-  /** Slug of the current interest, or "solutions". */
+  /** Slug of the current interest, or "solutions", or "about". */
   active?: string;
 }) {
   const [scrolled, setScrolled] = useState(false);
@@ -94,6 +97,18 @@ export function SiteNav({
           >
             Solutions
           </a>
+
+          {aboutHref && (
+            <a
+              href={aboutHref}
+              aria-current={active === "about" ? "page" : undefined}
+              className={`text-sm font-medium transition hover:text-[color:var(--gold)] ${
+                active === "about" ? "text-[color:var(--gold)]" : "text-white/80"
+              }`}
+            >
+              About
+            </a>
+          )}
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
@@ -154,6 +169,18 @@ export function SiteNav({
             >
               Solutions
             </a>
+
+            {aboutHref && (
+              <a
+                href={aboutHref}
+                onClick={() => setMenuOpen(false)}
+                className={`border-t border-white/10 py-3 text-base font-medium ${
+                  active === "about" ? "text-[color:var(--gold)]" : "text-white/90"
+                }`}
+              >
+                About
+              </a>
+            )}
 
             <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-4 pb-1 min-[401px]:hidden">
               <span className="text-sm text-white/60">

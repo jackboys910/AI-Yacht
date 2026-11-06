@@ -41,11 +41,16 @@ export function HomePage({
         locale={locale}
         interests={chrome.interests}
         solutionsHref={chrome.solutionsHref}
+        aboutHref={chrome.aboutHref}
         languageHrefs={chrome.languageHrefs}
       />
 
       <CommunityOpening lanes={lanes} locale={locale} />
-      <CommunityActions locale={locale} solutionsHref={chrome.solutionsHref} />
+      <CommunityActions
+        locale={locale}
+        solutionsHref={chrome.solutionsHref}
+        aboutHref={chrome.aboutHref}
+      />
       <HomeTrips trips={trips} chips={chips} locale={locale} today={today} />
 
       {/* Videos from the channel (item 2.11) and the subscription strip
@@ -55,6 +60,7 @@ export function HomePage({
         locale={locale}
         interests={chrome.interests}
         solutionsHref={chrome.solutionsHref}
+        aboutHref={chrome.aboutHref}
         languageHrefs={chrome.languageHrefs}
       />
     </div>

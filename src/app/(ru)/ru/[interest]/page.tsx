@@ -61,6 +61,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       chrome={{
         interests: interestLinks(content.interests, "ru"),
         solutionsHref: pagePath("itSolutions", "ru"),
+        aboutHref: pagePath("about", "ru"),
         languageHrefs: localeHrefs(`/${slug}/`),
       }}
     />

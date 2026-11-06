@@ -32,6 +32,7 @@ export function ItSolutionsPage({
         locale={locale}
         interests={chrome.interests}
         solutionsHref={chrome.solutionsHref}
+        aboutHref={chrome.aboutHref}
         languageHrefs={chrome.languageHrefs}
         active="solutions"
       />
@@ -52,6 +53,7 @@ export function ItSolutionsPage({
         locale={locale}
         interests={chrome.interests}
         solutionsHref={chrome.solutionsHref}
+        aboutHref={chrome.aboutHref}
         languageHrefs={chrome.languageHrefs}
       />
     </div>

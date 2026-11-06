@@ -3,10 +3,13 @@ export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = "en";
 
 /** Every page of the site, independent of language. */
-export type PageId = "home" | "itSolutions";
+export type PageId = "home" | "about" | "itSolutions";
 
 const slugs: Record<PageId, string> = {
   home: "/",
+  // ТЗ v4 §5: про сообщество, а не про владельца. Личная история живёт
+  // отдельно, на /story/, и приходит пунктом 4.1.
+  about: "/about/",
   // §2 of the spec renames the page to "Solutions"; its content is rewritten in
   // plan item 3.3, and /it-solutions redirects here (public/_redirects).
   itSolutions: "/solutions/",
