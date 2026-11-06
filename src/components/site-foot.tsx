@@ -50,6 +50,10 @@ export function SiteFoot({
               About
             </a>
           )}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+          <a href="/admin/" className="hover:text-[color:var(--teal)]">
+            {locale === "en" ? "Panel" : "Панель"}
+          </a>
         </nav>
 
         <div className="flex items-center gap-2 text-xs">
