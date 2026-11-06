@@ -186,6 +186,32 @@ push and run the workflow again.
 
 ---
 
+## 8a. Turnstile and Worker secrets
+
+Cloudflare Turnstile guards every public form (subscription, trip application,
+Suggest an Adventure). It has two keys, and only one of them is public.
+
+**Site key — `0x4AAAAAAF2CxPlP_RK6WRkZ`.** It travels to every visitor's
+browser inside the widget, so it lives in the repository rather than in a
+secret. Widget `nazarov.net`, mode Managed.
+
+**Secret key** is held by the Worker and never leaves it: Cloudflare dashboard
+→ **Workers & Pages** → the worker → **Settings** → **Variables and Secrets**
+→ Add → type **Secret**, name `TURNSTILE_SECRET`. **Production only** — the
+deploy workflow publishes straight to production and nothing here uses the
+preview environment.
+
+The same place holds `EMAILJS_PRIVATE_KEY`, which lets the Worker send mail
+through EmailJS's REST API. A private key in the browser would let anyone send
+mail from this account, which is why the Worker sends and the page does not.
+
+Until `TURNSTILE_SECRET` is set, the Worker accepts submissions without the
+check and says so in its reply, so the flow can be demonstrated. **An
+unprotected write endpoint on the live site collects spam within hours**, so
+the secret goes in before the forms are published.
+
+---
+
 ## 9. EmailJS
 
 Both forms (AI Yacht application, IT Solutions inquiry) send through the

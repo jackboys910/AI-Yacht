@@ -71,6 +71,13 @@ export function InterestPage({
             alt={pickOrOther(cover.alt, locale)}
             width={cover.width || 1920}
             height={cover.height || 1080}
+            // The banner is far wider than it is tall, so a portrait photo is
+            // cropped through its middle unless the owner says where to look.
+            style={{
+              objectPosition: `${(cover.focusX ?? 0.5) * 100}% ${
+                (cover.focusY ?? 0.5) * 100
+              }%`,
+            }}
             className="absolute inset-0 h-full w-full object-cover opacity-55"
           />
         )}

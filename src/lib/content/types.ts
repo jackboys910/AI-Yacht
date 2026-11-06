@@ -35,6 +35,21 @@ export interface StoredImage {
   height: number;
   storagePath: string;
   alt: Localized<string>;
+  /**
+   * Which part of the photo to keep when the frame it is shown in has other
+   * proportions, as a share of the photo's width and height: 0 is the left or
+   * top edge, 1 the right or bottom, 0.5 the middle.
+   *
+   * Needed because a frame that is not the photo's shape crops it from the
+   * middle, and the middle of a photograph of a person is their chest. The
+   * freefall shot lost its subject's face exactly that way in the wide
+   * sections of the home page, and the round thumbnails there take a narrow
+   * vertical slice that can miss the subject sideways just as easily.
+   *
+   * Absent means 0.5, which is what `object-cover` does on its own.
+   */
+  focusX?: number;
+  focusY?: number;
 }
 
 /* -------------------------------------------------------------------------
