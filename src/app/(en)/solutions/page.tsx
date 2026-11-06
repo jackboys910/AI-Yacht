@@ -15,6 +15,7 @@ export default async function Page() {
       chrome={{
         interests: interestLinks(interests, "en"),
         solutionsHref: pagePath("itSolutions", "en"),
+        aboutHref: pagePath("about", "en"),
         languageHrefs: localeHrefs(pagePath("itSolutions", "en")),
       }}
     />

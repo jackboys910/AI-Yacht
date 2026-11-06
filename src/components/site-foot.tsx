@@ -13,11 +13,14 @@ export function SiteFoot({
   locale,
   interests,
   solutionsHref,
+  aboutHref,
   languageHrefs,
 }: {
   locale: Locale;
   interests: NavLink[];
   solutionsHref: string;
+  /** Arrives with item 2.2; absent until then, and the link is not drawn. */
+  aboutHref?: string;
   languageHrefs: Record<Locale, string>;
 }) {
   return (
@@ -42,6 +45,11 @@ export function SiteFoot({
           <a href={solutionsHref} className="hover:text-[color:var(--teal)]">
             Solutions
           </a>
+          {aboutHref && (
+            <a href={aboutHref} className="hover:text-[color:var(--teal)]">
+              About
+            </a>
+          )}
         </nav>
 
         <div className="flex items-center gap-2 text-xs">

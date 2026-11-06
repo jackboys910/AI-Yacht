@@ -5,6 +5,11 @@ export const en = {
       description:
         "Small-group sailing, snowboarding, skydiving and kid-friendly trips across the US and beyond. See what is coming up and join the crew.",
     },
+    about: {
+      title: "About Nazarov.net — a community, not a business",
+      description:
+        "Why this community exists, what the letter S stands for, how to follow a direction, join a trip or suggest your own — and why all of it is free.",
+    },
     itSolutions: {
       title: "IT Solutions by CTMASS — custom software, mobile apps and AI",
       description:

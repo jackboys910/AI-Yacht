@@ -26,6 +26,7 @@ import type { Person, Settings, Trip } from "@/lib/content/types";
 export interface SiteChrome {
   interests: NavLink[];
   solutionsHref: string;
+  aboutHref: string;
   languageHrefs: Record<Locale, string>;
 }
 
@@ -66,6 +67,7 @@ export function TripPage({
           locale={locale}
           interests={chrome.interests}
           solutionsHref={chrome.solutionsHref}
+          aboutHref={chrome.aboutHref}
           languageHrefs={chrome.languageHrefs}
           active={interestSlug}
         />
@@ -107,6 +109,7 @@ export function TripPage({
           locale={locale}
           interests={chrome.interests}
           solutionsHref={chrome.solutionsHref}
+          aboutHref={chrome.aboutHref}
           languageHrefs={chrome.languageHrefs}
         />
       )}
