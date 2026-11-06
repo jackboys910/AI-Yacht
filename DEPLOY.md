@@ -186,29 +186,69 @@ push and run the workflow again.
 
 ---
 
-## 8a. Turnstile and Worker secrets
+## 8a. Worker secrets
 
-Cloudflare Turnstile guards every public form (subscription, trip application,
-Suggest an Adventure). It has two keys, and only one of them is public.
+The Worker holds four secrets. Each one exists because the value must never
+reach a browser, and each is set the same way: Cloudflare dashboard →
+**Workers & Pages** → the worker → **Settings** → **Variables and Secrets** →
+**Add** → type **Secret**. **Production only** — the deploy workflow publishes
+straight to production and nothing here uses the preview environment.
+
+| Secret | What it lets the Worker do | Without it |
+| --- | --- | --- |
+| `GITHUB_TOKEN` | start a site rebuild | the panel says the rebuild is not set up |
+| `TURNSTILE_SECRET` | prove a form submission came from a browser | forms are accepted unchecked |
+| `FIREBASE_SERVICE_ACCOUNT` | write collections that browsers may not write to | the idea form answers "not switched on yet" |
+| `EMAILJS_PRIVATE_KEY` | send mail server-side | the idea is saved, no email goes out |
+
+### Turnstile
+
+Two keys, and only one of them is public.
 
 **Site key — `0x4AAAAAAF2CxPlP_RK6WRkZ`.** It travels to every visitor's
 browser inside the widget, so it lives in the repository rather than in a
 secret. Widget `nazarov.net`, mode Managed.
 
-**Secret key** is held by the Worker and never leaves it: Cloudflare dashboard
-→ **Workers & Pages** → the worker → **Settings** → **Variables and Secrets**
-→ Add → type **Secret**, name `TURNSTILE_SECRET`. **Production only** — the
-deploy workflow publishes straight to production and nothing here uses the
-preview environment.
+**Secret key** goes in as `TURNSTILE_SECRET`.
 
-The same place holds `EMAILJS_PRIVATE_KEY`, which lets the Worker send mail
-through EmailJS's REST API. A private key in the browser would let anyone send
-mail from this account, which is why the Worker sends and the page does not.
+Until it is set, the Worker accepts submissions without checking them and says
+so: the answer to a successful submission carries `"checked": false`, which
+is visible in the browser's network tab. **An unprotected write endpoint on a
+live site collects spam within hours**, so the secret goes in before the forms
+are announced anywhere.
 
-Until `TURNSTILE_SECRET` is set, the Worker accepts submissions without the
-check and says so in its reply, so the flow can be demonstrated. **An
-unprotected write endpoint on the live site collects spam within hours**, so
-the secret goes in before the forms are published.
+### Firebase service account
+
+`/api/suggestion` writes to `adventureSuggestions`, a collection
+`firestore.rules` keeps shut to every browser — it holds email addresses and
+what people wrote about themselves to be allowed on a trip. A service account
+is how the Worker gets past a rule that is there to stop browsers.
+
+Click by click:
+
+1. <https://console.firebase.google.com/project/nazarov-net/settings/serviceaccounts/adminsdk>
+2. **Generate new private key** → **Generate key**. A `.json` file downloads.
+3. Open that file in a text editor and copy **the whole thing**, from the first
+   `{` to the last `}`.
+4. In the Cloudflare dashboard add a secret named `FIREBASE_SERVICE_ACCOUNT`
+   and paste the JSON in as the value. Not one field of it — all of it. The
+   private key inside has line breaks, and pasting the whole document is what
+   keeps them intact.
+5. Delete the downloaded file. It is a key to the database, and a copy of it
+   in Downloads is a copy somebody else can find.
+
+The key can be revoked and reissued on the same page at any time; doing so
+only means setting the secret again.
+
+### EmailJS private key
+
+`EMAILJS_PRIVATE_KEY` is what lets the Worker send through EmailJS's REST
+API. A private key in a page would let anyone send mail from this account,
+which is why the Worker sends and the page does not. It is in the EmailJS
+dashboard under **Account → General → Private Key**.
+
+Everything else about EmailJS — service id, template id, public key, the
+recipient address — is public and lives in `wrangler.jsonc`.
 
 ---
 

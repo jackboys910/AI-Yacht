@@ -10,6 +10,11 @@ export const en = {
       description:
         "Why this community exists, what the letter S stands for, how to follow a direction, join a trip or suggest your own — and why all of it is free.",
     },
+    suggest: {
+      title: "Suggest an Adventure — Nazarov.net",
+      description:
+        "Propose a trip, an event or a project and gather people around it. No dates or prices needed yet; one person reads every idea.",
+    },
     itSolutions: {
       title: "IT Solutions by CTMASS — custom software, mobile apps and AI",
       description:

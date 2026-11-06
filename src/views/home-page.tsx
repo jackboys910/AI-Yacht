@@ -42,6 +42,7 @@ export function HomePage({
         interests={chrome.interests}
         solutionsHref={chrome.solutionsHref}
         aboutHref={chrome.aboutHref}
+        suggestHref={chrome.suggestHref}
         languageHrefs={chrome.languageHrefs}
       />
 
@@ -50,6 +51,7 @@ export function HomePage({
         locale={locale}
         solutionsHref={chrome.solutionsHref}
         aboutHref={chrome.aboutHref}
+        suggestHref={chrome.suggestHref}
       />
       <HomeTrips trips={trips} chips={chips} locale={locale} today={today} />
 
@@ -61,6 +63,7 @@ export function HomePage({
         interests={chrome.interests}
         solutionsHref={chrome.solutionsHref}
         aboutHref={chrome.aboutHref}
+        suggestHref={chrome.suggestHref}
         languageHrefs={chrome.languageHrefs}
       />
     </div>

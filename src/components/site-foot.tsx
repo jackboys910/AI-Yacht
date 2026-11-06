@@ -6,7 +6,7 @@ import type { NavLink } from "@/lib/content/nav";
  * switch.
  *
  * "Privacy Policy" and "Unsubscribe" belong here too and arrive with the items
- * that build those pages — 4.2 and 2.5. Linking to them now would mean linking
+ * that build those pages — 4.2 and 2.7. Linking to them now would mean linking
  * to a 404, which is worse than linking to nothing.
  */
 export function SiteFoot({
@@ -14,13 +14,15 @@ export function SiteFoot({
   interests,
   solutionsHref,
   aboutHref,
+  suggestHref,
   languageHrefs,
 }: {
   locale: Locale;
   interests: NavLink[];
   solutionsHref: string;
-  /** Arrives with item 2.2; absent until then, and the link is not drawn. */
   aboutHref?: string;
+  /** ТЗ v4 §3.1 wants the way in on every page, footer included. */
+  suggestHref?: string;
   languageHrefs: Record<Locale, string>;
 }) {
   return (
@@ -48,6 +50,11 @@ export function SiteFoot({
           {aboutHref && (
             <a href={aboutHref} className="hover:text-[color:var(--teal)]">
               About
+            </a>
+          )}
+          {suggestHref && (
+            <a href={suggestHref} className="hover:text-[color:var(--teal)]">
+              {locale === "en" ? "Suggest an idea" : "Предложить идею"}
             </a>
           )}
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}

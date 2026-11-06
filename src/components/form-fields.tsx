@@ -64,6 +64,7 @@ export function SelectField({
   value,
   onChange,
   disabled,
+  required,
 }: {
   label: string;
   name: string;
@@ -71,6 +72,9 @@ export function SelectField({
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
+  /** With an empty-valued first option, this is what makes the browser
+   *  refuse "Choose one…" before anything is sent. */
+  required?: boolean;
 }) {
   return (
     <label className="block">
@@ -80,6 +84,7 @@ export function SelectField({
           name={name}
           value={value}
           disabled={disabled}
+          required={required}
           onChange={(event) => onChange(event.target.value)}
           className={`${fieldClass} cursor-pointer appearance-none pr-11`}
         >

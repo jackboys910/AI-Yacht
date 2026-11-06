@@ -6,11 +6,13 @@
   "name": "ai-yacht",
   "compatibility_date": "2026-09-18",
 
-  // The Worker exists for one thing: /api/rebuild, which lets the admin panel
-  // start a build without the owner ever opening GitHub (А-08, А-09). The site
-  // itself is still served as files from the edge — "run_worker_first" below
-  // lists the only paths that reach this code, so a page view costs no
-  // invocation and the site is served exactly as before.
+  // The Worker exists for the handful of things a page cannot do for itself:
+  // /api/rebuild, which lets the admin panel start a build without the owner
+  // ever opening GitHub (А-08, А-09), and /api/suggestion, which checks a
+  // Turnstile token and writes to a collection no browser may write to
+  // (ТЗ v4, §3). The site itself is still served as files from the edge —
+  // "run_worker_first" below lists the only paths that reach this code, so a
+  // page view costs no invocation and the site is served exactly as before.
   "main": "src/worker/index.ts",
 
   "assets": {
@@ -26,12 +28,23 @@
   },
 
   // Plain values live here rather than in the dashboard, because a deploy
-  // replaces whatever the dashboard holds. The one value that must not be in
-  // the repository — the GitHub token — is a secret, and secrets survive a
-  // deploy untouched: `wrangler secret put GITHUB_TOKEN`, or the dashboard's
-  // Variables and Secrets page.
+  // replaces whatever the dashboard holds. Values that must not be in the
+  // repository are secrets instead, and secrets survive a deploy untouched:
+  // `wrangler secret put NAME`, or the dashboard's Variables and Secrets page.
+  // Those are GITHUB_TOKEN, FIREBASE_SERVICE_ACCOUNT, TURNSTILE_SECRET and
+  // EMAILJS_PRIVATE_KEY — see DEPLOY.md §8a.
+  //
+  // Everything below is public by design. The EmailJS public key travels to
+  // every visitor in the page bundle already; it names the account rather
+  // than granting anything, and abuse is held off by the domain allow-list in
+  // the EmailJS dashboard.
   "vars": {
-    "GITHUB_REPO": "jackboys910/AI-Yacht"
+    "GITHUB_REPO": "jackboys910/AI-Yacht",
+    "FIREBASE_PROJECT_ID": "nazarov-net",
+    "EMAILJS_SERVICE_ID": "default_service",
+    "EMAILJS_TEMPLATE_ID": "template_epduqer",
+    "EMAILJS_PUBLIC_KEY": "as4ih3rGW3abw98dk",
+    "CONTACT_EMAIL": "support@ctmass.com"
   },
 
   "observability": {

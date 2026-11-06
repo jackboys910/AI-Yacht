@@ -60,6 +60,7 @@ export function InterestPage({
         interests={chrome.interests}
         solutionsHref={chrome.solutionsHref}
         aboutHref={chrome.aboutHref}
+        suggestHref={chrome.suggestHref}
         languageHrefs={chrome.languageHrefs}
         active={interest.slug}
       />
@@ -148,6 +149,7 @@ export function InterestPage({
         interests={chrome.interests}
         solutionsHref={chrome.solutionsHref}
         aboutHref={chrome.aboutHref}
+        suggestHref={chrome.suggestHref}
         languageHrefs={chrome.languageHrefs}
       />
     </div>

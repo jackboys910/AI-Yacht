@@ -23,6 +23,23 @@ export function esc(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
+/**
+ * A finished email, whoever is about to send it.
+ *
+ * Declared here rather than beside the sender because the Cloudflare Worker
+ * sends too, and the sender imports the EmailJS browser SDK, which has no
+ * business being pulled into a Worker bundle even as a type.
+ */
+export type OutgoingEmail = {
+  subject: string;
+  html: string;
+  text: string;
+  fromName?: string;
+  /** Lets "Reply" in the inbox go straight to the sender, when the EmailJS
+   *  template maps its Reply-To field to {{reply_to}}. */
+  replyTo?: string;
+};
+
 export type EmailRow = {
   label: string;
   /** Raw user value; escaped here. Empty renders as an em dash. */
@@ -125,7 +142,6 @@ export function renderEmailHtml(content: EmailContent): string {
           <tr>
             <td style="background-color:${c.background};border-top:1px solid ${c.border};padding:22px 36px;">
               <div style="font-size:12px;line-height:18px;color:${c.muted};">Sent automatically from <a href="${siteConfig.url}" style="color:${c.teal};text-decoration:none;">${siteConfig.domain}</a> &middot; ${new Date().toUTCString()}</div>
-              <div style="margin-top:4px;font-size:12px;line-height:18px;color:${c.muted};">AI Yacht Bootcamp &middot; Grenada &rarr; Grenadines &rarr; Saint Vincent</div>
             </td>
           </tr>
 
