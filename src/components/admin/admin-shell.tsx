@@ -9,6 +9,7 @@ import { PanelLanguage, useAdmin } from "./i18n";
 import { InterestsView } from "./interests/interests-view";
 import { RebuildBar } from "./rebuild-bar";
 import { PeopleView } from "./people/people-view";
+import { SuggestionsView } from "./suggestions/suggestions-view";
 import { TripsView } from "./trips/trips-view";
 import { ADMIN_VIEW_IDS, COMING_IN, resolveView } from "./views";
 
@@ -155,6 +156,8 @@ export function AdminShell({ user }: { user: User }) {
             <InterestsView />
           ) : active === "people" ? (
             <PeopleView />
+          ) : active === "suggestions" ? (
+            <SuggestionsView />
           ) : (
             <div className="rounded-2xl border border-dashed border-border bg-card p-6 sm:p-10">
               <p className="text-sm text-muted-foreground">

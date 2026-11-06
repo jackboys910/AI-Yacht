@@ -193,6 +193,12 @@ export async function duplicateTrip(trip: Trip, others: Trip[]): Promise<string>
  * `Trip` then fails to compile here until it is either carried across or
  * deliberately left out, instead of silently vanishing on the next save — or,
  * worse, out of every duplicate.
+ *
+ * That guarantee covers required fields only. An **optional** one added to
+ * `Trip` and forgotten here compiles perfectly well and simply disappears from
+ * the form: `organizerEmail` and `suggestionId` did exactly that on the day
+ * they were added, and the trip made from an idea came back with no organizer.
+ * So an optional field added above has to be added here by hand.
  */
 export function stripTripIds(trip: Trip): TripDraft {
   return {
@@ -227,6 +233,9 @@ export function stripTripIds(trip: Trip): TripDraft {
     rules: trip.rules,
     faq: trip.faq,
     social: trip.social,
+    organizerEmail: trip.organizerEmail,
+    organizerPersonId: trip.organizerPersonId,
+    suggestionId: trip.suggestionId,
     announcementSentAt: trip.announcementSentAt,
     publishedAt: trip.publishedAt,
     statusBeforeArchive: trip.statusBeforeArchive,

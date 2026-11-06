@@ -129,6 +129,8 @@ export function InterestsView() {
                   {interest.collectsKidFriendly && (
                     <Badge>{t.interests.collector}</Badge>
                   )}
+                  {interest.suggestable && <Badge>{t.interests.inSuggestForm}</Badge>}
+                  {interest.suggestOther && <Badge>{t.interests.isOther}</Badge>}
                 </div>
                 {interest.description.en && (
                   <p className="mt-1 truncate text-sm text-muted-foreground">
@@ -205,6 +207,8 @@ function stripIds(interest: Interest): InterestDraft {
     showPastTrips: interest.showPastTrips,
     hidden: interest.hidden,
     collectsKidFriendly: interest.collectsKidFriendly,
+    suggestable: interest.suggestable,
+    suggestOther: interest.suggestOther,
   };
 }
 

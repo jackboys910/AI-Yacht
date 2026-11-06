@@ -389,6 +389,12 @@ const EN = {
       "The trip gets a “Kids welcome” mark, the application form gains a question about children, and it appears on the Son tab.",
     kidAgeFrom: "Children's age, from",
     kidAgeTo: "Children's age, to",
+    organizer: "Organizer's email",
+    organizerHint:
+      "Who, besides you, this trip is open to. Filled in by itself when the " +
+      "trip was made from an idea. Access to the panel for that person arrives " +
+      "with plan item 2.6.",
+    fromIdea: "Made from an idea sent through the site.",
     showInPast: "Show among past trips",
     showInPastHint:
       "Switched off, the trip will not appear in this tab's “Past trips” block once it is over.",
@@ -426,6 +432,8 @@ const EN = {
       `Directions: ${total}. The order here is the order in the site's menu.`,
     hidden: "hidden from the site",
     noPast: "no past trips",
+    inSuggestForm: "in the idea form",
+    isOther: "“Other” category",
     collector: "gathers trips with children",
     edit: "Edit",
     editTitle: "Edit direction",
@@ -450,6 +458,15 @@ const EN = {
     hideHint:
       "The tab disappears from the menu and the home page, but the trips survive and come back with it.",
     collects: "Gather trips with children from other tabs",
+    suggestable: "Offer in the Suggest an Adventure form",
+    suggestableHint:
+      "Independent of the tab being visible. A direction can be suggestable " +
+      "before it has a single trip — a tab with nothing under it is worse " +
+      "than no tab.",
+    suggestOther: "This is the “Other” category",
+    suggestOtherHint:
+      "Whoever picks it is asked to name their own category. Usually only one " +
+      "direction has this.",
     collectsHint:
       "This is how the Son tab works: it shows every trip marked kid-friendly. They are the same trips, not copies.",
     loadFailed: (detail: string) => `Could not load the directions: ${detail}`,
@@ -476,6 +493,82 @@ const EN = {
     loadFailed: (detail: string) => `Could not load the directory: ${detail}`,
     saveFailed: (detail: string) => `Could not save: ${detail}`,
     deleteFailed: (detail: string) => `Could not delete: ${detail}`,
+  },
+
+suggestions: {
+    loading: "Loading the ideas…",
+    none: "No ideas yet. They arrive through the Suggest an Adventure form on the site.",
+    count: (total: number, fresh: number) =>
+      fresh > 0 ? `Ideas: ${total}, of them ${fresh} unread.` : `Ideas: ${total}.`,
+    notFound: "Idea not found.",
+    emptyFilter: "No ideas with this status.",
+    showAll: "Show all",
+    untitled: "Untitled idea",
+    noDirection: "direction not set",
+    filterStatus: "Status",
+    statuses: {
+      all: "All",
+      new: "New",
+      underReview: "Under review",
+      needsInfo: "Needs info",
+      approved: "Approved",
+      published: "Published",
+      declined: "Declined",
+    },
+    open: "Open",
+    back: "Back to the list",
+    received: (when: string) => `Received ${when}`,
+    sentIn: (language: string) => `Filled in on the ${language} site`,
+    languages: { en: "English", ru: "Russian" },
+
+    idea: "The idea",
+    author: "Who sent it",
+    category: "Category",
+    otherCategory: "Their own category",
+    description: "The idea",
+    place: "Destination",
+    when: "When",
+    budget: "Budget per person",
+    groupSize: "Group size",
+    experienceLevel: "Experience level",
+    levels: {
+      beginner: "Beginner",
+      intermediate: "Intermediate",
+      advanced: "Advanced",
+      allLevels: "All levels",
+    },
+    name: "Name",
+    email: "Email",
+    links: "Social links",
+    experience: "Their experience organizing",
+    audience: "Who they want to bring together",
+    photoLinks: "Photos and references",
+    source: "Sent from",
+    empty: "— not filled in —",
+
+    decision: "What to do with it",
+    status: "Status",
+    note: "Note to yourself",
+    noteHint: "Only you see it. The author never does.",
+    saveNote: "Save the note",
+    noteSaved: "Note saved.",
+    statusChanged: "Status changed.",
+
+    createTrip: "Create a trip from this idea",
+    createTripHint:
+      "Makes a draft with the fields carried across, in the language it was written in. " +
+      "The other language, the dates and the photos are still yours to fill in.",
+    creating: "Creating…",
+    openTrip: "Open the trip",
+    alreadyCreated: "A trip has already been made from this idea.",
+    created: "A draft was created. The idea is now marked approved.",
+
+    deleteIdea: "Delete the idea",
+    deleteConfirm: "Delete this idea? It cannot be brought back.",
+
+    loadFailed: (detail: string) => `Could not load the ideas: ${detail}`,
+    saveFailed: (detail: string) => `Could not save: ${detail}`,
+    createFailed: (detail: string) => `Could not create the trip: ${detail}`,
   },
 
   error: {

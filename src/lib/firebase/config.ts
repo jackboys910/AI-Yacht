@@ -46,6 +46,7 @@ export const collections = {
   subscribers: "subscribers",
   interested: "interested",
   applications: "applications",
+  adventureSuggestions: "adventureSuggestions",
   solutionsInquiries: "solutionsInquiries",
   owners: "owners",
 } as const;

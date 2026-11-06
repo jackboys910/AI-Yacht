@@ -189,6 +189,20 @@ export function InterestForm({
             hint={t.interests.hideHint}
           />
           <Checkbox
+            id="interest-suggestable"
+            label={t.interests.suggestable}
+            checked={draft.suggestable}
+            onChange={(value) => set("suggestable", value)}
+            hint={t.interests.suggestableHint}
+          />
+          <Checkbox
+            id="interest-suggest-other"
+            label={t.interests.suggestOther}
+            checked={draft.suggestOther}
+            onChange={(value) => set("suggestOther", value)}
+            hint={t.interests.suggestOtherHint}
+          />
+          <Checkbox
             id="interest-collector"
             label={t.interests.collects}
             checked={draft.collectsKidFriendly}

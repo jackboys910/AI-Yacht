@@ -161,7 +161,7 @@ export function TextInput({
   hint?: ReactNode;
   placeholder?: string;
   required?: boolean;
-  type?: "text" | "url" | "number";
+  type?: "text" | "url" | "email" | "number";
 }) {
   return (
     <div>
