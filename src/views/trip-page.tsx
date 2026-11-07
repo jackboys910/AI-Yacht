@@ -1,5 +1,6 @@
 import { SiteFoot } from "@/components/site-foot";
 import { SiteNav } from "@/components/site-nav";
+import { Subscribe } from "@/components/subscribe/subscribe";
 import { TripHero } from "@/components/trip/trip-hero";
 import {
   TripAudience,
@@ -19,7 +20,7 @@ import {
   TripRouteDays,
 } from "@/components/trip/trip-journey";
 import type { Locale } from "@/i18n/config";
-import type { NavLink } from "@/lib/content/nav";
+import { subscribeOptions, type NavLink } from "@/lib/content/nav";
 import type { Person, Settings, Trip } from "@/lib/content/types";
 
 /** Header and footer. Absent in the admin preview, which brings its own bar. */
@@ -102,9 +103,23 @@ export function TripPage({
       <TripRules trip={trip} locale={locale} />
       <TripFaq trip={trip} locale={locale} />
 
-      {/* "Book my spot", the subscribe strip and the share buttons belong to
-          items 2.3, 2.1 and 3.2. A form that cannot send would be worse than
-          no form, so they arrive with the code that makes them work. */}
+      {/* "Book my spot" and the share buttons belong to items 2.8 and 2.10.
+          A form that cannot send would be worse than no form, so they arrive
+          with the code that makes them work. */}
+
+      {/* Н-01: the trip page offers the list too, with this trip's direction
+          already ticked. Left out of the admin preview along with the rest of
+          the chrome — there is nothing to subscribe to in a draft. */}
+      {chrome && (
+        <Subscribe
+          locale={locale}
+          options={subscribeOptions(chrome.interests)}
+          preselect={subscribeOptions(
+            chrome.interests.filter((link) => link.id === interestSlug),
+          ).map((option) => option.id)}
+          variant="strip"
+        />
+      )}
 
       {chrome && (
         <SiteFoot

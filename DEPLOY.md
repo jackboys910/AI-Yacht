@@ -198,8 +198,8 @@ straight to production and nothing here uses the preview environment.
 | --- | --- | --- |
 | `GITHUB_TOKEN` | start a site rebuild | the panel says the rebuild is not set up |
 | `TURNSTILE_SECRET` | prove a form submission came from a browser | forms are accepted unchecked |
-| `FIREBASE_SERVICE_ACCOUNT` | write collections that browsers may not write to | the idea form answers "not switched on yet" |
-| `EMAILJS_PRIVATE_KEY` | send mail server-side | the idea is saved, no email goes out; the organizer's letter cannot be sent |
+| `FIREBASE_SERVICE_ACCOUNT` | write collections that browsers may not write to | the idea form and the subscription answer "not switched on yet" |
+| `EMAILJS_PRIVATE_KEY` | send mail server-side | the idea and the subscription are saved, no email goes out; the organizer's letter cannot be sent |
 
 ### Turnstile
 
@@ -247,8 +247,9 @@ API. A private key in a page would let anyone send mail from this account,
 which is why the Worker sends and the page does not. It is in the EmailJS
 dashboard under **Account → General → Private Key**.
 
-Two things need it. `/api/suggestion` writes to the owner and answers the
-author of an idea, and `/api/organizer-invite` sends an organizer the letter
+Three things need it. `/api/suggestion` writes to the owner and answers the
+author of an idea, `/api/subscribe` greets a new subscriber (Н-05), and
+`/api/organizer-invite` sends an organizer the letter
 that explains the panel (С-12) — that one addresses somebody who is not the
 owner, which a key visible in the browser may never do, because the template's
 recipient is pinned to the owner's own mailbox precisely to keep it harmless.

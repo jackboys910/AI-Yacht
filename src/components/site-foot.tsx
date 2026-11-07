@@ -6,7 +6,7 @@ import type { NavLink } from "@/lib/content/nav";
  * switch.
  *
  * "Privacy Policy" and "Unsubscribe" belong here too and arrive with the items
- * that build those pages — 4.2 and 2.7. Linking to them now would mean linking
+ * that build those pages — 4.2 and 3.3. Linking to them now would mean linking
  * to a 404, which is worse than linking to nothing.
  */
 export function SiteFoot({

@@ -17,6 +17,15 @@ export interface NavLink {
   id: string;
   label: string;
   href: string;
+  /**
+   * The interest's database id, for the links that are interests.
+   *
+   * The slug above is what addresses identify a tab by and what the header
+   * compares to mark one active; a subscription is recorded against the
+   * document instead, because a slug can be renamed and a mailing list that
+   * forgets its subscribers when a tab is renamed is not a mailing list.
+   */
+  interestId?: string;
 }
 
 /**
@@ -38,7 +47,23 @@ export function interestLinks(interests: Interest[], locale: Locale): NavLink[] 
     id: interest.slug,
     label: interestLabel(interest),
     href: localized(`/${interest.slug}/`, locale),
+    interestId: interest.id,
   }));
+}
+
+/**
+ * The directions somebody can subscribe to, out of the links already built.
+ *
+ * Taken from the navigation rather than from the interests themselves so that
+ * every page can offer the subscription without loading anything extra — and
+ * so the list in the window is exactly the list of tabs on the site. A hidden
+ * interest has no tab and no page, so there is nowhere to be written to about
+ * it either.
+ */
+export function subscribeOptions(links: NavLink[]): { id: string; label: string }[] {
+  return links
+    .filter((link): link is NavLink & { interestId: string } => Boolean(link.interestId))
+    .map((link) => ({ id: link.interestId, label: link.label }));
 }
 
 /** Where the EN / RU switch points from a database-built address. */
