@@ -1,5 +1,5 @@
 import type { Dictionary } from "@/i18n";
-import { emailConfig } from "@/lib/site";
+import { emailConfig } from "@/lib/email/config";
 import { Eyebrow } from "../eyebrow";
 import { FaqList } from "../faq-list";
 

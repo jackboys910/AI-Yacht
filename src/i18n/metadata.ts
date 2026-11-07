@@ -13,6 +13,7 @@ import { getDictionary } from "./index";
 const ogImages: Record<PageId, string> = {
   home: "/assets/hero-catamaran.jpg",
   about: "/assets/yasha-helm-sunrise.jpg",
+  suggest: "/assets/yasha-wing-exit.jpg",
   itSolutions: "/assets/laptop-deck.jpg",
 };
 

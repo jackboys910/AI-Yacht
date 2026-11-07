@@ -27,6 +27,7 @@ export interface SiteChrome {
   interests: NavLink[];
   solutionsHref: string;
   aboutHref: string;
+  suggestHref: string;
   languageHrefs: Record<Locale, string>;
 }
 
@@ -68,6 +69,7 @@ export function TripPage({
           interests={chrome.interests}
           solutionsHref={chrome.solutionsHref}
           aboutHref={chrome.aboutHref}
+          suggestHref={chrome.suggestHref}
           languageHrefs={chrome.languageHrefs}
           active={interestSlug}
         />
@@ -110,6 +112,7 @@ export function TripPage({
           interests={chrome.interests}
           solutionsHref={chrome.solutionsHref}
           aboutHref={chrome.aboutHref}
+          suggestHref={chrome.suggestHref}
           languageHrefs={chrome.languageHrefs}
         />
       )}

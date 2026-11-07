@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Dictionary, Locale } from "@/i18n";
-import { emailConfig } from "@/lib/site";
+import { emailConfig } from "@/lib/email/config";
 import { sendEmail } from "@/lib/email/send";
 import {
   buildItInquiryEmail,

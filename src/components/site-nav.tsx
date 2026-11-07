@@ -30,16 +30,18 @@ export function SiteNav({
   interests,
   solutionsHref,
   aboutHref,
+  suggestHref,
   languageHrefs,
   active,
 }: {
   locale: Locale;
   interests: NavLink[];
   solutionsHref: string;
-  /** Arrives with item 2.2; absent until then, and the link is not drawn. */
   aboutHref?: string;
+  /** ТЗ v4 §3.1 asks for this in the menu on every page. */
+  suggestHref?: string;
   languageHrefs: Record<Locale, string>;
-  /** Slug of the current interest, or "solutions", or "about". */
+  /** Slug of the current interest, or "solutions", "about", "suggest". */
   active?: string;
 }) {
   const [scrolled, setScrolled] = useState(false);
@@ -54,6 +56,7 @@ export function SiteNav({
 
   const home = locale === "en" ? "/" : `/${locale}/`;
   const panelLabel = locale === "en" ? "Panel" : "Панель";
+  const suggestLabel = locale === "en" ? "Suggest an idea" : "Предложить идею";
   const panelTitle =
     locale === "en"
       ? "For the owner and trip organizers"
@@ -117,6 +120,20 @@ export function SiteNav({
               }`}
             >
               About
+            </a>
+          )}
+
+          {suggestHref && (
+            <a
+              href={suggestHref}
+              aria-current={active === "suggest" ? "page" : undefined}
+              className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${
+                active === "suggest"
+                  ? "border-[color:var(--gold)] text-[color:var(--gold)]"
+                  : "border-[color:var(--gold)]/50 text-white hover:border-[color:var(--gold)] hover:text-[color:var(--gold)]"
+              }`}
+            >
+              {suggestLabel}
             </a>
           )}
 
@@ -203,6 +220,18 @@ export function SiteNav({
                 }`}
               >
                 About
+              </a>
+            )}
+
+            {suggestHref && (
+              <a
+                href={suggestHref}
+                onClick={() => setMenuOpen(false)}
+                className={`border-t border-white/10 py-3 text-base font-medium ${
+                  active === "suggest" ? "text-[color:var(--gold)]" : "text-[color:var(--gold)]/90"
+                }`}
+              >
+                {suggestLabel}
               </a>
             )}
 

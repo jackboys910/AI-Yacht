@@ -14,22 +14,15 @@
  *
  * Everything except `/api/*` is served straight from the edge and never
  * reaches this code — `run_worker_first` in wrangler.jsonc draws that line.
+ *
+ * ТЗ v4 adds a second endpoint for the same reason as the first: `/api/suggestion`
+ * holds a Turnstile secret, a Firebase service account and an EmailJS private
+ * key, none of which may travel to a browser.
  */
 
-export interface Env {
-  /** Fine-grained GitHub token, Actions: read and write. A secret. */
-  GITHUB_TOKEN?: string;
-  /** `owner/repo`, e.g. `jackboys910/AI-Yacht`. */
-  GITHUB_REPO?: string;
-  /** The workflow file to run. */
-  GITHUB_WORKFLOW?: string;
-  /** The branch it is run from. */
-  GITHUB_REF?: string;
-  /** Firebase project whose owners may press the button. */
-  FIREBASE_PROJECT_ID?: string;
-  /** Two publications in a row must not start two builds (seconds). */
-  REBUILD_MIN_INTERVAL?: string;
-}
+import { suggestion } from "./suggestion";
+import type { Env } from "./env";
+
 
 const DEFAULTS = {
   workflow: "deploy.yml",
@@ -37,6 +30,8 @@ const DEFAULTS = {
   projectId: "nazarov-net",
   minInterval: 90,
 };
+
+export type { Env };
 
 const GITHUB_HEADERS = {
   accept: "application/vnd.github+json",
@@ -190,6 +185,21 @@ const worker = {
         return await rebuild(request, env);
       } catch (error) {
         return json({ error: "github-failed", detail: String(error) }, 502);
+      }
+    }
+
+    if (pathname === "/api/suggestion" || pathname === "/api/suggestion/") {
+      if (request.method !== "POST") {
+        return json({ error: "method-not-allowed" }, 405);
+      }
+      try {
+        return await suggestion(request, env);
+      } catch (error) {
+        // The detail is logged, not returned: it can carry a Firestore path
+        // or a Google error, and a form on a public page is the wrong place
+        // to print either.
+        console.log(`suggestion failed: ${String(error)}`);
+        return json({ error: "server" }, 502);
       }
     }
 

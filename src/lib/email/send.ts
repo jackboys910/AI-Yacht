@@ -1,15 +1,9 @@
 import emailjs from "@emailjs/browser";
-import { emailConfig, siteConfig } from "../site";
+import { siteConfig } from "../site";
+import { emailConfig } from "./config";
+import type { OutgoingEmail } from "./shell";
 
-export type OutgoingEmail = {
-  subject: string;
-  html: string;
-  text: string;
-  fromName?: string;
-  /** Lets "Reply" in the inbox go straight to the sender, when the EmailJS
-   *  template maps its Reply-To field to {{reply_to}}. */
-  replyTo?: string;
-};
+export type { OutgoingEmail } from "./shell";
 
 /**
  * Sends through the shared EmailJS template, whose fields are
