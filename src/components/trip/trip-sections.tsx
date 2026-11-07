@@ -55,11 +55,19 @@ export function TripSeats({
   locale,
   today,
   thresholds = DEFAULT_COUNTER_THRESHOLDS,
+  joinable = false,
 }: {
   trip: Trip;
   locale: Locale;
   today: string;
   thresholds?: Settings["counterThresholds"];
+  /**
+   * Whether there is an application form further down to jump to.
+   *
+   * False in the admin preview, which has no form in it — and a button that
+   * scrolls to nothing is worse than no button.
+   */
+  joinable?: boolean;
 }) {
   const status = effectiveBookingStatus(trip, today);
   const going = goingCount(trip);
@@ -77,6 +85,17 @@ export function TripSeats({
           <span className="rounded-full border border-border px-4 py-2 text-sm font-medium text-[color:var(--teal)]">
             {bookingLabel(status, locale)}
           </span>
+
+          {/* §9: the way in is offered where the seats are counted, not only
+              at the bottom of a long page. */}
+          {joinable && status !== "completed" && status !== "soldOut" && (
+            <a
+              href="#join"
+              className="rounded-full bg-[color:var(--gold)] px-6 py-2.5 text-sm font-semibold text-[color:var(--gold-foreground)] transition hover:brightness-95"
+            >
+              {locale === "ru" ? "Хочу поехать" : "Book my spot"}
+            </a>
+          )}
         </div>
       </div>
     </section>

@@ -643,6 +643,41 @@ suggestions: {
     createFailed: (detail: string) => `Could not create the trip: ${detail}`,
   },
 
+  applications: {
+    loading: "Loading the applications…",
+    none: "Nobody has applied yet.",
+    noneHere: "No applications match this filter.",
+    count: (total: number, fresh: number) =>
+      fresh > 0
+        ? `Applications: ${total}, ${fresh} not decided yet`
+        : `Applications: ${total}`,
+    filter: "Status",
+    byTrip: "Trip",
+    allTrips: "All trips",
+    unknownTrip: "A trip that is no longer here",
+    noName: "No name given",
+    email: "Email",
+    contact: "Phone / messenger",
+    city: "Lives in",
+    kids: "Children",
+    source: "Came from",
+    why: "Why this trip",
+    about: "What they are like to travel with",
+    bring: "What they bring",
+    accept: "Accept",
+    decline: "Decline",
+    undo: "Back to undecided",
+    statuses: {
+      all: "All",
+      new: "Not decided",
+      accepted: "Accepted",
+      declined: "Declined",
+    },
+    languages: { en: "English", ru: "Russian" },
+    loadFailed: (detail: string) => `Could not load the applications: ${detail}`,
+    saveFailed: (detail: string) => `Could not save the decision: ${detail}`,
+  },
+
   error: {
     permissionDenied:
       "the database refused access — either the Firestore rules have not been " +

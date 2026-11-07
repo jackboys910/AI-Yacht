@@ -5,6 +5,7 @@ import type { Locale } from "@/i18n/config";
 import { slugify } from "@/lib/content/slug";
 import type { Interest, Person, Trip } from "@/lib/content/types";
 import { validateTrip, type ValidationIssue } from "@/lib/content/validation";
+import { restampOrganizer } from "@/lib/firebase/applications";
 import { rebuildAfterTrip, rebuildSoon } from "@/lib/rebuild";
 import {
   deleteTrip,
@@ -160,7 +161,21 @@ export function TripForm({
     setBusy(true);
     setSaveError(null);
     try {
-      await saveTrip(id, { ...draft, status }, allTrips);
+      const savedId = await saveTrip(id, { ...draft, status }, allTrips);
+
+      // Handing the trip to a different organizer has to hand over the
+      // people who already applied to it. Each application carries the
+      // organizer's address so the database can let them list it cheaply,
+      // and a copy nobody refreshes is a copy that goes stale the first
+      // time the owner changes his mind.
+      if (!organizer && draft.organizerEmail !== initial.organizerEmail) {
+        try {
+          await restampOrganizer(savedId, draft.organizerEmail);
+        } catch {
+          // The trip is saved; failing to re-stamp costs the organizer
+          // sight of older applications, not the owner his work.
+        }
+      }
       // А-08: publishing is what the owner presses, and the page appearing is
       // what they expect to follow. Saving a draft changes nothing a visitor
       // can see, so it starts no build.

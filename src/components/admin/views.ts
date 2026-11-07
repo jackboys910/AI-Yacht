@@ -30,7 +30,6 @@ export const DEFAULT_VIEW: AdminViewId = "trips";
  * table is one that works.
  */
 export const COMING_IN: Partial<Record<AdminViewId, string>> = {
-  applications: "2.8",
   subscribers: "3.4",
   settings: "4.3",
 };

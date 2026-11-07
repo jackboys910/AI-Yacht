@@ -24,6 +24,7 @@
  * the secret, and the welcome letter goes to the subscriber.
  */
 
+import { application } from "./application";
 import { organizerInvite } from "./organizer";
 import { bearerOf, isOwner } from "./owner";
 import { subscribe } from "./subscribe";
@@ -167,6 +168,18 @@ const worker = {
         // or a Google error, and a form on a public page is the wrong place
         // to print either.
         console.log(`suggestion failed: ${String(error)}`);
+        return json({ error: "server" }, 502);
+      }
+    }
+
+    if (pathname === "/api/application" || pathname === "/api/application/") {
+      if (request.method !== "POST") {
+        return json({ error: "method-not-allowed" }, 405);
+      }
+      try {
+        return await application(request, env);
+      } catch (error) {
+        console.log(`application failed: ${String(error)}`);
         return json({ error: "server" }, 502);
       }
     }

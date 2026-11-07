@@ -1,3 +1,4 @@
+import { JoinSection } from "@/components/join/join-section";
 import { SiteFoot } from "@/components/site-foot";
 import { SiteNav } from "@/components/site-nav";
 import { Subscribe } from "@/components/subscribe/subscribe";
@@ -77,7 +78,13 @@ export function TripPage({
       )}
 
       <TripHero trip={trip} locale={locale} today={today} />
-      <TripSeats trip={trip} locale={locale} today={today} thresholds={thresholds} />
+      <TripSeats
+        trip={trip}
+        locale={locale}
+        today={today}
+        thresholds={thresholds}
+        joinable={Boolean(chrome)}
+      />
       <TripPrice trip={trip} locale={locale} />
       <TripPlace trip={trip} locale={locale} />
       <TripAudience trip={trip} locale={locale} />
@@ -103,9 +110,13 @@ export function TripPage({
       <TripRules trip={trip} locale={locale} />
       <TripFaq trip={trip} locale={locale} />
 
-      {/* "Book my spot" and the share buttons belong to items 2.8 and 2.10.
-          A form that cannot send would be worse than no form, so they arrive
-          with the code that makes them work. */}
+      {/* The share buttons belong to item 2.10.
+
+          The application form is left out of the admin preview along with the
+          rest of the chrome. The preview is the real page (А-07), but a form
+          that posts for real is not something to leave under the owner's
+          cursor while he reads his own draft. */}
+      {chrome && <JoinSection trip={trip} locale={locale} today={today} />}
 
       {/* Н-01: the trip page offers the list too, with this trip's direction
           already ticked. Left out of the admin preview along with the rest of
