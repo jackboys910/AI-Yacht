@@ -419,17 +419,62 @@ export interface InterestedRecord {
   createdAt: IsoDateTime;
 }
 
+/** What the owner decided about an application (ТЗ v4, §12). */
+export type ApplicationStatus = "new" | "accepted" | "declined";
+
+/**
+ * Somebody asking to come on a trip.
+ *
+ * ТЗ v4 §2.2 makes this the whole of the "Member" role: no account, no
+ * password, just the form. Which is why it holds more than a contact — the
+ * reason the owner wanted the role at all was "to see who I am travelling
+ * with", so the social link and what they wrote about themselves are the
+ * point of the record rather than extras on it (С-06).
+ *
+ * The fields are the ones a member profile would have, so that accounts, if
+ * they ever arrive, can be matched to these by email instead of asking
+ * everybody to type it all again.
+ */
 export interface TripApplication {
   id: string;
   tripId: string;
+  /**
+   * The organizer's address, copied off the trip when the application
+   * arrives.
+   *
+   * Duplicated rather than looked up, and `firestore.rules` is the reason:
+   * a list query may only run a handful of document lookups in total, so a
+   * rule that fetched the trip for every application would break the moment
+   * a trip had more than twenty of them. Copied, the rule is one string
+   * comparison and the query stays cheap however long the list grows.
+   */
+  organizerEmail?: string;
   name: string;
-  /** Phone, WhatsApp or Telegram — one free-text field, as §9 specifies. */
-  contact: string;
-  email?: string;
+  email: string;
+  /** Where they live — §9 asks, because a flight is part of the plan. */
+  city?: string;
+  /** Instagram, Facebook, LinkedIn — whatever they chose to show. */
+  links: string[];
+  /** Why this trip. */
+  why?: string;
+  /** Values and experience — what kind of traveller they are. */
+  about?: string;
+  /** What they bring to the group. */
+  bring?: string;
+  /** Only asked on a kid-friendly trip, and only shown there. */
   kids?: string;
-  comment?: string;
+  /** Phone, WhatsApp or Telegram — one free-text field, as §9 specifies. */
+  contact?: string;
+  locale: Locale;
+  /** Where the visit came from (§7.5). */
+  source?: string;
+  status: ApplicationStatus;
+  /** Read and dealt with, whatever was decided. */
   handled: boolean;
+  /** The owner's own note, invisible to the applicant. */
+  adminNote?: string;
   createdAt: IsoDateTime;
+  updatedAt?: IsoDateTime;
 }
 
 export type SolutionsProjectType = "website" | "webApp" | "mobileApp" | "other";

@@ -646,6 +646,41 @@ suggestions: {
     createFailed: (detail: string) => `Не удалось создать поездку: ${detail}`,
   },
 
+  applications: {
+    loading: "Загружаем заявки…",
+    none: "Заявок пока нет.",
+    noneHere: "Под этот фильтр заявок нет.",
+    count: (total: number, fresh: number) =>
+      fresh > 0
+        ? `Заявок: ${total}, без решения ${fresh}`
+        : `Заявок: ${total}`,
+    filter: "Статус",
+    byTrip: "Поездка",
+    allTrips: "Все поездки",
+    unknownTrip: "Поездки больше нет",
+    noName: "Имя не указано",
+    email: "Почта",
+    contact: "Телефон / мессенджер",
+    city: "Откуда",
+    kids: "Дети",
+    source: "Откуда пришли",
+    why: "Почему эта поездка",
+    about: "Какой он попутчик",
+    bring: "Что принесёт группе",
+    accept: "Принять",
+    decline: "Отклонить",
+    undo: "Вернуть без решения",
+    statuses: {
+      all: "Все",
+      new: "Без решения",
+      accepted: "Приняты",
+      declined: "Отклонены",
+    },
+    languages: { en: "английский", ru: "русский" },
+    loadFailed: (detail: string) => `Не удалось загрузить заявки: ${detail}`,
+    saveFailed: (detail: string) => `Не удалось сохранить решение: ${detail}`,
+  },
+
   error: {
     permissionDenied:
       "база отказала в доступе — либо не опубликованы правила Firestore, либо " +

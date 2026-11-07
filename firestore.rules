@@ -172,14 +172,32 @@ service cloud.firestore {
       allow read, write: if isOwner();
     }
 
-    // Who applied to go. The organizer of a trip reads the applications to
-    // their own trip and nobody else's (ТЗ v4, §12); writing stays with the
-    // owner, and the form that creates these arrives with plan item 2.8.
+    /**
+     * Who applied to go (ТЗ v4, §12).
+     *
+     * The organizer reads the applications to their own trip and nobody
+     * else's. Which trip that is comes from `organizerEmail` written on the
+     * application itself, not from fetching the trip, and the difference is
+     * not style: a query may make only twenty document lookups in total, so
+     * the fetching version would have worked in testing and then refused the
+     * whole list on the first trip with twenty-one applicants.
+     *
+     * `get` keeps the fetching version as well, for the one case the copy
+     * cannot cover — an application that arrived before the owner named an
+     * organizer. A single document read may make ten lookups, and this is
+     * one.
+     *
+     * Writing stays with the owner: a decision on an application is his, and
+     * the applications themselves are written by the Worker through a service
+     * account, which these rules do not apply to.
+     */
     match /applications/{id} {
-      allow read: if isOwner()
+      allow get: if isOwner()
+        || isOrganizerOf(resource.data)
         || isOrganizerOf(
              get(/databases/$(database)/documents/trips/$(resource.data.tripId)).data
            );
+      allow list: if isOwner() || isOrganizerOf(resource.data);
       allow write: if isOwner();
     }
 

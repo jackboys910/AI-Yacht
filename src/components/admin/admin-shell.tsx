@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { User } from "firebase/auth";
 import { signOutOwner } from "@/lib/firebase/auth";
 import { PanelLanguage, useAdmin } from "./i18n";
+import { ApplicationsView } from "./applications/applications-view";
 import { InterestsView } from "./interests/interests-view";
 import { RebuildBar } from "./rebuild-bar";
 import { PeopleView } from "./people/people-view";
@@ -42,15 +43,20 @@ export function AdminShell({ user, role }: { user: User; role: AdminRole }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const organizer = role === "organizer";
-  // Everything but the trips belongs to the owner. The menu is cut rather
-  // than disabled: a greyed-out "Subscribers" tells an organizer about a
-  // list that is none of their business.
-  const views = organizer ? (["trips"] as const) : ADMIN_VIEW_IDS;
+  // Everything but their own trip and the people asking to come on it
+  // belongs to the owner. The menu is cut rather than disabled: a greyed-out
+  // "Subscribers" tells an organizer about a list that is none of their
+  // business.
+  const views = organizer ? (["trips", "applications"] as const) : ADMIN_VIEW_IDS;
 
   const asked = resolveView(params.get("view"));
-  const active = organizer ? "trips" : asked;
+  // An organizer who types ?view=settings gets their trip, not a blank page.
+  const active = organizer && !views.includes(asked as "trips" | "applications")
+    ? "trips"
+    : asked;
 
-  const current = organizer ? t.trips.mine : t.views[active];
+  const current =
+    organizer && active === "trips" ? t.trips.mine : t.views[active];
   const comingIn = COMING_IN[active];
 
   return (
@@ -111,7 +117,9 @@ export function AdminShell({ user, role }: { user: User; role: AdminRole }) {
                     : "text-white/80 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                {organizer ? t.shell.organizer : t.views[view].label}
+                {organizer && view === "trips"
+                  ? t.shell.organizer
+                  : t.views[view].label}
               </Link>
             </li>
           ))}
@@ -172,6 +180,8 @@ export function AdminShell({ user, role }: { user: User; role: AdminRole }) {
             <PeopleView />
           ) : active === "suggestions" ? (
             <SuggestionsView />
+          ) : active === "applications" ? (
+            <ApplicationsView role={role} ownerEmail={user.email ?? ""} />
           ) : (
             <div className="rounded-2xl border border-dashed border-border bg-card p-6 sm:p-10">
               <p className="text-sm text-muted-foreground">

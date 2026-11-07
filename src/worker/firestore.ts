@@ -283,3 +283,30 @@ export async function listDocuments(
     fields: document.fields ?? {},
   }));
 }
+
+/**
+ * One document, read with the service account.
+ *
+ * `null` when there is no such document — which for a form posting a trip id
+ * is a perfectly ordinary answer and not an error.
+ */
+export async function getDocument(
+  account: ServiceAccount,
+  projectId: string,
+  path: string,
+): Promise<Record<string, unknown> | null> {
+  const token = await accessToken(account);
+
+  const response = await fetch(
+    `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${path}`,
+    { headers: { authorization: `Bearer ${token}` } },
+  );
+
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(`Firestore ${response.status}: ${await response.text()}`);
+  }
+
+  const body = (await response.json()) as { fields?: Record<string, Value> };
+  return decodeFields(body.fields ?? {});
+}

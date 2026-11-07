@@ -2,6 +2,7 @@ import type { DocumentData } from "firebase/firestore/lite";
 import { locales, type Locale } from "@/i18n/config";
 import type {
   AdventureSuggestion,
+  ApplicationStatus,
   ExperienceLevel,
   Interest,
   Localized,
@@ -9,6 +10,7 @@ import type {
   Settings,
   SuggestionStatus,
   Trip,
+  TripApplication,
   WorkProject,
 } from "@/lib/content/types";
 
@@ -284,6 +286,40 @@ export function toSuggestion(id: string, data: DocumentData): AdventureSuggestio
 
     createdAt: str(data.createdAt),
     updatedAt: str(data.updatedAt),
+  };
+}
+
+const APPLICATION_STATUSES: ApplicationStatus[] = ["new", "accepted", "declined"];
+
+/**
+ * One application, out of the database (ТЗ v4, §12).
+ *
+ * Every text field is optional except the three the form insists on, because
+ * the record has to survive the day somebody adds a question to the form or
+ * takes one away. An unknown status reads as "new": a row the owner has not
+ * decided on yet is the safe interpretation of a value nobody recognises.
+ */
+export function toApplication(id: string, data: DocumentData): TripApplication {
+  return {
+    id,
+    tripId: str(data.tripId),
+    organizerEmail: data.organizerEmail || undefined,
+    name: str(data.name),
+    email: str(data.email),
+    city: data.city || undefined,
+    links: strings(data.links),
+    why: data.why || undefined,
+    about: data.about || undefined,
+    bring: data.bring || undefined,
+    kids: data.kids || undefined,
+    contact: data.contact || undefined,
+    locale: locales.includes(data.locale) ? data.locale : "en",
+    source: data.source || undefined,
+    status: APPLICATION_STATUSES.includes(data.status) ? data.status : "new",
+    handled: data.handled === true,
+    adminNote: data.adminNote || undefined,
+    createdAt: str(data.createdAt),
+    updatedAt: data.updatedAt || undefined,
   };
 }
 
