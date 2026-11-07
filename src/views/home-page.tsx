@@ -2,9 +2,11 @@ import { CommunityActions } from "@/components/home/community-actions";
 import { CommunityOpening } from "@/components/home/community-opening";
 import { HomeTrips } from "@/components/home/home-trips";
 import { SiteFoot } from "@/components/site-foot";
+import { Subscribe } from "@/components/subscribe/subscribe";
 import { SiteNav } from "@/components/site-nav";
 import type { Locale } from "@/i18n/config";
 import type { HomeChip, HomeLane, HomeTrip } from "@/lib/content/home";
+import { subscribeOptions } from "@/lib/content/nav";
 import type { SiteChrome } from "./trip-page";
 
 /**
@@ -15,10 +17,9 @@ import type { SiteChrome } from "./trip-page";
  * what a visitor can do here; the nearest upcoming trips with their filter.
  * Past trips never appear here.
  *
- * Two blocks of §6.1 are still to come and are marked below: the videos need
- * the YouTube playlists (item 2.11) and the subscription strip needs the
- * mailing list behind it (item 2.7). Each arrives with the code that makes it
- * work, rather than standing here as something that looks ready and is not.
+ * One block of §6.1 is still to come and is marked below: the videos need the
+ * YouTube playlists (item 2.11). It arrives with the code that makes it work,
+ * rather than standing here as something that looks ready and is not.
  */
 export function HomePage({
   lanes,
@@ -55,8 +56,12 @@ export function HomePage({
       />
       <HomeTrips trips={trips} chips={chips} locale={locale} today={today} />
 
-      {/* Videos from the channel (item 2.11) and the subscription strip
-          (item 2.7). */}
+      {/* Videos from the channel (item 2.11). */}
+
+      {/* Н-01: the way onto the mailing list is on the home page as well as
+          on every tab. Nothing is ticked for it here — from the home page
+          the window offers the whole community. */}
+      <Subscribe locale={locale} options={subscribeOptions(chrome.interests)} variant="strip" />
 
       <SiteFoot
         locale={locale}

@@ -19,11 +19,14 @@
  * `/api/suggestion` holds a Turnstile secret, a Firebase service account and
  * an EmailJS private key, none of which may travel to a browser;
  * `/api/organizer-invite` needs that same private key, because a send from
- * the page can only ever address the owner's own mailbox.
+ * the page can only ever address the owner's own mailbox. `/api/subscribe`
+ * needs all three: the mailing list is shut to browsers, the spam check needs
+ * the secret, and the welcome letter goes to the subscriber.
  */
 
 import { organizerInvite } from "./organizer";
 import { bearerOf, isOwner } from "./owner";
+import { subscribe } from "./subscribe";
 import { suggestion } from "./suggestion";
 import type { Env } from "./env";
 
@@ -164,6 +167,21 @@ const worker = {
         // or a Google error, and a form on a public page is the wrong place
         // to print either.
         console.log(`suggestion failed: ${String(error)}`);
+        return json({ error: "server" }, 502);
+      }
+    }
+
+    if (pathname === "/api/subscribe" || pathname === "/api/subscribe/") {
+      if (request.method !== "POST") {
+        return json({ error: "method-not-allowed" }, 405);
+      }
+      try {
+        return await subscribe(request, env);
+      } catch (error) {
+        // The detail is logged, not returned: it can carry a Firestore path
+        // or a Google error, and a form on a public page is the wrong place
+        // to print either.
+        console.log(`subscribe failed: ${String(error)}`);
         return json({ error: "server" }, 502);
       }
     }

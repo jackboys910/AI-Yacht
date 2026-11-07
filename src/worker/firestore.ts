@@ -169,3 +169,117 @@ export async function patchDocumentAsUser(
     throw new Error(`Firestore ${response.status}: ${await response.text()}`);
   }
 }
+
+/**
+ * A query, run with the service account.
+ *
+ * Used for the one question the subscription has to ask before writing:
+ * is this address already on the list? Н-06 turns on the answer, and a
+ * browser cannot ask it — `subscribers` is shut to browsers precisely so
+ * that nobody can find out who is on it.
+ *
+ * Returns the documents with their ids, which `runQuery` otherwise buries
+ * inside a full resource path.
+ */
+export async function queryDocuments(
+  account: ServiceAccount,
+  projectId: string,
+  structuredQuery: Record<string, unknown>,
+): Promise<{ id: string; fields: Record<string, Value> }[]> {
+  const token = await accessToken(account);
+
+  const response = await fetch(
+    `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery`,
+    {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ structuredQuery }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Firestore ${response.status}: ${await response.text()}`);
+  }
+
+  const rows = (await response.json()) as {
+    document?: { name: string; fields?: Record<string, Value> };
+  }[];
+
+  return rows
+    .filter((row) => row.document)
+    .map((row) => ({
+      id: row.document!.name.split("/").pop() ?? "",
+      fields: row.document!.fields ?? {},
+    }));
+}
+
+/**
+ * Changes the named fields of a document, with the service account.
+ *
+ * The `updateMask` is what makes this an update rather than a replacement:
+ * a PATCH without one writes the document the body describes and drops
+ * everything the body left out.
+ */
+export async function patchDocument(
+  account: ServiceAccount,
+  projectId: string,
+  path: string,
+  data: Record<string, unknown>,
+): Promise<void> {
+  const token = await accessToken(account);
+  const mask = Object.keys(data)
+    .map((field) => `updateMask.fieldPaths=${encodeURIComponent(field)}`)
+    .join("&");
+
+  const response = await fetch(
+    `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${path}?${mask}`,
+    {
+      method: "PATCH",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ fields: encodeFields(data) }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Firestore ${response.status}: ${await response.text()}`);
+  }
+}
+
+/**
+ * Every document in a collection, with the service account.
+ *
+ * Only used for small, finite collections — the interests, which is seven
+ * documents the owner maintains by hand. There is no paging here on purpose:
+ * a collection that needs paging should not be read whole in a Worker.
+ */
+export async function listDocuments(
+  account: ServiceAccount,
+  projectId: string,
+  collection: string,
+): Promise<{ id: string; fields: Record<string, Value> }[]> {
+  const token = await accessToken(account);
+
+  const response = await fetch(
+    `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}?pageSize=300`,
+    { headers: { authorization: `Bearer ${token}` } },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Firestore ${response.status}: ${await response.text()}`);
+  }
+
+  const body = (await response.json()) as {
+    documents?: { name: string; fields?: Record<string, Value> }[];
+  };
+
+  return (body.documents ?? []).map((document) => ({
+    id: document.name.split("/").pop() ?? "",
+    fields: document.fields ?? {},
+  }));
+}

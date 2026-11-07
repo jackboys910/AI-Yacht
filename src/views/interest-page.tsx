@@ -1,9 +1,11 @@
 import { SectionHead } from "@/components/section-head";
 import { SiteFoot } from "@/components/site-foot";
 import { SiteNav } from "@/components/site-nav";
+import { Subscribe } from "@/components/subscribe/subscribe";
 import { TripList } from "@/components/interest/trip-list";
 import type { Locale } from "@/i18n/config";
 import type { ListedTrip } from "@/lib/content/lookup";
+import { subscribeOptions } from "@/lib/content/nav";
 import type { Interest } from "@/lib/content/types";
 import { pick, pickOrOther } from "@/lib/content/trip-view";
 import type { SiteChrome } from "./trip-page";
@@ -31,8 +33,8 @@ const COPY = {
  * the interest's own switch can hide the block entirely and a single trip can
  * be kept out of it, and both live in `tabTrips` so the rules exist once.
  *
- * "+ Subscribe to [interest]" belongs here too and arrives with plan item 2.1,
- * together with the dialog it opens.
+ * "+ Subscribe to [interest]" sits in the banner, with this direction already
+ * ticked in the window it opens (Н-01, Н-03).
  */
 export function InterestPage({
   interest,
@@ -89,6 +91,16 @@ export function InterestPage({
           {description && (
             <p className="mt-6 max-w-2xl text-base text-white/80 sm:text-lg">{description}</p>
           )}
+
+          <div className="mt-8">
+            <Subscribe
+              locale={locale}
+              options={subscribeOptions(chrome.interests)}
+              preselect={[interest.id]}
+              name={title}
+              tone="dark"
+            />
+          </div>
         </div>
       </section>
 
@@ -143,6 +155,13 @@ export function InterestPage({
       )}
 
       {/* The interest's YouTube playlist belongs here and arrives with item 3.1. */}
+
+      <Subscribe
+        locale={locale}
+        options={subscribeOptions(chrome.interests)}
+        preselect={[interest.id]}
+        variant="strip"
+      />
 
       <SiteFoot
         locale={locale}

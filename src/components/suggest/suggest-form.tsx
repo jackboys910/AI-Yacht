@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import type { Locale } from "@/i18n/config";
 import { emailConfig } from "@/lib/email/config";
+import { visitSource } from "@/lib/visit-source";
 import { Field, SelectField } from "../form-fields";
 import { suggestCopy } from "./suggest-copy";
 import { TurnstileCheck, type CheckState } from "./turnstile-check";
@@ -95,7 +96,10 @@ export function SuggestForm({
           audience: read("audience"),
           photoLinks: lines("photos"),
           locale,
-          source: window.location.pathname,
+          // The page plus, where there is one, the campaign the link carried
+          // and the site it came from (§7.5) — the same line a subscription
+          // records, so the two lists can be read side by side.
+          source: visitSource(),
           turnstileToken: token,
         }),
       });
