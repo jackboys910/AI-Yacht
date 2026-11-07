@@ -236,6 +236,7 @@ export function stripTripIds(trip: Trip): TripDraft {
     organizerEmail: trip.organizerEmail,
     organizerPersonId: trip.organizerPersonId,
     suggestionId: trip.suggestionId,
+    organizerInvitedAt: trip.organizerInvitedAt,
     announcementSentAt: trip.announcementSentAt,
     publishedAt: trip.publishedAt,
     statusBeforeArchive: trip.statusBeforeArchive,

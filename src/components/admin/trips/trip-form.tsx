@@ -25,6 +25,7 @@ import {
 } from "../fields";
 import { failureText, useAdmin, type AdminCopy } from "../i18n";
 import type { AdminRole } from "../role";
+import { OrganizerInvite } from "./organizer-invite";
 import { Section } from "./section";
 import { TripBlocks, TripClosingBlocks } from "./trip-blocks";
 import { TripCrew, TripGallery, TripRoute } from "./trip-media";
@@ -308,22 +309,32 @@ export function TripForm({
               />
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <TextInput
-                  id="trip-start"
-                  label={t.tripForm.startDate}
-                  required
-                  value={draft.startDate}
-                  onChange={(startDate) => set("startDate", startDate)}
-                  hint={t.tripForm.startDateHint}
-                />
-                <TextInput
-                  id="trip-end"
-                  label={t.tripForm.endDate}
-                  required
-                  value={draft.endDate}
-                  onChange={(endDate) => set("endDate", endDate)}
-                  hint={t.tripForm.endDateHint}
-                />
+                {/* Moving a trip is the owner's call (С-11): people book
+                    flights around these two dates. */}
+                {organizer ? (
+                  <Fixed label={t.tripForm.startDate} value={draft.startDate} />
+                ) : (
+                  <TextInput
+                    id="trip-start"
+                    label={t.tripForm.startDate}
+                    required
+                    value={draft.startDate}
+                    onChange={(startDate) => set("startDate", startDate)}
+                    hint={t.tripForm.startDateHint}
+                  />
+                )}
+                {organizer ? (
+                  <Fixed label={t.tripForm.endDate} value={draft.endDate} />
+                ) : (
+                  <TextInput
+                    id="trip-end"
+                    label={t.tripForm.endDate}
+                    required
+                    value={draft.endDate}
+                    onChange={(endDate) => set("endDate", endDate)}
+                    hint={t.tripForm.endDateHint}
+                  />
+                )}
               </div>
 
               <LocalizedInput
@@ -425,6 +436,18 @@ export function TripForm({
                   )
                 }
               />
+              )}
+
+              {!organizer && (
+                <OrganizerInvite
+                  tripId={id}
+                  email={draft.organizerEmail}
+                  invitedAt={draft.organizerInvitedAt}
+                  name={
+                    people.find((person) => person.id === draft.organizerPersonId)
+                      ?.name
+                  }
+                />
               )}
 
               <Checkbox

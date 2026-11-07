@@ -441,9 +441,32 @@ const EN = {
     organizer: "Organizer's email",
     organizerHint:
       "Who, besides you, this trip is open to. Filled in by itself when the " +
-      "trip was made from an idea. Access to the panel for that person arrives " +
-      "with plan item 2.6.",
+      "trip was made from an idea. Once the address is confirmed, that person " +
+      "sees this trip in the panel — and nothing else.",
     fromIdea: "Made from an idea sent through the site.",
+    invite: {
+      title: "Letter about the panel",
+      explain:
+        "Nobody knows a site has an admin panel. The letter says what it is " +
+        "and walks them through it: open /admin/, create an account on this " +
+        "address, confirm it, sign in.",
+      language: "Language of the letter",
+      send: "Send the letter",
+      resend: "Send again",
+      sending: "Sending…",
+      sent: (at: string) => `Letter sent ${at}.`,
+      already: (at: string) => `It had already gone out ${at}.`,
+      wentAt: (at: string) => `Letter about the panel sent ${at}.`,
+      neverSent: "The letter has not gone out yet.",
+      saveFirst: "Save the trip first: the letter is about a trip that exists.",
+      needsEmail: "Write the organizer's address first.",
+      absent:
+        "A letter can only be sent from the live site — there is no server " +
+        "behind the panel here.",
+      unconfigured:
+        "Sending is not set up: the Worker has no EmailJS key for it.",
+      failed: "The letter did not go out.",
+    },
     showInPast: "Show among past trips",
     showInPastHint:
       "Switched off, the trip will not appear in this tab's “Past trips” block once it is over.",

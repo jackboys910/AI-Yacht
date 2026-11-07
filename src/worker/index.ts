@@ -15,11 +15,15 @@
  * Everything except `/api/*` is served straight from the edge and never
  * reaches this code — `run_worker_first` in wrangler.jsonc draws that line.
  *
- * ТЗ v4 adds a second endpoint for the same reason as the first: `/api/suggestion`
- * holds a Turnstile secret, a Firebase service account and an EmailJS private
- * key, none of which may travel to a browser.
+ * ТЗ v4 adds two more endpoints for the same reason as the first.
+ * `/api/suggestion` holds a Turnstile secret, a Firebase service account and
+ * an EmailJS private key, none of which may travel to a browser;
+ * `/api/organizer-invite` needs that same private key, because a send from
+ * the page can only ever address the owner's own mailbox.
  */
 
+import { organizerInvite } from "./organizer";
+import { bearerOf, isOwner } from "./owner";
 import { suggestion } from "./suggestion";
 import type { Env } from "./env";
 
@@ -45,44 +49,6 @@ const json = (body: unknown, status = 200) =>
     status,
     headers: { "content-type": "application/json; charset=utf-8" },
   });
-
-/**
- * The uid inside a Firebase ID token, read without checking the signature.
- *
- * That is safe because nothing is believed on the strength of this value: it
- * only builds the address of the document the next request asks Firestore for,
- * and Firestore checks the token itself. A token with a uid someone else wrote
- * into it is refused there, by the same rule that guards the admin panel.
- */
-function uidOf(idToken: string): string | null {
-  const payload = idToken.split(".")[1];
-  if (!payload) return null;
-  try {
-    const text = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
-    const uid = JSON.parse(text).user_id ?? JSON.parse(text).sub;
-    return typeof uid === "string" && uid.length > 0 ? uid : null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Is the caller the owner?
- *
- * The question is put to Firestore under the caller's own token, so the answer
- * comes from `firestore.rules` — the same `/owners/{uid}` entry the panel
- * itself is gated on, rather than a second copy of the rule living here.
- */
-async function isOwner(idToken: string, projectId: string): Promise<boolean> {
-  const uid = uidOf(idToken);
-  if (!uid) return false;
-
-  const response = await fetch(
-    `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/owners/${uid}`,
-    { headers: { authorization: `Bearer ${idToken}` } },
-  );
-  return response.ok;
-}
 
 interface RunState {
   running: boolean;
@@ -149,8 +115,7 @@ async function rebuild(request: Request, env: Env): Promise<Response> {
     return json({ error: "not-configured" }, 503);
   }
 
-  const header = request.headers.get("authorization") ?? "";
-  const idToken = header.startsWith("Bearer ") ? header.slice(7) : "";
+  const idToken = bearerOf(request);
   if (!idToken || !(await isOwner(idToken, env.FIREBASE_PROJECT_ID || DEFAULTS.projectId))) {
     return json({ error: "unauthorized" }, 401);
   }
@@ -200,6 +165,20 @@ const worker = {
         // to print either.
         console.log(`suggestion failed: ${String(error)}`);
         return json({ error: "server" }, 502);
+      }
+    }
+
+    if (pathname === "/api/organizer-invite" || pathname === "/api/organizer-invite/") {
+      if (request.method !== "POST") {
+        return json({ error: "method-not-allowed" }, 405);
+      }
+      try {
+        return await organizerInvite(request, env);
+      } catch (error) {
+        // Only the owner can reach this, so the detail is safe to return and
+        // useful: "the letter did not go" with no reason is a dead end.
+        console.log(`organizer invite failed: ${String(error)}`);
+        return json({ error: "send-failed", detail: String(error) }, 502);
       }
     }
 

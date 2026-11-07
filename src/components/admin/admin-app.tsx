@@ -54,18 +54,27 @@ function AdminScreens() {
         return;
       }
 
-      // An unconfirmed address never reaches the panel, so there is nothing
-      // to show optimistically: the whole question is whether it is confirmed.
-      if (!user.emailVerified) {
-        if (active) setState({ kind: "unverified", user });
-        return;
-      }
-
       try {
         const { role } = await resolveSession(user);
         if (!active) return;
+
+        if (role !== "none") {
+          setState({ kind: "ready", user, role });
+          return;
+        }
+
+        // The role is asked for **before** the address is looked at, and the
+        // order is load-bearing. The owner's account was made by hand in the
+        // Firebase console and its address was never confirmed through the
+        // site; demanding a confirmation of everyone locked the owner out of
+        // his own panel, which is exactly what happened the first time this
+        // was written the other way round. His authority is the entry under
+        // /owners, which is a stronger proof than a letter anyway.
+        //
+        // For everybody else the confirmation is the whole point: an address
+        // nobody has proved is an address anyone could have typed.
         setState(
-          role === "none" ? { kind: "noAccess", user } : { kind: "ready", user, role },
+          user.emailVerified ? { kind: "noAccess", user } : { kind: "unverified", user },
         );
       } catch {
         if (active) setState({ kind: "error" });
