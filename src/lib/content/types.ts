@@ -282,6 +282,15 @@ export interface Trip {
   organizerPersonId?: string;
   /** The idea this trip grew out of, so the queue knows it is dealt with. */
   suggestionId?: string;
+  /**
+   * When the organizer was told the panel exists (С-12).
+   *
+   * Written by the Worker that sends that letter, never by the form. The
+   * owner opening a trip weeks later has no other way of knowing whether the
+   * person was ever written to, and "did I send it?" is exactly the question
+   * that gets a second copy sent.
+   */
+  organizerInvitedAt?: IsoDateTime;
 
   /** Set once the announcement went out; a resend needs its own confirmation. */
   announcementSentAt?: IsoDateTime;

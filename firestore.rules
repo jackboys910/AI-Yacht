@@ -70,11 +70,14 @@ service cloud.firestore {
      * anybody having to remember to re-close them.
      *
      *  - status, statusBeforeArchive: publishing is the owner's decision.
+     *  - startDate, endDate: moving a trip is not editing it. С-11 of ТЗ v4
+     *    names rescheduling alongside publishing, and for the same reason —
+     *    people have booked flights around those two dates.
      *  - organizerEmail: otherwise the first organizer could hand the trip on
      *    to anyone, including out of the owner's sight.
      *  - interestId, slug: both change the published address.
-     *  - createdAt, publishedAt, suggestionId: the record of what happened
-     *    and where the trip came from.
+     *  - createdAt, publishedAt, suggestionId, organizerInvitedAt: the record
+     *    of what happened and where the trip came from.
      *  - announcementSentAt: clearing it would let the announcement go out to
      *    every subscriber a second time.
      */
@@ -82,12 +85,15 @@ service cloud.firestore {
       return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
         'status',
         'statusBeforeArchive',
+        'startDate',
+        'endDate',
         'organizerEmail',
         'interestId',
         'slug',
         'createdAt',
         'publishedAt',
         'suggestionId',
+        'organizerInvitedAt',
         'announcementSentAt'
       ]);
     }
