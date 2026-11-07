@@ -11,6 +11,7 @@ import { RebuildBar } from "./rebuild-bar";
 import { PeopleView } from "./people/people-view";
 import { SuggestionsView } from "./suggestions/suggestions-view";
 import { TripsView } from "./trips/trips-view";
+import type { AdminRole } from "./role";
 import { ADMIN_VIEW_IDS, COMING_IN, resolveView } from "./views";
 
 /**
@@ -29,14 +30,27 @@ import { ADMIN_VIEW_IDS, COMING_IN, resolveView } from "./views";
  * the heading. A form has its own EN/RU tabs for the trip's text, and two
  * identical-looking pairs within reach of each other is exactly how someone
  * ends up typing an English subtitle into the Russian field.
+ *
+ * An organizer gets the same frame with one item in it (ТЗ v4, §2.4). Not a
+ * separate panel: the trip form is the same form, the rules are what stop
+ * them doing the owner's half, and a second implementation would be a second
+ * place for the two to drift apart.
  */
-export function AdminShell({ user }: { user: User }) {
+export function AdminShell({ user, role }: { user: User; role: AdminRole }) {
   const { t } = useAdmin();
   const params = useSearchParams();
-  const active = resolveView(params.get("view"));
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const current = t.views[active];
+  const organizer = role === "organizer";
+  // Everything but the trips belongs to the owner. The menu is cut rather
+  // than disabled: a greyed-out "Subscribers" tells an organizer about a
+  // list that is none of their business.
+  const views = organizer ? (["trips"] as const) : ADMIN_VIEW_IDS;
+
+  const asked = resolveView(params.get("view"));
+  const active = organizer ? "trips" : asked;
+
+  const current = organizer ? t.trips.mine : t.views[active];
   const comingIn = COMING_IN[active];
 
   return (
@@ -72,12 +86,12 @@ export function AdminShell({ user }: { user: User }) {
             NAZAROV
           </span>
           <p className="mt-0.5 text-[11px] uppercase tracking-[0.18em] text-[color:var(--gold)]/85">
-            {t.shell.panel}
+            {organizer ? t.shell.organizerPanel : t.shell.panel}
           </p>
         </div>
 
         <ul className="mt-0 flex flex-col gap-1 lg:mt-8">
-          {ADMIN_VIEW_IDS.map((view) => (
+          {views.map((view) => (
             <li key={view}>
               <Link
                 href={`/admin/?view=${view}`}
@@ -97,7 +111,7 @@ export function AdminShell({ user }: { user: User }) {
                     : "text-white/80 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                {t.views[view].label}
+                {organizer ? t.shell.organizer : t.views[view].label}
               </Link>
             </li>
           ))}
@@ -151,7 +165,7 @@ export function AdminShell({ user }: { user: User }) {
 
         <div className="mt-8">
           {active === "trips" ? (
-            <TripsView />
+            <TripsView role={role} ownerEmail={user.email ?? ""} />
           ) : active === "interests" ? (
             <InterestsView />
           ) : active === "people" ? (

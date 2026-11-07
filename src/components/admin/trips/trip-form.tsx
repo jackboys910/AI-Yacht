@@ -24,6 +24,7 @@ import {
   TextInput,
 } from "../fields";
 import { failureText, useAdmin, type AdminCopy } from "../i18n";
+import type { AdminRole } from "../role";
 import { Section } from "./section";
 import { TripBlocks, TripClosingBlocks } from "./trip-blocks";
 import { TripCrew, TripGallery, TripRoute } from "./trip-media";
@@ -82,6 +83,7 @@ export function TripForm({
   interests,
   people,
   allTrips,
+  role,
   onDone,
   onCancel,
 }: {
@@ -90,9 +92,16 @@ export function TripForm({
   interests: Interest[];
   people: Person[];
   allTrips: Trip[];
+  /**
+   * An organizer gets the same form without the fields and buttons the
+   * database would refuse anyway (ТЗ v4, §2.4). Hiding them is courtesy, not
+   * security: `firestore.rules` is what actually says no.
+   */
+  role: AdminRole;
   onDone: () => void;
   onCancel: () => void;
 }) {
+  const organizer = role === "organizer";
   const { locale: panelLocale, t } = useAdmin();
   const [draft, setDraft] = useState(initial);
   // The content language. Separate from the panel's on purpose: А-03 blocks
@@ -249,20 +258,30 @@ export function TripForm({
               title={t.tripForm.basics.title}
               subtitle={t.tripForm.basics.subtitle}
             >
-              <Select
-                id="trip-interest"
-                label={t.tripForm.interest}
-                required
-                value={draft.interestId}
-                options={[
-                  { value: "", label: t.tripForm.interestPlaceholder },
-                  ...interests.map((interest) => ({
-                    value: interest.id,
-                    label: interest.name.en || interest.slug,
-                  })),
-                ]}
-                onChange={(interestId) => set("interestId", interestId)}
-              />
+              {organizer ? (
+                <Fixed
+                  label={t.tripForm.interest}
+                  value={
+                    interests.find((interest) => interest.id === draft.interestId)?.name
+                      .en ?? draft.interestId
+                  }
+                />
+              ) : (
+                <Select
+                  id="trip-interest"
+                  label={t.tripForm.interest}
+                  required
+                  value={draft.interestId}
+                  options={[
+                    { value: "", label: t.tripForm.interestPlaceholder },
+                    ...interests.map((interest) => ({
+                      value: interest.id,
+                      label: interest.name.en || interest.slug,
+                    })),
+                  ]}
+                  onChange={(interestId) => set("interestId", interestId)}
+                />
+              )}
 
               <LocalizedInput
                 id="trip-title"
@@ -370,15 +389,25 @@ export function TripForm({
               title={t.tripForm.flags.title}
               subtitle={t.tripForm.flags.subtitle}
             >
-              <TextInput
-                id="trip-slug"
-                label={t.tripForm.slug}
-                required
-                value={draft.slug}
-                onChange={(slug) => set("slug", slugify(slug))}
-                hint={`nazarov.net/${interestSlug(interests, draft.interestId)}/${draft.slug || "…"}/`}
-              />
+              {organizer ? (
+                <Fixed
+                  label={t.tripForm.slug}
+                  value={`nazarov.net/${interestSlug(interests, draft.interestId)}/${draft.slug || "…"}/`}
+                />
+              ) : (
+                <TextInput
+                  id="trip-slug"
+                  label={t.tripForm.slug}
+                  required
+                  value={draft.slug}
+                  onChange={(slug) => set("slug", slugify(slug))}
+                  hint={`nazarov.net/${interestSlug(interests, draft.interestId)}/${draft.slug || "…"}/`}
+                />
+              )}
 
+              {organizer ? (
+                <Fixed label={t.tripForm.organizer} value={draft.organizerEmail ?? "—"} />
+              ) : (
               <TextInput
                 id="trip-organizer"
                 label={t.tripForm.organizer}
@@ -396,6 +425,7 @@ export function TripForm({
                   )
                 }
               />
+              )}
 
               <Checkbox
                 id="trip-kid-friendly"
@@ -488,17 +518,21 @@ export function TripForm({
                   : t.tripForm.saveDraft}
             </PrimaryButton>
 
-            {draft.status !== "published" ? (
-              <SecondaryButton onClick={() => save("published")} disabled={busy || errors.length > 0}>
-                {t.tripForm.publish}
-              </SecondaryButton>
-            ) : (
-              // Back to a draft, which takes the trip off the site without
-              // archiving it. Archiving and restoring live in the trip list.
-              <SecondaryButton onClick={() => save("draft")} disabled={busy}>
-                {t.tripForm.unpublish}
-              </SecondaryButton>
-            )}
+            {!organizer &&
+              (draft.status !== "published" ? (
+                <SecondaryButton
+                  onClick={() => save("published")}
+                  disabled={busy || errors.length > 0}
+                >
+                  {t.tripForm.publish}
+                </SecondaryButton>
+              ) : (
+                // Back to a draft, which takes the trip off the site without
+                // archiving it. Archiving and restoring live in the trip list.
+                <SecondaryButton onClick={() => save("draft")} disabled={busy}>
+                  {t.tripForm.unpublish}
+                </SecondaryButton>
+              ))}
 
             <SecondaryButton onClick={() => setPreviewing(true)} disabled={busy}>
               {t.tripForm.preview}
@@ -508,7 +542,7 @@ export function TripForm({
               {dirty ? t.tripForm.discard : t.tripForm.back}
             </SecondaryButton>
 
-            {id && (
+            {id && !organizer && (
               <div className="ml-auto">
                 {confirmDelete ? (
                   <div className="flex items-center gap-2">
@@ -560,6 +594,23 @@ export function TripForm({
         </nav>
       </div>
     </FormLocaleProvider>
+  );
+}
+
+/**
+ * A value an organizer may see but not change.
+ *
+ * Shown rather than hidden: the direction and the address are how the trip is
+ * found, and a form that silently lacks them reads as a form that lost them.
+ */
+function Fixed({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <span className="block text-sm font-medium">{label}</span>
+      <p className="mt-1.5 rounded-lg border border-dashed border-border bg-[color:var(--muted)]/50 px-3 py-2.5 text-base text-muted-foreground">
+        {value}
+      </p>
+    </div>
   );
 }
 

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { effectiveBookingStatus, isPast, todayUtc } from "@/lib/content/schedule";
 import type { Interest, Person, Trip } from "@/lib/content/types";
 import { listInterests } from "@/lib/firebase/interests";
+import { tripsForOrganizer } from "@/lib/firebase/organizer";
 import { listPeople } from "@/lib/firebase/people";
 import {
   blankTrip,
@@ -17,11 +18,20 @@ import {
 import { rebuildSoon } from "@/lib/rebuild";
 import { PrimaryButton, SecondaryButton } from "../fields";
 import { failureText, useAdmin, type AdminCopy } from "../i18n";
+import type { AdminRole } from "../role";
 import { TripForm } from "./trip-form";
 
 /**
  * §7.2: the list of trips, its filters, and the actions that move a trip
  * between draft, published and the archive (А-10, А-11, А-13).
+ *
+ * The same screen serves an organizer, with one trip in it and none of the
+ * actions that are the owner's (ТЗ v4, §2.4). Two things differ and both
+ * matter. The list is fetched with a filter on their address — without it
+ * `firestore.rules` refuses the query whole, and the panel would show an
+ * error or, worse, an empty list reading "you have no trips". And the trip
+ * form is the same component: what an organizer may not change is enforced
+ * by the database, so the screen only has to avoid offering it.
  */
 
 type StatusFilter = "all" | "draft" | "published" | "past" | "archived";
@@ -29,7 +39,15 @@ type StatusFilter = "all" | "draft" | "published" | "past" | "archived";
 /** Only the values: the words for them live in the copy files, keyed the same. */
 const STATUS_FILTERS: StatusFilter[] = ["all", "draft", "published", "past", "archived"];
 
-export function TripsView() {
+export function TripsView({
+  role,
+  ownerEmail,
+}: {
+  role: AdminRole;
+  /** The signed-in address, which is what an organizer's trips are keyed on. */
+  ownerEmail: string;
+}) {
+  const organizer = role === "organizer";
   const { locale, t } = useAdmin();
   const router = useRouter();
   const params = useSearchParams();
@@ -51,7 +69,11 @@ export function TripsView() {
   useEffect(() => {
     let active = true;
 
-    Promise.all([listTrips(), listInterests(), listPeople()]).then(
+    Promise.all([
+      organizer ? tripsForOrganizer(ownerEmail) : listTrips(),
+      listInterests(),
+      listPeople(),
+    ]).then(
       ([trips, interests, people]) => {
         if (!active) return;
         setData({ trips, interests, people });
@@ -70,7 +92,7 @@ export function TripsView() {
     // The copy is only read in the failure path, so changing the panel's
     // language must not re-run this — that would be three wasted requests.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reloadToken]);
+  }, [reloadToken, organizer, ownerEmail]);
 
   const today = todayUtc();
 
@@ -126,7 +148,9 @@ export function TripsView() {
       );
     }
 
-    if (interests.length === 0) {
+    // An organizer never starts a trip, so "set up a direction first" is
+    // advice they can do nothing with.
+    if (interests.length === 0 && !organizer) {
       return (
         <Empty text={t.trips.noInterests}>
           <PrimaryButton onClick={() => router.push("/admin/?view=interests&edit=new")}>
@@ -143,6 +167,7 @@ export function TripsView() {
         // Remounts when switching between trips, so one trip's draft can never
         // be left in the fields while another is on screen.
         key={editing}
+        role={role}
         id={current?.id ?? null}
         initial={initial}
         interests={interests}
@@ -154,6 +179,60 @@ export function TripsView() {
         }}
         onCancel={() => go(null)}
       />
+    );
+  }
+
+  if (organizer) {
+    return (
+      <div>
+        {error && <Banner tone="warn">{error}</Banner>}
+        {notice && <Banner tone="info">{notice}</Banner>}
+
+        <p className="text-sm text-muted-foreground">
+          {trips.length === 0
+            ? t.trips.mine.none
+            : trips.length === 1
+              ? t.trips.mine.one
+              : t.trips.mine.several(trips.length)}
+        </p>
+
+        {trips.length > 0 && (
+          <ul className="mt-4 space-y-3">
+            {trips.map((trip) => {
+              const interest = interests.find((i) => i.id === trip.interestId);
+              return (
+                <li
+                  key={trip.id}
+                  className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border border-border bg-card p-4 sm:p-5"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium">
+                        {trip.title.en || trip.title.ru || t.trips.untitled}
+                      </span>
+                      <StatusBadge
+                        status={trip.status}
+                        past={trip.status === "published" && isPast(trip, today)}
+                        t={t}
+                      />
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {interest?.name.en ?? t.trips.noInterest} · {trip.startDate} — {trip.endDate}
+                    </p>
+                  </div>
+                  <SecondaryButton onClick={() => go(trip.id)}>
+                    {t.trips.edit}
+                  </SecondaryButton>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        <p className="mt-6 max-w-2xl text-xs text-muted-foreground">
+          {t.trips.mine.cannotPublish}
+        </p>
+      </div>
     );
   }
 
