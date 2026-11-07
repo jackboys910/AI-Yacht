@@ -47,3 +47,6 @@ next-env.d.ts
 # screenshots taken while checking pages in a browser
 /.playwright-mcp/
 /*.png
+
+# Локальные настройки Claude Code: разрешения этой машины, не команды.
+.claude/settings.local.json
