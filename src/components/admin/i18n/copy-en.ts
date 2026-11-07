@@ -27,6 +27,8 @@ const EN = {
     menu: "Menu",
     interface: "Interface",
     interfaceLanguage: "Panel language",
+    organizer: "Your trip",
+    organizerPanel: "Trip panel",
     toSite: "Open the site",
     signOut: "Sign out",
     comingSoon: (item: string) => `This section arrives with plan item ${item}.`,
@@ -34,11 +36,31 @@ const EN = {
 
   app: {
     loading: "Loading…",
-    notOwner: (email: string) => `The account ${email} is not an owner of this site.`,
-    notOwnerHow: (uid: string) =>
-      `Sign in with the owner's account. If this is your account, it has to be ` +
-      `added to the list of owners in the database — collection "owners", ` +
-      `document with the id ${uid}.`,
+
+    noAccess: (email: string) =>
+      `The account ${email} has nothing to manage here yet.`,
+    noAccessHow:
+      "The panel opens for two kinds of people: the owner of the site, and " +
+      "whoever is running a trip. If a trip was meant to be yours, it is the " +
+      "address on it that decides — check that you signed in with the same one.",
+    ownerHint: (uid: string) =>
+      `If this is the owner's account, it has to be added to the owners list in ` +
+      `the database: collection "owners", document with the id ${uid}.`,
+
+    verifyTitle: "One step left: confirm your address",
+    verifySent: (email: string) =>
+      `A letter went to ${email}. Open it and follow the link — that is what ` +
+      `proves the address is yours, and it is the only thing standing between ` +
+      `you and your trip.`,
+    verifySpam: "No letter after a minute or two? Look in the spam folder.",
+    verifyDone: "I have confirmed it",
+    verifyChecking: "Checking…",
+    verifyNotYet:
+      "Still not confirmed. Open the letter and follow the link, then press " +
+      "the button again.",
+    verifyResend: "Send the letter again",
+    verifyResent: "Sent. It can take a minute.",
+
     unreachable: "Could not reach the database.",
     unreachableHow:
       "Check your connection and reload the page. If that does not help, the " +
@@ -51,6 +73,17 @@ const EN = {
     password: "Password",
     submit: "Sign in",
     submitting: "Signing in…",
+    register: "Create an account",
+    registering: "Creating…",
+    toRegister: "Running a trip and have no account yet?",
+    toRegisterAction: "Create one",
+    toSignIn: "Already have an account?",
+    toSignInAction: "Sign in",
+    registerSubtitle: "For whoever is running a trip",
+    registerNote:
+      "Use the address the trip was offered to. Another one will make an " +
+      "account and nothing else — it is the address that the trip is tied to.",
+    passwordHint: "Six characters at least.",
     failed: {
       invalidEmail: "That is not a valid email address.",
       invalidCredential: "Wrong email or password.",
@@ -58,6 +91,10 @@ const EN = {
       tooManyAttempts:
         "Too many sign-in attempts. Wait a few minutes and try again.",
       offline: "No connection to the server. Check your internet.",
+      emailTaken:
+        "There is already an account on this address. Sign in instead, or use " +
+        "“Forgot the password”.",
+      weakPassword: "That password is too short — six characters at the very least.",
       unknown: "Could not sign in. Please try again.",
     } satisfies Record<SignInReason, string>,
   },
@@ -205,6 +242,18 @@ const EN = {
     archived: "The trip was taken off the site into the archive.",
     emptyFilter: "No trips match this filter.",
     showAll: "Show all",
+    mine: {
+      label: "My trip",
+      description: "Everything about the trip you are running.",
+      none:
+        "Nothing here yet. A trip appears once the owner writes your address " +
+        "on it.",
+      one: "This is your trip. Change what you need; the owner publishes it.",
+      several: (total: number) => `${total} trips are yours.`,
+      cannotPublish:
+        "Publishing, the archive and moving the trip between directions stay " +
+        "with the owner — the database refuses them here, not just this screen.",
+    },
     loadFailed: (detail: string) => `Could not load the trips: ${detail}`,
   },
 

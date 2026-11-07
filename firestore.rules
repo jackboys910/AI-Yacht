@@ -31,6 +31,67 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/owners/$(request.auth.uid));
     }
 
+    /**
+     * A signed-in account whose email address has actually been confirmed.
+     *
+     * The confirmation is the whole point. Anyone can register any address
+     * with the public API key; only someone who can read that inbox can
+     * confirm it. Without this test, naming an organizer by email would mean
+     * handing the trip to whoever registered that address first.
+     */
+    function verified() {
+      return signedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email is string;
+    }
+
+    /**
+     * Whether this trip was opened to the signed-in account.
+     *
+     * Compared exactly rather than case-insensitively, and that is deliberate.
+     * Firestore has to be able to prove a list query safe from the query
+     * itself, and it cannot do that through a lower() call — the panel would
+     * get a flat refusal for the whole query instead of the organizer's trips.
+     * Both sides are lowercase already: Firebase lowercases the address in the
+     * token, and the panel lowercases what the owner types.
+     */
+    function isOrganizerOf(trip) {
+      return verified()
+        && trip.organizerEmail is string
+        && trip.organizerEmail == request.auth.token.email;
+    }
+
+    /**
+     * What an organizer may not touch.
+     *
+     * A list of forbidden fields rather than a list of allowed ones, on
+     * purpose: a field added to the model later is editable by default, which
+     * is the harmless outcome, while the dangerous ones stay shut without
+     * anybody having to remember to re-close them.
+     *
+     *  - status, statusBeforeArchive: publishing is the owner's decision.
+     *  - organizerEmail: otherwise the first organizer could hand the trip on
+     *    to anyone, including out of the owner's sight.
+     *  - interestId, slug: both change the published address.
+     *  - createdAt, publishedAt, suggestionId: the record of what happened
+     *    and where the trip came from.
+     *  - announcementSentAt: clearing it would let the announcement go out to
+     *    every subscriber a second time.
+     */
+    function organizerKeepsOut() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        'status',
+        'statusBeforeArchive',
+        'organizerEmail',
+        'interestId',
+        'slug',
+        'createdAt',
+        'publishedAt',
+        'suggestionId',
+        'announcementSentAt'
+      ]);
+    }
+
     // A person may check their own entry — the admin panel uses that to say
     // "this account is not the owner" instead of showing a panel where every
     // action silently fails. Nobody may list the collection or write to it.
@@ -74,9 +135,21 @@ service cloud.firestore {
     // П-09: drafts and archived trips are invisible to visitors anywhere on
     // the site. The published test comes first so that reading a public trip
     // costs no extra document lookup.
+    //
+    // ТЗ v4 §2.3 adds a third reader: the organizer of a trip sees it before
+    // anyone else does, because that is the point of handing them the panel —
+    // a trip they can only see once it is live is a trip they cannot prepare.
     match /trips/{id} {
-      allow read: if resource.data.status == 'published' || isOwner();
-      allow write: if isOwner();
+      allow read: if resource.data.status == 'published'
+        || isOwner()
+        || isOrganizerOf(resource.data);
+
+      // Creating and deleting stay the owner's: an organizer edits the trip
+      // they were given, they do not start or end one.
+      allow create, delete: if isOwner();
+
+      allow update: if isOwner()
+        || (isOrganizerOf(resource.data) && organizerKeepsOut());
     }
 
     /* ---------------------------------------------------------------------
@@ -93,8 +166,15 @@ service cloud.firestore {
       allow read, write: if isOwner();
     }
 
+    // Who applied to go. The organizer of a trip reads the applications to
+    // their own trip and nobody else's (ТЗ v4, §12); writing stays with the
+    // owner, and the form that creates these arrives with plan item 2.8.
     match /applications/{id} {
-      allow read, write: if isOwner();
+      allow read: if isOwner()
+        || isOrganizerOf(
+             get(/databases/$(database)/documents/trips/$(resource.data.tripId)).data
+           );
+      allow write: if isOwner();
     }
 
     // Ideas sent through Suggest an Adventure (ТЗ v4, §3). Written by the
