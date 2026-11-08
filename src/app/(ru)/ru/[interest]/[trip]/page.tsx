@@ -4,7 +4,7 @@ import { localeHrefs, pagePath } from "@/i18n/config";
 import { todayUtc } from "@/lib/content/schedule";
 import { interestLinks } from "@/lib/content/nav";
 import { resolveTrip, withPlaceholder } from "@/lib/content/lookup";
-import { pick, pickOrOther } from "@/lib/content/trip-view";
+import { formatDateRange, pick, pickOrOther } from "@/lib/content/trip-view";
 import { publishedTripPaths } from "@/lib/content/visibility";
 import { getSiteContent } from "@/lib/firebase/content";
 import { siteConfig } from "@/lib/site";
@@ -36,10 +36,25 @@ export async function generateMetadata({
   const description = pick(trip.social.description, "ru") || pick(trip.subtitle, "ru");
   const path = `/${interest}/${tripSlug}/`;
 
+  // Ш-03: the dates belong in what Facebook shows, not only on the page.
+  // They are the first thing anybody checks about a trip, and a preview that
+  // makes them open the link to find out is a preview that failed.
+  const dates = formatDateRange(trip.startDate, trip.endDate, "ru");
+  const preview = [dates, description].filter(Boolean).join(" · ");
+
   return {
     metadataBase: new URL(siteConfig.url),
     title,
     description,
+    openGraph: {
+      title,
+      description: preview,
+      type: "article",
+      url: `/ru${path}`,
+      // The picture is the generated card beside this file; Next finds it
+      // and fills in og:image, its size and its type by itself.
+    },
+    twitter: { card: "summary_large_image", title, description: preview },
     alternates: {
       canonical: `/ru${path}`,
       languages: { en: path, ru: `/ru${path}`, "x-default": path },

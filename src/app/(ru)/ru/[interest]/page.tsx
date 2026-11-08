@@ -41,6 +41,21 @@ export async function generateMetadata({
       canonical: `/ru${path}`,
       languages: { en: path, ru: `/ru${path}`, "x-default": path },
     },
+    // Ш-05: a tab shared on Facebook shows its own cover and its own
+    // sentence, not the home page's.
+    openGraph: {
+      title: pickOrOther(found.interest.name, "ru"),
+      description: pick(found.interest.description, "ru"),
+      type: "website",
+      url: `/ru${path}`,
+      images: found.interest.cover?.url ? [found.interest.cover.url] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: pickOrOther(found.interest.name, "ru"),
+      description: pick(found.interest.description, "ru"),
+      images: found.interest.cover?.url ? [found.interest.cover.url] : undefined,
+    },
   };
 }
 
