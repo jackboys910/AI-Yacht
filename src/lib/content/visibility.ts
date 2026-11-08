@@ -90,6 +90,17 @@ export function homeTrips(
 export const DEFAULT_COUNTER_THRESHOLDS = { going: 3, interested: 10 } as const;
 
 /**
+ * The calendar /solutions/ books through until somebody changes it (ТЗ v4 §7).
+ *
+ * The same one that already works on ctmass.com. It lives here rather than
+ * only in the settings mapper because there is no settings document yet —
+ * the screen that writes one arrives with plan item 4.3 — and a block that
+ * waits for a document nobody has written is a block that never appears.
+ */
+export const DEFAULT_CALENDLY_URL =
+  "https://calendly.com/ctmass-support/cutting-edge-software-development";
+
+/**
  * The tabs the header and the subscription form offer. Hidden interests keep
  * their trips in the database but disappear from the site (§7.3).
  */

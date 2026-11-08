@@ -1,5 +1,6 @@
 import type { DocumentData } from "firebase/firestore/lite";
 import { locales, type Locale } from "@/i18n/config";
+import { DEFAULT_CALENDLY_URL } from "@/lib/content/visibility";
 import type {
   AdventureSuggestion,
   ApplicationStatus,
@@ -364,6 +365,10 @@ export function toSettings(data: DocumentData): Settings {
       })),
       process: list<DocumentData>(data.solutions?.process).map(text),
     },
+    // ТЗ v4 §7. A default rather than an empty string: the settings screen
+    // arrives with plan item 4.3, and until then this is what makes the
+    // block work at all.
+    calendlyUrl: str(data.calendlyUrl, DEFAULT_CALENDLY_URL),
     counterThresholds: {
       // §6.3 fixes the launch thresholds: "1 going" puts people off more than
       // showing nothing does.
