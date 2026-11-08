@@ -1,5 +1,6 @@
 import { JoinSection } from "@/components/join/join-section";
 import { SiteFoot } from "@/components/site-foot";
+import { ShareButtons } from "@/components/trip/share-buttons";
 import { SiteNav } from "@/components/site-nav";
 import { Subscribe } from "@/components/subscribe/subscribe";
 import { TripHero } from "@/components/trip/trip-hero";
@@ -23,6 +24,7 @@ import {
 import type { Locale } from "@/i18n/config";
 import { subscribeOptions, type NavLink } from "@/lib/content/nav";
 import type { Person, Settings, Trip } from "@/lib/content/types";
+import { pickOrOther } from "@/lib/content/trip-view";
 
 /** Header and footer. Absent in the admin preview, which brings its own bar. */
 export interface SiteChrome {
@@ -110,7 +112,13 @@ export function TripPage({
       <TripRules trip={trip} locale={locale} />
       <TripFaq trip={trip} locale={locale} />
 
-      {/* The share buttons belong to item 2.10.
+      {/* Ш-01: the buttons sit between the page and the form, where somebody
+          who has just read the whole thing is deciding what to do about it. */}
+      {chrome && (
+        <ShareButtons title={pickOrOther(trip.title, locale)} locale={locale} />
+      )}
+
+      {/*
 
           The application form is left out of the admin preview along with the
           rest of the chrome. The preview is the real page (А-07), but a form
