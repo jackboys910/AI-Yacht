@@ -3,6 +3,7 @@ import { buildMetadata } from "@/i18n/metadata";
 import { homeLanes, homeUpcoming } from "@/lib/content/home";
 import { interestLinks } from "@/lib/content/nav";
 import { todayUtc } from "@/lib/content/schedule";
+import { readChannelVideos } from "@/lib/content/youtube";
 import { getSiteContent } from "@/lib/firebase/content";
 import { HomePage } from "@/views/home-page";
 
@@ -12,12 +13,16 @@ export default async function Page() {
   const content = await getSiteContent();
   const today = todayUtc();
   const { trips, chips } = homeUpcoming(content, today);
+  // Read here rather than inside the component: the page is printed at
+  // build time, so this is the one moment the feed can be asked at all.
+  const videos = await readChannelVideos(content.settings?.story.youtubeChannelId);
 
   return (
     <HomePage
       lanes={homeLanes(content.interests, "en", pagePath("itSolutions", "en"))}
       trips={trips}
       chips={chips}
+      videos={videos}
       locale="en"
       today={today}
       chrome={{

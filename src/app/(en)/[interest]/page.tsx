@@ -6,6 +6,7 @@ import { interestLinks } from "@/lib/content/nav";
 import { todayUtc } from "@/lib/content/schedule";
 import { pick, pickOrOther } from "@/lib/content/trip-view";
 import { visibleInterests } from "@/lib/content/visibility";
+import { readPlaylistVideos } from "@/lib/content/youtube";
 import { getSiteContent } from "@/lib/firebase/content";
 import { siteConfig } from "@/lib/site";
 import { InterestPage } from "@/views/interest-page";
@@ -72,6 +73,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       interest={found.interest}
       upcoming={found.upcoming}
       past={found.past}
+      videos={await readPlaylistVideos(found.interest.youtubePlaylistId)}
       locale="en"
       today={today}
       chrome={{
