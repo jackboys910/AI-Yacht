@@ -97,19 +97,45 @@ export async function signIn(email: string, password: string): Promise<void> {
  * they have to ask for would be a step too many.
  */
 export async function register(email: string, password: string): Promise<void> {
+  let created;
   try {
     await setPersistence(auth(), browserLocalPersistence);
-    const created = await createUserWithEmailAndPassword(
-      auth(),
-      email.trim(),
-      password,
-    );
-    await sendEmailVerification(created.user, {
-      url: `${window.location.origin}/admin/`,
-    });
+    created = await createUserWithEmailAndPassword(auth(), email.trim(), password);
   } catch (cause) {
     const code = (cause as { code?: string }).code ?? "";
     throw new SignInError(REASONS[code] ?? "unknown", { cause });
+  }
+
+  // The account exists from here on, so a failure to send the letter must
+  // not be reported as a failure to register: the screen that follows has a
+  // "send it again" button, and telling someone their registration failed
+  // when it did not sends them round to try the same address twice.
+  await sendVerification(created.user);
+}
+
+/**
+ * The confirmation letter, with a way back into the panel where one is
+ * allowed.
+ *
+ * "Where allowed" is the whole reason this is three lines rather than one.
+ * Firebase refuses a continue URL whose domain is not in the project's
+ * authorized list — and that list holds `localhost` and the two
+ * `firebaseapp.com` addresses out of the box, not `nazarov.net`. Sending
+ * with no URL at all still confirms the address; the person simply lands on
+ * Firebase's own page instead of back in the panel. That is a far smaller
+ * loss than an account that cannot be confirmed because of a console setting
+ * nobody thought to change.
+ */
+async function sendVerification(user: User): Promise<void> {
+  try {
+    await sendEmailVerification(user, { url: `${window.location.origin}/admin/` });
+  } catch {
+    try {
+      await sendEmailVerification(user);
+    } catch {
+      // Both refused: the panel's "confirm your address" screen offers to
+      // send it again, which is the only thing left to do about it.
+    }
   }
 }
 
@@ -117,7 +143,7 @@ export async function register(email: string, password: string): Promise<void> {
 export async function resendVerification(): Promise<void> {
   const user = auth().currentUser;
   if (!user) return;
-  await sendEmailVerification(user, { url: `${window.location.origin}/admin/` });
+  await sendVerification(user);
 }
 
 /**
