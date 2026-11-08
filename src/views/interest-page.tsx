@@ -2,10 +2,12 @@ import { SectionHead } from "@/components/section-head";
 import { SiteFoot } from "@/components/site-foot";
 import { SiteNav } from "@/components/site-nav";
 import { Subscribe } from "@/components/subscribe/subscribe";
+import { VideoWall } from "@/components/video/video-wall";
 import { TripList } from "@/components/interest/trip-list";
 import type { Locale } from "@/i18n/config";
 import type { ListedTrip } from "@/lib/content/lookup";
 import { subscribeOptions } from "@/lib/content/nav";
+import type { ChannelVideo } from "@/lib/content/youtube";
 import type { Interest } from "@/lib/content/types";
 import { pick, pickOrOther } from "@/lib/content/trip-view";
 import type { SiteChrome } from "./trip-page";
@@ -40,6 +42,7 @@ export function InterestPage({
   interest,
   upcoming,
   past,
+  videos,
   locale,
   today,
   chrome,
@@ -47,6 +50,8 @@ export function InterestPage({
   interest: Interest;
   upcoming: ListedTrip[];
   past: ListedTrip[];
+  /** This direction's own playlist, where the owner gave one. */
+  videos: ChannelVideo[];
   locale: Locale;
   today: string;
   chrome: SiteChrome;
@@ -154,7 +159,7 @@ export function InterestPage({
         </section>
       )}
 
-      {/* The interest's YouTube playlist belongs here and arrives with item 3.1. */}
+      <VideoWall videos={videos} locale={locale} />
 
       <Subscribe
         locale={locale}
