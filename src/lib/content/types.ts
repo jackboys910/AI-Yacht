@@ -519,6 +519,14 @@ export interface Settings {
     services: TitledCard[];
     process: Localized<string>[];
   };
+  /**
+   * Where /solutions/ books a consultation (ТЗ v4, §7).
+   *
+   * A setting rather than a constant so the client can point it at another
+   * calendar without a developer — which is the only reason it is not simply
+   * written into the page.
+   */
+  calendlyUrl: string;
   /** Below these numbers the counters stay hidden (§6.3). */
   counterThresholds: { going: number; interested: number };
   /**
