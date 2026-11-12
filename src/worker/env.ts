@@ -49,4 +49,12 @@ export interface Env {
   EMAILJS_PRIVATE_KEY?: string;
   /** Where the owner's copy of a form goes. */
   CONTACT_EMAIL?: string;
+  /**
+   * Who else receives the letters addressed to the owner, comma separated.
+   *
+   * Absent leaves the default in `lib/email/recipients.ts`; empty switches
+   * the copies off. Letters to applicants, organizers and subscribers are
+   * never copied.
+   */
+  EMAILJS_COPY_TO?: string;
 }

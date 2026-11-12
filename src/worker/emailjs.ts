@@ -1,5 +1,6 @@
 // Relative, not "@/…": the Worker is bundled by wrangler, not by Next, and
 // nothing here should depend on its view of the path aliases.
+import { OWNER_WATCHERS, ownerAddresses, parseAddresses } from "../lib/email/recipients";
 import type { OutgoingEmail } from "../lib/email/shell";
 
 /**
@@ -25,6 +26,8 @@ export interface EmailJsConfig {
   privateKey: string;
   /** Where the owner's own copy goes. */
   owner: string;
+  /** Who else reads the owner's mail — see lib/email/recipients.ts. */
+  watchers: string[];
 }
 
 export function readEmailJs(env: {
@@ -33,6 +36,7 @@ export function readEmailJs(env: {
   EMAILJS_PUBLIC_KEY?: string;
   EMAILJS_PRIVATE_KEY?: string;
   CONTACT_EMAIL?: string;
+  EMAILJS_COPY_TO?: string;
 }): EmailJsConfig | null {
   if (!env.EMAILJS_PRIVATE_KEY || !env.EMAILJS_PUBLIC_KEY) return null;
   return {
@@ -41,7 +45,23 @@ export function readEmailJs(env: {
     publicKey: env.EMAILJS_PUBLIC_KEY,
     privateKey: env.EMAILJS_PRIVATE_KEY,
     owner: env.CONTACT_EMAIL || "support@ctmass.com",
+    // An absent variable leaves the default; an empty one is somebody saying
+    // "no copies", and that must be possible without editing code.
+    watchers:
+      env.EMAILJS_COPY_TO === undefined
+        ? [...OWNER_WATCHERS]
+        : parseAddresses(env.EMAILJS_COPY_TO),
   };
+}
+
+/**
+ * Everyone who gets a letter addressed to the owner, the owner first.
+ *
+ * Used by every endpoint that writes to the owner, so that a new endpoint
+ * cannot quietly leave the copy out.
+ */
+export function ownerCopies(config: EmailJsConfig): string[] {
+  return ownerAddresses(config.owner, config.watchers);
 }
 
 export async function sendEmail(

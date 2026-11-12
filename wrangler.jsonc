@@ -50,7 +50,13 @@
     "EMAILJS_SERVICE_ID": "default_service",
     "EMAILJS_TEMPLATE_ID": "template_epduqer",
     "EMAILJS_PUBLIC_KEY": "as4ih3rGW3abw98dk",
-    "CONTACT_EMAIL": "support@ctmass.com"
+    "CONTACT_EMAIL": "support@ctmass.com",
+
+    // Everyone who gets a copy of the letters addressed to the owner, comma
+    // separated. Letters to applicants, organizers and subscribers are never
+    // copied — see src/lib/email/recipients.ts. Remove the value to switch
+    // the copies off; remove the line and the default there applies.
+    "EMAILJS_COPY_TO": "george.jackboys@gmail.com"
   },
 
   "observability": {

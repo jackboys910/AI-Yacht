@@ -20,4 +20,12 @@ export const emailConfig = {
   templateId: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || "template_epduqer",
   publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || "as4ih3rGW3abw98dk",
   recipient: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "support@ctmass.com",
+  /**
+   * Who else reads the owner's copy, comma separated.
+   *
+   * Left as the raw string rather than a list, because `next build`
+   * substitutes the literal text of the read and a value this file had
+   * already split would be impossible to override.
+   */
+  copyTo: process.env.NEXT_PUBLIC_EMAILJS_COPY_TO,
 } as const;
