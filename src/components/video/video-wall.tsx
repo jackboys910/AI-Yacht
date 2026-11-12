@@ -16,6 +16,7 @@ const COPY = {
   },
   all: { en: "The whole channel", ru: "Весь канал" },
   play: { en: "Play", ru: "Смотреть" },
+  onYouTube: { en: "Watch on YouTube", ru: "Смотреть на YouTube" },
 } as const;
 
 /**
@@ -25,8 +26,21 @@ const COPY = {
  * Thumbnails, not embeds. Six YouTube players on one page is two megabytes
  * of someone else's JavaScript and six sets of cookies for a block most
  * visitors scroll past; the player is loaded for the one video somebody
- * actually pressed, and from `youtube-nocookie.com`, which sets nothing
- * until it plays.
+ * actually pressed, and not one byte of YouTube is fetched before that press.
+ *
+ * The player comes from `youtube.com` rather than `youtube-nocookie.com`,
+ * which is a reversal. On the cookie-free domain YouTube has no way to tell a
+ * person from a scraper, so on some addresses — a VPN, a mobile operator's
+ * shared one — it answers the embed with "Sign in to confirm you are not a
+ * bot" and plays nothing. On the ordinary domain a viewer who is signed in to
+ * YouTube in that browser is simply recognised. The privacy that mattered is
+ * kept by the facade: nothing is loaded, and no cookie is set, until somebody
+ * deliberately presses play on one video.
+ *
+ * That check can still appear — it is YouTube's call and it depends on the
+ * address the viewer is coming from — so every card carries a plain link to
+ * the video as well. When the player refuses, the way out is one click, not a
+ * dead rectangle.
  *
  * The thumbnail is a link as well as a button: a middle click, a long press
  * and a right-click "open in new tab" all do what they look like they do,
@@ -83,7 +97,7 @@ export function VideoWall({
                     <iframe
                       // Autoplay because the press that put it here was the
                       // press that means "play".
-                      src={`https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0`}
+                      src={`https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0`}
                       title={video.title}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
@@ -126,9 +140,17 @@ export function VideoWall({
                   )}
                 </div>
 
-                <h3 className="line-clamp-2 px-4 py-3.5 text-sm font-medium leading-snug">
-                  {video.title}
-                </h3>
+                <div className="px-4 py-3.5">
+                  <h3 className="line-clamp-2 text-sm font-medium leading-snug">{video.title}</h3>
+                  <a
+                    href={video.url}
+                    target="_blank"
+                    rel="noopener"
+                    className="mt-1.5 inline-block text-xs text-muted-foreground underline underline-offset-2 transition hover:text-foreground"
+                  >
+                    {COPY.onYouTube[locale]}
+                  </a>
+                </div>
               </article>
             </li>
           ))}
