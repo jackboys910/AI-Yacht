@@ -85,15 +85,32 @@ function parseFeed(xml: string, limit: number): ChannelVideo[] {
 }
 
 async function readFeed(query: string, limit: number): Promise<ChannelVideo[]> {
+  const started = Date.now();
+  const took = () => `${Date.now() - started}ms`;
+
   try {
     const response = await fetch(`${FEED}?${query}`, {
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
-    if (!response.ok) return [];
-    return parseFeed(await response.text(), limit);
-  } catch {
+    if (!response.ok) {
+      // Said out loud, because a silent empty list is exactly how the block
+      // went missing from the live site while every local build had it: the
+      // feed answers a laptop and refuses a build runner's address.
+      console.warn(
+        `[youtube] ${query} refused: HTTP ${response.status} after ${took()}`,
+      );
+      return [];
+    }
+    const videos = parseFeed(await response.text(), limit);
+    if (videos.length === 0) {
+      console.warn(`[youtube] ${query} answered with no entries after ${took()}`);
+    }
+    return videos;
+  } catch (cause) {
     // Offline, blocked, slow, or a channel that no longer exists. The page
-    // is built either way.
+    // is built either way — but not silently.
+    const name = cause instanceof Error ? `${cause.name}: ${cause.message}` : String(cause);
+    console.warn(`[youtube] ${query} failed after ${took()} — ${name}`);
     return [];
   }
 }
