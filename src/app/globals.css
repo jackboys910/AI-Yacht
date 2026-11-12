@@ -81,6 +81,37 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Anything that reacts to a click says so under the cursor.
+
+   Tailwind v4 changed this: its reset now follows the CSS specification,
+   where a <button> gets `cursor: default` like any other form widget. Links
+   kept the hand, buttons lost it, and the result reads as a dead control —
+   the filter chips on the home page, "See all trips", "Subscribe", "Copy
+   link" and every button in the panel all looked unclickable.
+
+   Put back once, here, rather than with a `cursor-pointer` class on every
+   button in the codebase: a rule nobody has to remember cannot be forgotten
+   on the next button.
+
+   Disabled controls are deliberately left with the arrow — a control that
+   will not act must not promise that it will. `aria-disabled` counts, since
+   a button kept focusable for a screen reader is still refusing to act. */
+button:not(:disabled):not([aria-disabled="true"]),
+[role="button"]:not([aria-disabled="true"]),
+summary,
+select:not(:disabled),
+input:where(
+    [type="button"],
+    [type="submit"],
+    [type="reset"],
+    [type="checkbox"],
+    [type="radio"],
+    [type="file"]
+  ):not(:disabled),
+::file-selector-button {
+  cursor: pointer;
+}
+
 /* ---------------------------------------------------------------------------
    Custom utilities used across the page.
    --------------------------------------------------------------------------- */
