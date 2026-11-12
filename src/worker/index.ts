@@ -22,6 +22,10 @@
  * the page can only ever address the owner's own mailbox. `/api/subscribe`
  * needs all three: the mailing list is shut to browsers, the spam check needs
  * the secret, and the welcome letter goes to the subscriber.
+ *
+ * `/api/videos` is the odd one out: it holds no secret at all. It exists
+ * because the address a request comes from decides whether YouTube answers it,
+ * and a build runner is the wrong address — see videos.ts.
  */
 
 import { application } from "./application";
@@ -29,6 +33,7 @@ import { organizerInvite } from "./organizer";
 import { bearerOf, isOwner } from "./owner";
 import { subscribe } from "./subscribe";
 import { suggestion } from "./suggestion";
+import { videos } from "./videos";
 import type { Env } from "./env";
 
 
@@ -210,6 +215,20 @@ const worker = {
         // useful: "the letter did not go" with no reason is a dead end.
         console.log(`organizer invite failed: ${String(error)}`);
         return json({ error: "send-failed", detail: String(error) }, 502);
+      }
+    }
+
+    if (pathname === "/api/videos" || pathname === "/api/videos/") {
+      if (request.method !== "GET") {
+        return json({ error: "method-not-allowed" }, 405);
+      }
+      try {
+        return await videos(request);
+      } catch (error) {
+        // A feed that did not answer costs the home page its video block and
+        // nothing else, so this is a log line rather than a broken build.
+        console.log(`videos failed: ${String(error)}`);
+        return json({ error: "server" }, 502);
       }
     }
 

@@ -194,6 +194,10 @@ reach a browser, and each is set the same way: Cloudflare dashboard →
 **Add** → type **Secret**. **Production only** — the deploy workflow publishes
 straight to production and nothing here uses the preview environment.
 
+One endpoint needs nothing from this section: `/api/videos` reads the public
+YouTube feed for the video block, and it exists only because YouTube answers
+Cloudflare and refuses the build runner. Nothing to set, nothing to rotate.
+
 | Secret | What it lets the Worker do | Without it |
 | --- | --- | --- |
 | `GITHUB_TOKEN` | start a site rebuild | the panel says the rebuild is not set up |

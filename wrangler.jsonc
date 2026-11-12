@@ -13,7 +13,10 @@
   // (ТЗ v4, §3); /api/subscribe, which keeps the mailing list browsers may
   // not read and sends the welcome letter; and /api/organizer-invite, which
   // emails an organizer the way into the panel (С-12) with a key no page may
-  // carry. The site itself is still served as files from the edge —
+  // carry. /api/videos is the one that holds no secret: YouTube's feed answers
+  // Cloudflare and refuses the build runner, so the build asks the edge for it
+  // instead of asking YouTube from GitHub. The site itself is still served as
+  // files from the edge —
   // "run_worker_first" below lists the only paths that reach this code, so a
   // page view costs no invocation and the site is served exactly as before.
   "main": "src/worker/index.ts",
