@@ -3,7 +3,7 @@ import {
   buildApplicationReceiptEmail,
   type ApplicationEmailData,
 } from "../lib/email/application";
-import { readEmailJs, sendEmail } from "./emailjs";
+import { ownerCopies, readEmailJs, sendEmail } from "./emailjs";
 import { createDocument, getDocument } from "./firestore";
 import { readServiceAccount } from "./google-auth";
 import { verifyTurnstile } from "./turnstile";
@@ -208,7 +208,9 @@ export async function application(request: Request, env: Env): Promise<Response>
 
     const owner = buildApplicationOwnerEmail(deciding);
     const letterList: [string, typeof owner][] = [
-      [mail.owner, owner],
+      // The owner and whoever watches the owner's mail; the applicant's own
+      // receipt below is not copied to anybody.
+      ...ownerCopies(mail).map((to) => [to, owner] as [string, typeof owner]),
       // The person running the trip decides who comes on it, so they are
       // told as directly as the owner is rather than having to notice a new
       // row in the panel.

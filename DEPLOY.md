@@ -267,18 +267,38 @@ recipient address — is public and lives in `wrangler.jsonc`.
 
 ## 9. EmailJS
 
-Both forms (AI Yacht application, IT Solutions inquiry) send through the
-CTMASS EmailJS account to `support@ctmass.com`. Out of the box they use the
-shared `template_epduqer`, which CTMASS also uses. Every request passes:
+Every form on the site sends through the CTMASS EmailJS account, out of the
+box through the shared `template_epduqer`, which CTMASS also uses. Every
+request passes:
 
 | Variable | Contents |
 | -------- | -------- |
-| `subject` | e.g. `AI Yacht — new application from Anna` |
+| `subject` | e.g. `nazarov.net · Anna wants to come — Grenadines` |
 | `html` | the branded email body |
 | `text` | plain-text version |
-| `mail_to` | `support@ctmass.com` |
-| `from_name` | `AI Yacht` or `AI Yacht · IT Solutions` |
-| `reply_to` | the client's email (IT inquiries only) |
+| `mail_to`, `send_to` | **who this letter is for** — see below |
+| `from_name` | `Nazarov` or `Nazarov · IT Solutions` |
+| `reply_to` | the writer's email, where there is one to answer |
+
+### Who each letter is addressed to
+
+This is no longer one mailbox, and that matters for the template.
+
+| Form | Letters |
+| --- | --- |
+| Join a trip | the owner, the trip's organizer, and a receipt to the applicant |
+| Suggest an adventure | the owner, and a confirmation to the author |
+| Subscribe | a welcome to the subscriber |
+| Organizer invitation | the organizer |
+| IT Solutions | the owner |
+
+Every letter addressed to **the owner** also goes to whoever is listed in
+`EMAILJS_COPY_TO` (a plain value in `wrangler.jsonc`, and
+`NEXT_PUBLIC_EMAILJS_COPY_TO` for the forms that send from the page). It is
+`george.jackboys@gmail.com` today. Letters to applicants, organizers and
+subscribers are never copied — that is somebody else's mail. Several addresses
+separated by commas; an empty value switches the copies off; the default lives
+in `src/lib/email/recipients.ts`.
 
 ### Recommended: a dedicated template for this site
 
@@ -291,10 +311,19 @@ site regardless of how the shared template is set up, and locks the recipient.
 4. **Content:** press **Edit Content** → switch to the **Code** editor →
    delete everything → type exactly `{{{html}}}` (three braces) → apply.
 5. Right-hand fields:
-   - **To Email:** `support@ctmass.com` — typed literally, *not*
-     `{{mail_to}}`. The public key is visible in the browser, so a template
-     that takes its recipient from the request could be abused to send mail
-     anywhere.
+   - **To Email:** `{{send_to}}`. This has to come from the request now:
+     the site writes to applicants, organizers and subscribers as well as to
+     the owner, and a template with one address typed into it sends all of
+     them to that address instead — the applicant gets nothing and the owner
+     gets four copies of the same evening.
+
+     The earlier advice here was the opposite, and it was right while every
+     letter went to the owner: the public key travels to the browser, so a
+     template that takes its recipient from the request can be used to send
+     mail elsewhere. What holds that off instead is **Account → Security →
+     allowed origins** (below) — only nazarov.net may use the key — and the
+     fact that everything except the Solutions form is sent by the Worker
+     with the private key, from an address nobody can read out of a page.
    - **From Name:** `{{from_name}}`
    - **From Email:** keep *Use Default Email Address*.
    - **Reply To:** `{{reply_to}}` — pressing *Reply* on an IT inquiry then
@@ -306,7 +335,10 @@ site regardless of how the shared template is set up, and locks the recipient.
    `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID` = that ID. The deploy workflow already
    reads it; run the workflow again.
 8. Use the template editor's **Test It** button, or submit a form on the live
-   site, and check the result in `support@ctmass.com`.
+   site, and check the result in `support@ctmass.com` — and in
+   `george.jackboys@gmail.com`, which should have the same letter. If the
+   copy is missing while the owner's letter arrived, the template is still
+   sending to a typed-in address rather than to `{{send_to}}`.
 
 ### If the email arrives as raw HTML
 
@@ -318,9 +350,10 @@ it right from the start.
 
 ### Other things to check in the dashboard
 
-- **Account → Security:** if domain restrictions are switched on, add
+- **Account → Security:** switch the domain restrictions **on** and add
   `https://nazarov.net`, `https://www.nazarov.net` and your
-  `*.workers.dev` URL. If there are none, nothing to do.
+  `*.workers.dev` URL. With the recipient coming from the request this is
+  what stops the public key being used to send mail from somewhere else.
 - **Email Services:** the service marked as default must be connected
   (the site calls `default_service`, EmailJS's alias for it).
 - **Usage / plan:** each form submission is one email against the monthly

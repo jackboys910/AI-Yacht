@@ -3,7 +3,7 @@ import {
   buildSuggestionOwnerEmail,
   type SuggestionEmailData,
 } from "../lib/email/suggestion";
-import { readEmailJs, sendEmail } from "./emailjs";
+import { ownerCopies, readEmailJs, sendEmail } from "./emailjs";
 import { createDocument } from "./firestore";
 import { readServiceAccount } from "./google-auth";
 import { verifyTurnstile } from "./turnstile";
@@ -207,8 +207,13 @@ export async function suggestion(request: Request, env: Env): Promise<Response> 
       ...parsed,
       category: clip((body as Record<string, unknown>).categoryLabel, 200) || parsed.interestId,
     };
+    const ownerLetter = buildSuggestionOwnerEmail(data);
     const letters: [string, ReturnType<typeof buildSuggestionOwnerEmail>][] = [
-      [mail.owner, buildSuggestionOwnerEmail(data)],
+      // The owner and whoever watches the owner's mail; the letter back to the
+      // author is theirs alone.
+      ...ownerCopies(mail).map(
+        (to) => [to, ownerLetter] as [string, ReturnType<typeof buildSuggestionOwnerEmail>],
+      ),
       [parsed.email, buildSuggestionAuthorEmail(data)],
     ];
 
