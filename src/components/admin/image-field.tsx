@@ -138,7 +138,7 @@ export function ImageField({
         <button
           type="button"
           onClick={() => setByAddress((open) => !open)}
-          className="text-sm text-muted-foreground underline underline-offset-2 transition hover:text-foreground"
+          className="inline-block py-1.5 text-sm text-muted-foreground underline underline-offset-2 transition hover:text-foreground"
         >
           {byAddress ? t.image.hideAddress : t.image.showAddress}
         </button>

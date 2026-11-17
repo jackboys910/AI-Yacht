@@ -25,6 +25,15 @@ import { TripForm } from "./trip-form";
  * §7.2: the list of trips, its filters, and the actions that move a trip
  * between draft, published and the archive (А-10, А-11, А-13).
  *
+ * Every row is a wrapping flex line, and the column with the title carries
+ * `basis-64` rather than `flex-1`. The difference is the whole layout on a
+ * phone. `flex-1` means a basis of zero: the line then always "fits", so it
+ * never wraps, and the three buttons take the width they need while the title
+ * is squeezed into a column one word wide — which is exactly how the list
+ * looked on a 412px screen. A real basis makes the line too long for the
+ * screen, so the buttons drop below the title instead, and on a wide screen
+ * they are still side by side because there the line genuinely fits.
+ *
  * The same screen serves an organizer, with one trip in it and none of the
  * actions that are the owner's (ТЗ v4, §2.4). Two things differ and both
  * matter. The list is fetched with a filter on their address — without it
@@ -205,7 +214,7 @@ export function TripsView({
                   key={trip.id}
                   className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border border-border bg-card p-4 sm:p-5"
                 >
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 grow basis-64">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-medium">
                         {trip.title.en || trip.title.ru || t.trips.untitled}
@@ -288,7 +297,7 @@ export function TripsView({
                 key={trip.id}
                 className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border border-border bg-card p-4 sm:p-5"
               >
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 grow basis-64">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium">
                       {trip.title.en || trip.title.ru || t.trips.untitled}

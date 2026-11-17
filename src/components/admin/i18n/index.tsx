@@ -174,7 +174,7 @@ export function PanelLanguage({ tone = "dark" }: { tone?: "dark" | "light" }) {
       <div
         role="group"
         aria-label={t.shell.interfaceLanguage}
-        className={`mt-1.5 inline-flex h-8 items-stretch rounded-full border p-[3px] text-xs font-semibold tracking-[0.08em] ${
+        className={`mt-1.5 inline-flex h-10 items-stretch rounded-full border p-[3px] text-xs font-semibold tracking-[0.08em] ${
           dark ? "border-white/20" : "border-border"
         }`}
       >

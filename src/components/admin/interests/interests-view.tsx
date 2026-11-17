@@ -118,7 +118,9 @@ export function InterestsView() {
               key={interest.id}
               className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border border-border bg-card p-4 sm:p-5"
             >
-              <div className="min-w-0 flex-1">
+              {/* basis, not flex-1: a line whose basis is zero never wraps, and
+                  the buttons squeeze this column instead — see trips-view. */}
+              <div className="min-w-0 grow basis-64">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium">{interest.name.en || interest.slug}</span>
                   <code className="rounded bg-[color:var(--muted)] px-1.5 py-0.5 text-xs text-muted-foreground">
@@ -139,26 +141,28 @@ export function InterestsView() {
                 )}
               </div>
 
-              <div className="flex items-center gap-1">
-                <Move
-                  label={t.field.up}
-                  disabled={index === 0}
-                  onClick={() => void swap(interests, index, index - 1, reload)}
-                >
-                  ↑
-                </Move>
-                <Move
-                  label={t.field.down}
-                  disabled={index === interests.length - 1}
-                  onClick={() => void swap(interests, index, index + 1, reload)}
-                >
-                  ↓
-                </Move>
-              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  <Move
+                    label={t.field.up}
+                    disabled={index === 0}
+                    onClick={() => void swap(interests, index, index - 1, reload)}
+                  >
+                    ↑
+                  </Move>
+                  <Move
+                    label={t.field.down}
+                    disabled={index === interests.length - 1}
+                    onClick={() => void swap(interests, index, index + 1, reload)}
+                  >
+                    ↓
+                  </Move>
+                </div>
 
-              <SecondaryButton onClick={() => go(interest.id)}>
-                {t.interests.edit}
-              </SecondaryButton>
+                <SecondaryButton onClick={() => go(interest.id)}>
+                  {t.interests.edit}
+                </SecondaryButton>
+              </div>
             </li>
           ))}
         </ul>

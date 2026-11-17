@@ -153,7 +153,7 @@ export function SignInForm() {
             type="button"
             onClick={swap}
             disabled={busy}
-            className="font-medium text-foreground underline underline-offset-2 transition hover:text-[color:var(--teal)] disabled:opacity-60"
+            className="inline-block py-1.5 font-medium text-foreground underline underline-offset-2 transition hover:text-[color:var(--teal)] disabled:opacity-60"
           >
             {registering ? t.signIn.toSignInAction : t.signIn.toRegisterAction}
           </button>

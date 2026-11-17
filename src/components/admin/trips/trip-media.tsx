@@ -412,7 +412,7 @@ function SmallButton({
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className="grid h-8 w-8 place-items-center rounded-lg border border-border text-sm transition hover:border-foreground disabled:opacity-30"
+      className="grid h-9 w-9 place-items-center rounded-lg border border-border text-sm transition hover:border-foreground disabled:opacity-30"
     >
       {children}
     </button>

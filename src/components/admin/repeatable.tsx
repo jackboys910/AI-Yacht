@@ -56,8 +56,8 @@ export function Repeatable<T>({
           key={index}
           className="rounded-xl border border-border bg-[color:var(--muted)]/40 p-4"
         >
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <span className="text-sm font-medium">{itemLabel(index, item)}</span>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <span className="min-w-0 text-sm font-medium">{itemLabel(index, item)}</span>
             <div className="flex items-center gap-1">
               <IconButton
                 label={t.field.up}
@@ -119,7 +119,7 @@ function IconButton({
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className={`grid h-8 w-8 place-items-center rounded-lg border text-sm transition disabled:opacity-30 ${
+      className={`grid h-9 w-9 place-items-center rounded-lg border text-sm transition disabled:opacity-30 ${
         tone === "danger"
           ? "border-border text-red-600 hover:border-red-400"
           : "border-border hover:border-foreground"
