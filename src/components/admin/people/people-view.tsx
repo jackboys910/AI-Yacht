@@ -107,7 +107,10 @@ export function PeopleView() {
           {people.map((person) => (
             <li
               key={person.id}
-              className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4"
+              // min-w-0 is load-bearing: a grid item is never narrower than its
+              // min-content, and a truncated line counts its whole text as that —
+              // which is what pushed this list off the side of the screen.
+              className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border border-border bg-card p-4"
             >
               {person.photo?.url ? (
                 <img
@@ -121,7 +124,7 @@ export function PeopleView() {
                 </span>
               )}
 
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 grow basis-32">
                 <p className="truncate font-medium">
                   {person.name.en || person.name.ru || t.people.unnamed}
                 </p>

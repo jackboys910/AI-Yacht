@@ -155,7 +155,9 @@ export function SuggestionsView() {
                 key={item.id}
                 className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border border-border bg-card p-4 sm:p-5"
               >
-                <div className="min-w-0 flex-1">
+                {/* basis, not flex-1: a line whose basis is zero never wraps, and
+                    the buttons squeeze this column instead — see trips-view. */}
+                <div className="min-w-0 grow basis-64">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium">
                       {item.title.trim() || t.suggestions.untitled}

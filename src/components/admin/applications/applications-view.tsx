@@ -210,7 +210,9 @@ function Card({
   return (
     <article className="rounded-2xl border border-border bg-card p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
+        {/* basis, not flex-1: a line whose basis is zero never wraps, and
+            the buttons squeeze this column instead — see trips-view. */}
+        <div className="min-w-0 grow basis-64">
           <h3 className="font-display text-lg">
             {application.name || t.applications.noName}
           </h3>

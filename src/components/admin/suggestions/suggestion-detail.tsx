@@ -105,7 +105,9 @@ export function SuggestionDetail({
       {notice && <Banner tone="info">{notice}</Banner>}
 
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
+        {/* basis, not flex-1: a line whose basis is zero never wraps, and
+            the buttons squeeze this column instead — see trips-view. */}
+        <div className="min-w-0 grow basis-64">
           <h2 className="font-display text-xl">
             {suggestion.title.trim() || t.suggestions.untitled}
           </h2>

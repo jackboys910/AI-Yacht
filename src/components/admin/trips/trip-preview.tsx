@@ -49,14 +49,14 @@ export function TripPreview({
           {t.preview.banner}{" "}
           <span className="text-white/60">{t.preview.draft}</span>
         </span>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="rounded-full bg-white/10 px-2 py-0.5">
             <LocaleTabs value={locale} onChange={setLocale} tone="dark" />
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-white/30 px-4 py-1.5 text-sm font-medium transition hover:border-white"
+            className="shrink-0 whitespace-nowrap rounded-full border border-white/30 px-4 py-1.5 text-sm font-medium transition hover:border-white"
           >
             {t.preview.back}
           </button>

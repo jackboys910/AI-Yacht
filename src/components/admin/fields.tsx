@@ -71,7 +71,7 @@ export function LocaleTabs({
         role="group"
         aria-label={t.field.contentLanguage}
         title={t.field.contentLanguageHint}
-        className={`inline-flex h-9 items-stretch rounded-full border p-[3px] text-xs font-semibold tracking-[0.08em] ${
+        className={`inline-flex h-10 items-stretch rounded-full border p-[3px] text-xs font-semibold tracking-[0.08em] ${
           dark ? "border-white/25" : "border-border"
         }`}
       >
@@ -467,7 +467,7 @@ export function PrimaryButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex items-center rounded-full bg-[color:var(--gold)] px-5 py-2.5 text-sm font-semibold text-[color:var(--gold-foreground)] transition hover:brightness-95 disabled:opacity-60"
+      className="inline-flex items-center whitespace-nowrap rounded-full bg-[color:var(--gold)] px-5 py-2.5 text-sm font-semibold text-[color:var(--gold-foreground)] transition hover:brightness-95 disabled:opacity-60"
     >
       {children}
     </button>
@@ -490,7 +490,7 @@ export function SecondaryButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center rounded-full border px-5 py-2.5 text-sm font-medium transition disabled:opacity-60 ${
+      className={`inline-flex items-center whitespace-nowrap rounded-full border px-5 py-2.5 text-sm font-medium transition disabled:opacity-60 ${
         tone === "danger"
           ? "border-red-300 text-red-700 hover:border-red-500"
           : "border-border text-foreground hover:border-foreground"
