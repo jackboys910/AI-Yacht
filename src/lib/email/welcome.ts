@@ -1,3 +1,4 @@
+import { manageUrl, unsubscribeUrl } from "./manage";
 import {
   renderEmailHtml,
   renderEmailText,
@@ -18,12 +19,12 @@ import {
  * hand-rolled `<div>` soup as source text often enough that the rendering is
  * not worth improvising twice.
  *
- * No unsubscribe link yet, and that is deliberate rather than forgotten: the
- * page behind such a link arrives with plan item 3.3, and a link to a 404 in
- * a letter about trust would be worse than the sentence that stands in for it
- * — reply and the address comes off. The link replaces that sentence the day
- * the page exists, and `manageKey` is already written on every subscriber so
- * no second migration is needed.
+ * The unsubscribe link is the real one now that the page behind it exists
+ * (item 3.3). It travels on the subscriber's `manageKey`, not on their
+ * address, so a forwarded letter cannot be used to guess anybody else's.
+ * Without a key the letter falls back to the sentence it carried before —
+ * reply and the address comes off — because a link to a page that cannot
+ * identify anyone is worse than no link.
  */
 export interface WelcomeEmailData {
   /** The directions they chose, already in the right language. */
@@ -33,22 +34,36 @@ export interface WelcomeEmailData {
   ownerEmail?: string;
   /** True when the address was already on the list and only added directions. */
   returning?: boolean;
+  /** What the unsubscribe link travels on; absent on an older subscriber. */
+  manageKey?: string;
+  /** The sender's postal address, as every mailing must carry (Н-09). */
+  postalAddress?: string;
 }
 
 export function buildWelcomeEmail(data: WelcomeEmailData): OutgoingEmail {
   const ru = data.locale === "ru";
   const list = data.directions.join(", ");
 
+const key = data.manageKey;
+
+  const leaving = key
+    ? ru
+      ? "Не хотите больше — ссылка внизу письма убирает адрес из списка. Там же можно оставить только нужные направления. Ни пароля, ни подтверждений."
+      : "Had enough? The link at the bottom takes the address off the list — or leaves only the directions you still want. No password, nothing to confirm."
+    : ru
+      ? "Не хотите больше — ответьте на это письмо одной строкой, и адрес уберут из списка. Ничего подтверждать и нигде входить для этого не нужно."
+      : "Had enough? Reply to this letter with one line and the address comes off the list. Nothing to confirm, nowhere to sign in.";
+
   const body = ru
     ? [
         "Что будет приходить: письмо, когда открывается новая поездка по выбранным направлениям. Обычно это несколько писем в год — столько, сколько поездок.",
         "Чего не будет: рекламы, чужих рассылок и передачи адреса кому бы то ни было. Телефон у вас никто не спросит.",
-        "Не хотите больше — ответьте на это письмо одной строкой, и адрес уберут из списка. Ничего подтверждать и нигде входить для этого не нужно.",
+        leaving,
       ].join("\n\n")
     : [
         "What arrives: a letter when a new trip opens in the directions you picked. That is a handful of letters a year — as many as there are trips.",
         "What does not: advertising, other people's mailings, and your address going anywhere else. Nobody will ask you for a phone number.",
-        "Had enough? Reply to this letter with one line and the address comes off the list. Nothing to confirm, nowhere to sign in.",
+        leaving,
       ].join("\n\n");
 
   const content: EmailContent = {
@@ -85,6 +100,29 @@ export function buildWelcomeEmail(data: WelcomeEmailData): OutgoingEmail {
       : "Got a trip in mind that is missing here? The site has a " +
         "<strong>Suggest an Adventure</strong> form — and if the idea fits, you " +
         "are the one who runs that trip.",
+    // Н-09: the way out and the sender's address, in this letter as in
+    // every other one that goes to a list.
+    footer: key
+      ? {
+          note: ru
+            ? `Вы получили это письмо, потому что подписались на nazarov.net.${
+                data.postalAddress ? ` ${data.postalAddress}` : ""
+              }`
+            : `You're receiving this because you subscribed at nazarov.net.${
+                data.postalAddress ? ` ${data.postalAddress}` : ""
+              }`,
+          links: [
+            {
+              label: ru ? "Отписаться" : "Unsubscribe",
+              href: unsubscribeUrl(key, data.locale),
+            },
+            {
+              label: ru ? "Выбрать направления" : "Manage topics",
+              href: manageUrl(key, data.locale),
+            },
+          ],
+        }
+      : undefined,
   };
 
   return {

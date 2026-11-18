@@ -34,6 +34,7 @@ import { interested } from "./interested";
 import { organizerInvite } from "./organizer";
 import { bearerOf, isOwner } from "./owner";
 import { subscribe } from "./subscribe";
+import { subscription } from "./subscription";
 import { suggestion } from "./suggestion";
 import { videos } from "./videos";
 import type { Env } from "./env";
@@ -231,6 +232,18 @@ const worker = {
         // or a Google error, and a form on a public page is the wrong place
         // to print either.
         console.log(`subscribe failed: ${String(error)}`);
+        return json({ error: "server" }, 502);
+      }
+    }
+
+    if (pathname === "/api/subscription" || pathname === "/api/subscription/") {
+      if (request.method !== "GET" && request.method !== "POST") {
+        return json({ error: "method-not-allowed" }, 405);
+      }
+      try {
+        return await subscription(request, env);
+      } catch (error) {
+        console.log("subscription failed: " + String(error));
         return json({ error: "server" }, 502);
       }
     }
