@@ -1,5 +1,6 @@
 import { TripCard } from "@/components/trip-card";
 import type { Locale } from "@/i18n/config";
+import type { CounterSet } from "@/lib/content/counters";
 import type { ListedTrip } from "@/lib/content/lookup";
 
 /** A row of trip cards. Each one links to the tab that owns it (§6.4). */
@@ -7,10 +8,12 @@ export function TripGrid({
   trips,
   locale,
   today,
+  counters,
 }: {
   trips: ListedTrip[];
   locale: Locale;
   today: string;
+  counters?: CounterSet;
 }) {
   return (
     <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -21,6 +24,7 @@ export function TripGrid({
           interestSlug={item.interestSlug}
           locale={locale}
           today={today}
+          counters={counters}
         />
       ))}
     </div>

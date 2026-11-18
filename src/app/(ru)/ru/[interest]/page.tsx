@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { localeHrefs, pagePath } from "@/i18n/config";
 import { resolveInterestPage, withInterestPlaceholder } from "@/lib/content/lookup";
 import { interestLinks } from "@/lib/content/nav";
+import { counterSet } from "@/lib/content/counters";
 import { todayUtc } from "@/lib/content/schedule";
 import { pick, pickOrOther } from "@/lib/content/trip-view";
 import { visibleInterests } from "@/lib/content/visibility";
@@ -75,6 +76,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       videos={await readPlaylistVideos(found.interest.youtubePlaylistId)}
       locale="ru"
       today={today}
+      counters={counterSet(content)}
       chrome={{
         interests: interestLinks(content.interests, "ru"),
         solutionsHref: pagePath("itSolutions", "ru"),

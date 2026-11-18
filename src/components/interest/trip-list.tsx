@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ALL_CHIP, FilterChips } from "@/components/filter-chips";
 import { TripGrid } from "@/components/trip-grid";
 import type { Locale } from "@/i18n/config";
+import type { CounterSet } from "@/lib/content/counters";
 import type { ListedTrip } from "@/lib/content/lookup";
 
 /**
@@ -18,11 +19,13 @@ export function TripList({
   locale,
   today,
   filterable = false,
+  counters,
 }: {
   trips: ListedTrip[];
   locale: Locale;
   today: string;
   filterable?: boolean;
+  counters?: CounterSet;
 }) {
   const [filter, setFilter] = useState<string>(ALL_CHIP);
 
@@ -47,7 +50,7 @@ export function TripList({
           locale={locale}
         />
       )}
-      <TripGrid trips={shown} locale={locale} today={today} />
+      <TripGrid trips={shown} locale={locale} today={today} counters={counters} />
     </>
   );
 }

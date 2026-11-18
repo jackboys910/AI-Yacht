@@ -5,6 +5,7 @@ import { SectionHead } from "@/components/section-head";
 import { ALL_CHIP, FilterChips } from "@/components/filter-chips";
 import { TripGrid } from "@/components/trip-grid";
 import type { Locale } from "@/i18n/config";
+import type { CounterSet } from "@/lib/content/counters";
 import type { HomeChip, HomeTrip } from "@/lib/content/home";
 
 /** §6.1: three nearest trips, with the rest a click away. */
@@ -39,11 +40,13 @@ export function HomeTrips({
   chips,
   locale,
   today,
+  counters,
 }: {
   trips: HomeTrip[];
   chips: HomeChip[];
   locale: Locale;
   today: string;
+  counters?: CounterSet;
 }) {
   const [filter, setFilter] = useState<string>(ALL_CHIP);
   const [expanded, setExpanded] = useState(false);
@@ -70,7 +73,7 @@ export function HomeTrips({
               locale={locale}
             />
 
-            <TripGrid trips={shown} locale={locale} today={today} />
+            <TripGrid trips={shown} locale={locale} today={today} counters={counters} />
 
             {matching.length > SHOWN_AT_FIRST && (
               <button

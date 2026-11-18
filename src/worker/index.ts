@@ -29,6 +29,7 @@
  */
 
 import { application } from "./application";
+import { interested } from "./interested";
 import { organizerInvite } from "./organizer";
 import { bearerOf, isOwner } from "./owner";
 import { subscribe } from "./subscribe";
@@ -185,6 +186,20 @@ const worker = {
         return await application(request, env);
       } catch (error) {
         console.log(`application failed: ${String(error)}`);
+        return json({ error: "server" }, 502);
+      }
+    }
+
+    if (pathname === "/api/interested" || pathname === "/api/interested/") {
+      if (request.method !== "POST") {
+        return json({ error: "method-not-allowed" }, 405);
+      }
+      try {
+        return await interested(request, env);
+      } catch (error) {
+        // Same reasoning as the forms above: the detail can name a Firestore
+        // path, and a button on a public page is the wrong place to print it.
+        console.log(`interested failed: ${String(error)}`);
         return json({ error: "server" }, 502);
       }
     }

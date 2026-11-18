@@ -22,8 +22,13 @@ import {
   TripRouteDays,
 } from "@/components/trip/trip-journey";
 import type { Locale } from "@/i18n/config";
+import {
+  printedInterest,
+  thresholdsOf,
+  type CounterSet,
+} from "@/lib/content/counters";
 import { subscribeOptions, type NavLink } from "@/lib/content/nav";
-import type { Person, Settings, Trip } from "@/lib/content/types";
+import type { Person, Trip } from "@/lib/content/types";
 import { pickOrOther } from "@/lib/content/trip-view";
 
 /** Header and footer. Absent in the admin preview, which brings its own bar. */
@@ -52,7 +57,8 @@ export function TripPage({
   locale,
   today,
   interestSlug,
-  thresholds,
+  interestName,
+  counters,
   chrome,
 }: {
   trip: Trip;
@@ -60,8 +66,13 @@ export function TripPage({
   locale: Locale;
   today: string;
   interestSlug: string;
-  /** From the settings; the defaults of §6.3 apply when they are not set. */
-  thresholds?: Settings["counterThresholds"];
+  /** The direction's name, said in the "I'm interested" window. */
+  interestName?: string;
+  /**
+   * The counters and their thresholds. Absent in the admin preview, where
+   * the defaults of §6.3 apply and nothing has been counted yet.
+   */
+  counters?: CounterSet;
   /** Absent in the admin preview, which has nowhere to navigate to. */
   chrome?: SiteChrome;
 }) {
@@ -84,8 +95,12 @@ export function TripPage({
         trip={trip}
         locale={locale}
         today={today}
-        thresholds={thresholds}
+        thresholds={thresholdsOf(counters)}
+        interested={printedInterest(counters, trip.id)}
+        crew={people}
+        interestName={interestName ?? interestSlug}
         joinable={Boolean(chrome)}
+        live={Boolean(chrome)}
       />
       <TripPrice trip={trip} locale={locale} />
       <TripPlace trip={trip} locale={locale} />

@@ -1,6 +1,12 @@
+import { CardCounters } from "@/components/trip/interested";
 import type { Locale } from "@/i18n/config";
 import { localized } from "@/i18n/config";
-import { effectiveBookingStatus } from "@/lib/content/schedule";
+import {
+  printedInterest,
+  thresholdsOf,
+  type CounterSet,
+} from "@/lib/content/counters";
+import { effectiveBookingStatus, goingCount } from "@/lib/content/schedule";
 import type { Trip } from "@/lib/content/types";
 import {
   bookingLabel,
@@ -29,11 +35,14 @@ export function TripCard({
   interestSlug,
   locale,
   today,
+  counters,
 }: {
   trip: Trip;
   interestSlug: string;
   locale: Locale;
   today: string;
+  /** Going and Interested, where the page has them (§6.2). */
+  counters?: CounterSet;
 }) {
   const cover = coverOf(trip);
   const status = effectiveBookingStatus(trip, today);
@@ -89,6 +98,20 @@ export function TripCard({
           {formatDateRange(trip.startDate, trip.endDate, locale)}
           {pick(trip.place, locale) && ` · ${pick(trip.place, locale)}`}
         </p>
+
+        {/* §6.2 puts "N going · M interested" on the card. Nothing is drawn
+            below the thresholds, and nothing is drawn on a trip that has
+            already happened — a number of people who were going is a fact
+            about the past, and the card is quiet about those anyway. */}
+        {!past && (
+          <CardCounters
+            tripId={trip.id}
+            going={goingCount(trip)}
+            printed={printedInterest(counters, trip.id)}
+            thresholds={thresholdsOf(counters)}
+            locale={locale}
+          />
+        )}
 
         {price && !past && (
           <p className="mt-3 font-display text-lg text-[color:var(--teal)]">{price}</p>
