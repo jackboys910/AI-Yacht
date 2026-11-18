@@ -309,15 +309,25 @@ export interface Trip {
 }
 
 /**
- * Live "Going" and "Interested" numbers, kept apart from the trip so the
- * browser can refresh them between site rebuilds (§6.3).
+ * How many people pressed "I'm interested" on one trip (§6.3).
+ *
+ * A record of its own, outside the trip, because it is the one number on the
+ * page that changes without anybody opening the panel. The site is printed
+ * ahead of time, so a number written into the trip would be as old as the
+ * last build; this one is printed too, and then read again in the browser.
+ *
+ * "Going" is not here and does not need to be. It is seats taken, or the
+ * owner's correction of that — both edited in the panel, which rebuilds the
+ * site, so the page can never show a going count older than itself. Keeping
+ * a second copy of it here would only create a copy that can disagree.
+ *
+ * The faces beside the numbers are not here either: they come from the
+ * trip's crew in the people directory, which the page already has.
  */
 export interface TripCounters {
   tripId: string;
-  going: number;
   interested: number;
-  /** Up to five faces shown next to the numbers. */
-  avatarUrls: string[];
+  updatedAt: IsoDateTime;
 }
 
 /* -------------------------------------------------------------------------
@@ -543,5 +553,7 @@ export interface SiteContent {
   trips: Trip[];
   people: Person[];
   projects: WorkProject[];
+  /** What the counters said when the site was printed; the browser re-reads them. */
+  counters: TripCounters[];
   settings: Settings | null;
 }

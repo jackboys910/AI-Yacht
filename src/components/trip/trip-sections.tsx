@@ -3,9 +3,10 @@ import { FaqList } from "@/components/faq-list";
 import { SectionHead } from "@/components/section-head";
 import type { Locale } from "@/i18n/config";
 import { effectiveBookingStatus, goingCount } from "@/lib/content/schedule";
-import type { CardsBlock, Settings, Trip } from "@/lib/content/types";
+import type { CardsBlock, Person, Settings, Trip } from "@/lib/content/types";
 import { bookingLabel, pick, pickList, pickOrOther } from "@/lib/content/trip-view";
 import { DEFAULT_COUNTER_THRESHOLDS } from "@/lib/content/visibility";
+import { InterestedFigure, InterestedRow } from "./interested";
 
 /**
  * The text blocks of a trip page (§6.3).
@@ -43,24 +44,44 @@ const HEADINGS = {
 const say = (key: keyof typeof HEADINGS, locale: Locale) => HEADINGS[key][locale];
 
 /**
- * "Who's going" (§6.3).
+ * "Who's going" (§6.3): the numbers, the faces, and the two ways in.
  *
- * The number of people going appears only once there are enough of them: the
- * spec sets a threshold because a trip that says "1 going" reads worse than one
- * that says nothing. Until the counters of item 2.4 exist, this is what keeps a
- * freshly published trip from announcing "0 going" to its first visitor.
+ * Each number appears only once there are enough of it. The spec sets the
+ * thresholds because a trip that says "1 going" reads worse than one that
+ * says nothing, and the owner can move them in the settings.
+ *
+ * "Going" is printed here and stays as printed: it is seats taken, or the
+ * owner's correction of that, and both are edited in the panel, which
+ * rebuilds the site. "Interested" is a visitor's doing, so it arrives as a
+ * small client island that re-reads the count after the page has loaded —
+ * see `components/trip/interested`.
+ *
+ * The faces are the trip's crew. §6.3 asks for photographs from the people
+ * directory or initials, and the directory is the only place this site has a
+ * photograph of anybody; the people who wrote in gave their names to the
+ * owner, not to the page.
  */
 export function TripSeats({
   trip,
   locale,
   today,
   thresholds = DEFAULT_COUNTER_THRESHOLDS,
+  interested = 0,
+  crew = [],
+  interestName = "",
   joinable = false,
+  live = false,
 }: {
   trip: Trip;
   locale: Locale;
   today: string;
   thresholds?: Settings["counterThresholds"];
+  /** What "Interested" said when the page was printed. */
+  interested?: number;
+  /** The people shown as faces beside the numbers. */
+  crew?: Person[];
+  /** The direction's name, said in the "I'm interested" window. */
+  interestName?: string;
   /**
    * Whether there is an application form further down to jump to.
    *
@@ -68,6 +89,14 @@ export function TripSeats({
    * scrolls to nothing is worse than no button.
    */
   joinable?: boolean;
+  /**
+   * Whether this is the published page rather than the admin preview.
+   *
+   * The preview draws a trip that may not exist yet, and a button that wrote
+   * a real record against a draft would count people into a trip nobody can
+   * open.
+   */
+  live?: boolean;
 }) {
   const status = effectiveBookingStatus(trip, today);
   const going = goingCount(trip);
@@ -79,6 +108,12 @@ export function TripSeats({
         <Eyebrow>{say("seats", locale)}</Eyebrow>
         <div className="mt-6 flex flex-wrap items-center gap-x-10 gap-y-6">
           {showGoing && <Figure value={String(going)} label={say("going", locale)} />}
+          <InterestedFigure
+            tripId={trip.id}
+            printed={interested}
+            threshold={thresholds.interested}
+            locale={locale}
+          />
           {status !== "completed" && trip.seatsLeft > 0 && (
             <Figure value={String(trip.seatsLeft)} label={say("seatsLeft", locale)} />
           )}
@@ -97,6 +132,25 @@ export function TripSeats({
             </a>
           )}
         </div>
+
+        {/* A trip that has already happened is not one to be kept posted
+            about, so the button goes with the dates rather than with the
+            archive. */}
+        {live && status !== "completed" && (
+          <InterestedRow
+            tripId={trip.id}
+            tripTitle={pickOrOther(trip.title, locale)}
+            direction={interestName}
+            locale={locale}
+            going={going}
+            printed={interested}
+            thresholds={thresholds}
+            faces={crew.map((person) => ({
+              name: pickOrOther(person.name, locale),
+              url: person.photo?.thumbUrl || person.photo?.url,
+            }))}
+          />
+        )}
       </div>
     </section>
   );

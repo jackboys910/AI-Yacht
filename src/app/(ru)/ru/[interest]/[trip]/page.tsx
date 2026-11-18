@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { localeHrefs, pagePath } from "@/i18n/config";
 import { todayUtc } from "@/lib/content/schedule";
 import { interestLinks } from "@/lib/content/nav";
+import { counterSet } from "@/lib/content/counters";
 import { resolveTrip, withPlaceholder } from "@/lib/content/lookup";
 import { formatDateRange, pick, pickOrOther } from "@/lib/content/trip-view";
 import { publishedTripPaths } from "@/lib/content/visibility";
@@ -75,7 +76,8 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       locale="ru"
       today={todayUtc()}
       interestSlug={interest}
-      thresholds={content.settings?.counterThresholds}
+      interestName={pickOrOther(found.interest.name, "ru")}
+      counters={counterSet(content)}
       chrome={{
         interests: interestLinks(content.interests, "ru"),
         solutionsHref: pagePath("itSolutions", "ru"),

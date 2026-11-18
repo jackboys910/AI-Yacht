@@ -202,7 +202,7 @@ Cloudflare and refuses the build runner. Nothing to set, nothing to rotate.
 | --- | --- | --- |
 | `GITHUB_TOKEN` | start a site rebuild | the panel says the rebuild is not set up |
 | `TURNSTILE_SECRET` | prove a form submission came from a browser | forms are accepted unchecked |
-| `FIREBASE_SERVICE_ACCOUNT` | write collections that browsers may not write to | the idea form and the subscription answer "not switched on yet" |
+| `FIREBASE_SERVICE_ACCOUNT` | write collections that browsers may not write to | the idea form, the subscription and "I'm interested" answer "not switched on yet" |
 | `EMAILJS_PRIVATE_KEY` | send mail server-side | the idea and the subscription are saved, no email goes out; the organizer's letter cannot be sent |
 
 ### Turnstile
@@ -228,6 +228,13 @@ are announced anywhere.
 what people wrote about themselves to be allowed on a trip. A service account
 is how the Worker gets past a rule that is there to stop browsers.
 
+`/api/interested` needs it for the same reason and for one more. It writes
+`interested` and `subscribers`, both shut to browsers, and it also
+writes `counters`, which is the one collection browsers may *read*: the
+number of people interested in a trip is printed on the page. Counting happens
+in the Worker, from the records, precisely because a counter a browser could
+write is a counter anyone could write any number into.
+
 Click by click:
 
 1. <https://console.firebase.google.com/project/nazarov-net/settings/serviceaccounts/adminsdk>
@@ -251,9 +258,11 @@ API. A private key in a page would let anyone send mail from this account,
 which is why the Worker sends and the page does not. It is in the EmailJS
 dashboard under **Account → General → Private Key**.
 
-Three things need it. `/api/suggestion` writes to the owner and answers the
-author of an idea, `/api/subscribe` greets a new subscriber (Н-05), and
-`/api/organizer-invite` sends an organizer the letter
+Four things need it. `/api/suggestion` writes to the owner and answers the
+author of an idea, `/api/subscribe` greets a new subscriber (Н-05),
+`/api/interested` greets whoever presses the button on a trip — the press
+puts them on the list of that trip's direction — and `/api/organizer-invite`
+sends an organizer the letter
 that explains the panel (С-12) — that one addresses somebody who is not the
 owner, which a key visible in the browser may never do, because the template's
 recipient is pinned to the owner's own mailbox precisely to keep it harmless.
@@ -289,6 +298,7 @@ This is no longer one mailbox, and that matters for the template.
 | Join a trip | the owner, the trip's organizer, and a receipt to the applicant |
 | Suggest an adventure | the owner, and a confirmation to the author |
 | Subscribe | a welcome to the subscriber |
+| I'm interested | a welcome to the new subscriber, and nothing at all when the address is already on that list |
 | Organizer invitation | the organizer |
 | IT Solutions | the owner |
 

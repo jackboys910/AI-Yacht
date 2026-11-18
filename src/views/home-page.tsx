@@ -6,6 +6,7 @@ import { VideoWall } from "@/components/video/video-wall";
 import { Subscribe } from "@/components/subscribe/subscribe";
 import { SiteNav } from "@/components/site-nav";
 import type { Locale } from "@/i18n/config";
+import type { CounterSet } from "@/lib/content/counters";
 import type { HomeChip, HomeLane, HomeTrip } from "@/lib/content/home";
 import { subscribeOptions } from "@/lib/content/nav";
 import type { ChannelVideo } from "@/lib/content/youtube";
@@ -29,6 +30,7 @@ export function HomePage({
   videos,
   locale,
   today,
+  counters,
   chrome,
 }: {
   lanes: HomeLane[];
@@ -38,6 +40,8 @@ export function HomePage({
   videos: ChannelVideo[];
   locale: Locale;
   today: string;
+  /** Going and Interested for the cards (§6.2). */
+  counters?: CounterSet;
   chrome: SiteChrome;
 }) {
   return (
@@ -58,7 +62,13 @@ export function HomePage({
         aboutHref={chrome.aboutHref}
         suggestHref={chrome.suggestHref}
       />
-      <HomeTrips trips={trips} chips={chips} locale={locale} today={today} />
+      <HomeTrips
+        trips={trips}
+        chips={chips}
+        locale={locale}
+        today={today}
+        counters={counters}
+      />
 
       <VideoWall
         videos={videos}

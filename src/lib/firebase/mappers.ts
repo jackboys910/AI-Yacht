@@ -12,6 +12,7 @@ import type {
   SuggestionStatus,
   Trip,
   TripApplication,
+  TripCounters,
   WorkProject,
 } from "@/lib/content/types";
 
@@ -344,6 +345,21 @@ export function toWorkProject(id: string, data: DocumentData): WorkProject {
     url: str(data.url),
     screenshot: data.screenshot ?? undefined,
     order: num(data.order),
+  };
+}
+
+/**
+ * The live "Interested" number of a trip.
+ *
+ * The document is written by the Worker and by nobody else, but it is read
+ * anonymously, so a missing or spoiled field becomes zero rather than
+ * `NaN` on the page.
+ */
+export function toCounters(tripId: string, data: DocumentData): TripCounters {
+  return {
+    tripId,
+    interested: Math.max(0, Math.round(num(data.interested))),
+    updatedAt: str(data.updatedAt),
   };
 }
 

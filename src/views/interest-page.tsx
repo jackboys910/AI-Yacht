@@ -5,6 +5,7 @@ import { Subscribe } from "@/components/subscribe/subscribe";
 import { VideoWall } from "@/components/video/video-wall";
 import { TripList } from "@/components/interest/trip-list";
 import type { Locale } from "@/i18n/config";
+import type { CounterSet } from "@/lib/content/counters";
 import type { ListedTrip } from "@/lib/content/lookup";
 import { subscribeOptions } from "@/lib/content/nav";
 import type { ChannelVideo } from "@/lib/content/youtube";
@@ -45,6 +46,7 @@ export function InterestPage({
   videos,
   locale,
   today,
+  counters,
   chrome,
 }: {
   interest: Interest;
@@ -54,6 +56,8 @@ export function InterestPage({
   videos: ChannelVideo[];
   locale: Locale;
   today: string;
+  /** Going and Interested for the cards (§6.2). */
+  counters?: CounterSet;
   chrome: SiteChrome;
 }) {
   const title = pickOrOther(interest.name, locale);
@@ -119,6 +123,7 @@ export function InterestPage({
               locale={locale}
               today={today}
               filterable={interest.collectsKidFriendly}
+              counters={counters}
             />
           ) : (
             <p className="mt-6 max-w-xl text-lg text-muted-foreground">

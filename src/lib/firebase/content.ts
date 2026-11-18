@@ -11,6 +11,7 @@ import type { Settings, SiteContent, Trip } from "@/lib/content/types";
 import { firestore } from "./app";
 import { SETTINGS_DOC_ID, collections, isFirebaseConfigured } from "./config";
 import {
+  toCounters,
   toInterest,
   toPerson,
   toSettings,
@@ -62,15 +63,16 @@ async function readSiteContent(): Promise<SiteContent> {
   const db = firestore();
 
   try {
-    const [interests, trips, people, projects, settings] = await Promise.all([
+    const [interests, trips, people, projects, counters, settings] = await Promise.all([
       readAll(db, collections.interests, toInterest),
       readPublishedTrips(db),
       readAll(db, collections.people, toPerson),
       readAll(db, collections.projects, toWorkProject),
+      readAll(db, collections.counters, toCounters),
       readSettings(db),
     ]);
 
-    return { interests, trips, people, projects, settings };
+    return { interests, trips, people, projects, counters, settings };
   } catch (cause) {
     throw new Error(
       "[content] Could not read the site content from Firestore. Refusing to " +
@@ -81,7 +83,7 @@ async function readSiteContent(): Promise<SiteContent> {
 }
 
 function emptyContent(): SiteContent {
-  return { interests: [], trips: [], people: [], projects: [], settings: null };
+  return { interests: [], trips: [], people: [], projects: [], counters: [], settings: null };
 }
 
 type Db = ReturnType<typeof firestore>;
