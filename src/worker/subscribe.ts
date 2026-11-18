@@ -3,6 +3,7 @@ import { readEmailJs, sendEmail } from "./emailjs";
 import {
   createDocument,
   decodeFields,
+  getDocument,
   listDocuments,
   patchDocument,
   queryDocuments,
@@ -156,6 +157,8 @@ export async function subscribe(request: Request, env: Env): Promise<Response> {
 
   let created = true;
   let changed = true;
+  // What the unsubscribe link in the letter will travel on (Н-09).
+  let key = manageKey();
 
   if (existing.length > 0) {
     // Н-06: the same address twice is one subscriber. The directions are
@@ -173,7 +176,14 @@ export async function subscribe(request: Request, env: Env): Promise<Response> {
 
     changed = wasOut || merged.length !== before.length;
 
+    // An older subscriber may predate the key; the letter needs one, so one
+    // is written now rather than leaving that letter without a way out.
+    if (typeof fields.manageKey === "string" && fields.manageKey.length > 0) {
+      key = fields.manageKey;
+    }
+
     await patchDocument(account, projectId, `subscribers/${row.id}`, {
+      manageKey: key,
       interestIds: merged,
       // Subscribing again is how somebody comes back; there is no other
       // button for it.
@@ -190,7 +200,7 @@ export async function subscribe(request: Request, env: Env): Promise<Response> {
       source: parsed.source,
       viaInterested: false,
       unsubscribed: false,
-      manageKey: manageKey(),
+      manageKey: key,
       createdAt: now,
       updatedAt: now,
     });
@@ -208,6 +218,7 @@ export async function subscribe(request: Request, env: Env): Promise<Response> {
   // would be the mailing list spamming its own subscriber.
   if (mail && changed) {
     try {
+      const settings = await getDocument(account, projectId, "settings/site");
       await sendEmail(
         mail,
         parsed.email,
@@ -216,6 +227,9 @@ export async function subscribe(request: Request, env: Env): Promise<Response> {
           locale: parsed.locale,
           ownerEmail: mail.owner,
           returning: !created,
+          manageKey: key,
+          postalAddress:
+            typeof settings?.postalAddress === "string" ? settings.postalAddress : undefined,
         }),
       );
       letter = true;

@@ -5,9 +5,13 @@ import type { NavLink } from "@/lib/content/nav";
  * The footer from §6.1: "© Nazarov", the site's sections and the EN / RU
  * switch.
  *
- * "Privacy Policy" and "Unsubscribe" belong here too and arrive with the items
- * that build those pages — 4.2 and 3.3. Linking to them now would mean linking
- * to a 404, which is worse than linking to nothing.
+ * "Unsubscribe" is here as Appendix В asks, and it leads to the page the
+ * letters link to (item 3.3). Without a key that page cannot know whose
+ * subscription it is looking at, so it says so and points at the letters —
+ * which is the honest answer to somebody who arrived from the footer.
+ *
+ * "Privacy Policy" joins them with item 5.2, which is where that page is
+ * written. Linking to it now would mean linking to a 404.
  */
 export function SiteFoot({
   locale,
@@ -57,6 +61,12 @@ export function SiteFoot({
               {locale === "en" ? "Suggest an idea" : "Предложить идею"}
             </a>
           )}
+          <a
+            href={locale === "en" ? "/unsubscribe/" : `/${locale}/unsubscribe/`}
+            className="hover:text-[color:var(--teal)]"
+          >
+            {locale === "en" ? "Unsubscribe" : "Отписаться"}
+          </a>
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a href="/admin/" className="hover:text-[color:var(--teal)]">
             {locale === "en" ? "Panel" : "Панель"}

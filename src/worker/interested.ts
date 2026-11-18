@@ -186,6 +186,8 @@ export async function interested(request: Request, env: Env): Promise<Response> 
   let subscribed = false;
   let changed = false;
   let returning = false;
+  // The unsubscribe link in the welcome letter travels on this (Н-09).
+  let key = manageKey();
 
   if (interestId) {
     const existing = await queryDocuments(account, projectId, {
@@ -209,8 +211,12 @@ export async function interested(request: Request, env: Env): Promise<Response> 
         : [];
       const merged = [...new Set([...before, interestId])];
       changed = fields.unsubscribed === true || merged.length !== before.length;
+      if (typeof fields.manageKey === "string" && fields.manageKey.length > 0) {
+        key = fields.manageKey;
+      }
 
       await patchDocument(account, projectId, `subscribers/${row.id}`, {
+        manageKey: key,
         interestIds: merged,
         unsubscribed: false,
         locale: parsed.locale,
@@ -229,7 +235,7 @@ export async function interested(request: Request, env: Env): Promise<Response> 
         // and item 3.4 shows the owner which is which.
         viaInterested: true,
         unsubscribed: false,
-        manageKey: manageKey(),
+        manageKey: key,
         createdAt: now,
         updatedAt: now,
       });
@@ -246,6 +252,7 @@ export async function interested(request: Request, env: Env): Promise<Response> 
   if (mail && changed && interestId) {
     try {
       const direction = await getDocument(account, projectId, `interests/${interestId}`);
+      const settings = await getDocument(account, projectId, "settings/site");
       await sendEmail(
         mail,
         parsed.email,
@@ -254,6 +261,9 @@ export async function interested(request: Request, env: Env): Promise<Response> 
           locale: parsed.locale,
           ownerEmail: mail.owner,
           returning,
+          manageKey: key,
+          postalAddress:
+            typeof settings?.postalAddress === "string" ? settings.postalAddress : undefined,
         }),
       );
       letter = true;

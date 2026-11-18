@@ -228,6 +228,12 @@ are announced anywhere.
 what people wrote about themselves to be allowed on a trip. A service account
 is how the Worker gets past a rule that is there to stop browsers.
 
+`/api/subscription` — the page behind the Unsubscribe link — needs it to read
+and change a subscriber by their key, which is another collection no browser
+may touch. It holds no secret of its own: the key in the link is the whole of
+the authority, which is why it is 256 random bits rather than an email
+address.
+
 `/api/interested` needs it for the same reason and for one more. It writes
 `interested` and `subscribers`, both shut to browsers, and it also
 writes `counters`, which is the one collection browsers may *read*: the
@@ -324,10 +330,9 @@ something unlawful. It lives in the settings document — the screen that
 writes one arrives with plan item 4.3; until then the panel says what is
 missing and the button stays off.
 
-**The unsubscribe page.** Every announcement carries a link to
-`/unsubscribe/?key=…` (plan item 3.3). The key is already written on every
-subscriber, so no letter sent later will have to be corrected — but a letter
-sent before that page exists would link to a 404.
+**The unsubscribe page** is live (item 3.3): every letter links to
+`/unsubscribe/?key=…`, the key is written on every subscriber, and the page
+lets somebody leave in one press or keep only the directions they still want.
 
 The mailing goes out in batches of a dozen with the panel open, because a
 Worker request may only make so many outgoing requests and EmailJS refuses a
