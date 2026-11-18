@@ -10,6 +10,11 @@ export const en = {
       description:
         "Why this community exists, what the letter S stands for, how to follow a direction, join a trip or suggest your own — and why all of it is free.",
     },
+    story: {
+      title: "Story — the person behind the trips",
+      description:
+        "Who runs these trips, the YouTube channel the long version lives on, and where else to find him.",
+    },
     suggest: {
       title: "Suggest an Adventure — Nazarov.net",
       description:

@@ -30,6 +30,7 @@ export function SiteNav({
   interests,
   solutionsHref,
   aboutHref,
+  storyHref,
   suggestHref,
   languageHrefs,
   active,
@@ -38,6 +39,8 @@ export function SiteNav({
   interests: NavLink[];
   solutionsHref: string;
   aboutHref?: string;
+  /** ТЗ v3 §6.5 — личная страница владельца. */
+  storyHref?: string;
   /** ТЗ v4 §3.1 asks for this in the menu on every page. */
   suggestHref?: string;
   languageHrefs: Record<Locale, string>;
@@ -79,10 +82,13 @@ export function SiteNav({
           NAZAROV
         </a>
 
-        <nav className="hidden items-center gap-6 lg:flex">
+        {/* Tighter at 1024 than at 1280: with Story added (item 4.1) the row
+            no longer fit on a laptop, and what it lost there is the caption
+            over the interests — a label, not a way anywhere. */}
+        <nav className="hidden items-center gap-4 lg:flex xl:gap-6">
           {interests.length > 0 && (
             <>
-              <span className="text-[10px] uppercase tracking-[0.18em] text-white/45">
+              <span className="hidden text-[10px] uppercase tracking-[0.18em] text-white/45 xl:inline">
                 My interests
               </span>
               {interests.map((link) => (
@@ -110,6 +116,18 @@ export function SiteNav({
           >
             Solutions
           </a>
+
+          {storyHref && (
+            <a
+              href={storyHref}
+              aria-current={active === "story" ? "page" : undefined}
+              className={`text-sm font-medium transition hover:text-[color:var(--gold)] ${
+                active === "story" ? "text-[color:var(--gold)]" : "text-white/80"
+              }`}
+            >
+              Story
+            </a>
+          )}
 
           {aboutHref && (
             <a
@@ -210,6 +228,18 @@ export function SiteNav({
             >
               Solutions
             </a>
+
+            {storyHref && (
+              <a
+                href={storyHref}
+                onClick={() => setMenuOpen(false)}
+                className={`border-t border-white/10 py-3 text-base font-medium ${
+                  active === "story" ? "text-[color:var(--gold)]" : "text-white/90"
+                }`}
+              >
+                Story
+              </a>
+            )}
 
             {aboutHref && (
               <a

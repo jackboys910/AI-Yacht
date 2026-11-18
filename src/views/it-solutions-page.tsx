@@ -37,6 +37,7 @@ export function ItSolutionsPage({
         interests={chrome.interests}
         solutionsHref={chrome.solutionsHref}
         aboutHref={chrome.aboutHref}
+        storyHref={chrome.storyHref}
         suggestHref={chrome.suggestHref}
         languageHrefs={chrome.languageHrefs}
         active="solutions"
@@ -62,6 +63,7 @@ export function ItSolutionsPage({
         interests={chrome.interests}
         solutionsHref={chrome.solutionsHref}
         aboutHref={chrome.aboutHref}
+        storyHref={chrome.storyHref}
         suggestHref={chrome.suggestHref}
         languageHrefs={chrome.languageHrefs}
       />
