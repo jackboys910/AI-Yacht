@@ -304,6 +304,9 @@ export function TripsView({
                     </span>
                     <StatusBadge status={trip.status} past={past} t={t} />
                     {trip.kidFriendly && <Badge>{t.trips.badges.kidFriendly}</Badge>}
+                    {/* Н-07: that subscribers have already been written to
+                        about this trip is a fact about the trip. */}
+                    {trip.announcementSentAt && <Badge>{t.trips.badges.announced}</Badge>}
                     {past && !trip.showInPast && (
                       <Badge tone="warn">{t.trips.badges.hiddenInPast}</Badge>
                     )}

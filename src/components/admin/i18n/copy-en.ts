@@ -224,6 +224,7 @@ const EN = {
       draft: "draft",
       kidFriendly: "with kids",
       hiddenInPast: "hidden among past",
+      announced: "announced",
     },
     booking: {
       open: "open for booking",
@@ -466,6 +467,49 @@ const EN = {
       unconfigured:
         "Sending is not set up: the Worker has no EmailJS key for it.",
       failed: "The letter did not go out.",
+    },
+    announce: {
+      title: "Announcement to subscribers",
+      explain:
+        "A letter about this trip to everyone subscribed to its direction, " +
+        "each in the language they subscribed in. The photograph, the name, " +
+        "the dates, the place and a button to the page — nothing else.",
+      recipients: (count: number) =>
+        count === 1 ? "1 subscriber of this direction" : `${count} subscribers of this direction`,
+      byLocale: (en: number, ru: number) => `${en} in English, ${ru} in Russian`,
+      nobody: "Nobody is subscribed to this direction yet — there is nobody to write to.",
+      preview: "What will arrive",
+      previewEn: "English",
+      previewRu: "Russian",
+      send: "Send to subscribers",
+      resume: (left: number) => `Carry on — ${left} left`,
+      sending: (done: number, total: number) => `Sending… ${done} of ${total}`,
+      sentAt: (at: string) => `The announcement went out ${at}.`,
+      progress: (done: number, total: number) => `Written to ${done} of ${total}.`,
+      failedSome: (count: number) =>
+        count === 1
+          ? "One letter was refused by the mail service; its address is listed below."
+          : `${count} letters were refused by the mail service; their addresses are listed below.`,
+      again: "Send it again",
+      againConfirm:
+        "Everybody has already had this announcement. Send the same letter to all of them a second time?",
+      againYes: "Yes, send it again",
+      againNo: "No",
+      restarted: "Starting over — press “Send to subscribers” to begin.",
+      limit: (count: number, limit: number) =>
+        `${count} letters out of the ${limit} a month the EmailJS plan allows, shared with ctmass.com. What is left of it is visible in the EmailJS dashboard.`,
+      overLimit:
+        "This mailing alone is most of the monthly allowance, which is shared with ctmass.com. Check what is left in the EmailJS dashboard before sending.",
+      saveFirst: "Save and publish the trip first — an announcement is about a page that exists.",
+      draft: "Only a published trip can be announced: the letter leads to its page.",
+      noPostal:
+        "The sender's postal address is missing. American law requires it in every mailing, so nothing can be sent until it is filled in (Settings, item 4.3 of the plan).",
+      unconfigured: "Sending is not set up: the Worker has no EmailJS key.",
+      absent:
+        "A mailing can only be sent from the live site — there is no server behind the panel here.",
+      failed: "The mailing stopped. Press again to carry on from where it stopped.",
+      closingTab:
+        "Keep this page open while it sends. Closing it stops the mailing; nothing is lost and nobody is written to twice — reopen the trip and carry on.",
     },
     showInPast: "Show among past trips",
     showInPastHint:

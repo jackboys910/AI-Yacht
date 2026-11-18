@@ -27,6 +27,7 @@ import {
 import { failureText, useAdmin, type AdminCopy } from "../i18n";
 import type { AdminRole } from "../role";
 import { OrganizerInvite } from "./organizer-invite";
+import { AnnouncePanel } from "./announce-panel";
 import { Section } from "./section";
 import { TripBlocks, TripClosingBlocks } from "./trip-blocks";
 import { TripCrew, TripGallery, TripRoute } from "./trip-media";
@@ -73,6 +74,9 @@ const CONTENTS: { id: string; key: BlockKey }[] = [
   { id: "block-faq", key: "faq" },
   { id: "block-flags", key: "flags" },
   { id: "block-social", key: "social" },
+  // Last, and only for the owner: it is the one block that acts on the
+  // outside world rather than describing the trip.
+  { id: "block-announce", key: "announce" },
 ];
 
 const BOOKING_STATUSES = ["open", "fewSpots", "soldOut", "completed"] as const;
@@ -520,6 +524,13 @@ export function TripForm({
                 hint={t.tripForm.socialDescriptionHint}
               />
             </Section>
+
+            {/* Н-07. Not for an organizer: writing to the mailing list is
+                further outside their trip than publishing it, which С-11
+                already keeps away from them. */}
+            {!organizer && (
+              <AnnouncePanel tripId={id} status={draft.status} dirty={dirty} />
+            )}
           </div>
 
           <div className="mt-6 space-y-4">
@@ -617,7 +628,9 @@ export function TripForm({
               {t.tripForm.contents}
             </p>
             <ul className="mt-3 space-y-1">
-              {CONTENTS.map((entry) => (
+              {CONTENTS.filter(
+                (entry) => entry.id !== "block-announce" || !organizer,
+              ).map((entry) => (
                 <li key={entry.id}>
                   <a
                     href={`#${entry.id}`}

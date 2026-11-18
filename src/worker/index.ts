@@ -28,6 +28,7 @@
  * and a build runner is the wrong address — see videos.ts.
  */
 
+import { announce } from "./announce";
 import { application } from "./application";
 import { interested } from "./interested";
 import { organizerInvite } from "./organizer";
@@ -187,6 +188,21 @@ const worker = {
       } catch (error) {
         console.log(`application failed: ${String(error)}`);
         return json({ error: "server" }, 502);
+      }
+    }
+
+    if (pathname === "/api/announce" || pathname === "/api/announce/") {
+      if (request.method !== "GET" && request.method !== "POST") {
+        return json({ error: "method-not-allowed" }, 405);
+      }
+      try {
+        return await announce(request, env);
+      } catch (error) {
+        // Only the owner reaches this, so the detail is safe to return and
+        // useful: a mailing that stopped with no reason given is a mailing
+        // nobody can decide what to do about.
+        console.log(`announce failed: ${String(error)}`);
+        return json({ error: "server", detail: String(error) }, 502);
       }
     }
 
