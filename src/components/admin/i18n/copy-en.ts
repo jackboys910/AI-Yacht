@@ -258,6 +258,57 @@ const EN = {
     loadFailed: (detail: string) => `Could not load the trips: ${detail}`,
   },
 
+  subscriberList: {
+    loading: "Reading the list…",
+    loadFailed: (detail: string) => `Could not read the subscribers: ${detail}`,
+    none: "Nobody has subscribed yet.",
+    count: (total: number, active: number) =>
+      total === active
+        ? `${total} ${total === 1 ? "subscriber" : "subscribers"}.`
+        : `${total} ${total === 1 ? "address" : "addresses"}, ${active} of them still subscribed.`,
+    showing: (shown: number, total: number) => `Showing ${shown} of ${total}.`,
+    byDirection: "By direction",
+    filterDirection: "Direction",
+    filterState: "Who to show",
+    states: {
+      all: "Everyone",
+      active: "Subscribed",
+      unsubscribed: "Unsubscribed",
+      viaInterested: "From “I'm interested”",
+    },
+    search: "Search by address",
+    searchPlaceholder: "part of an email",
+    emptyFilter: "Nobody here with those filters.",
+    showAll: "Show everyone",
+    download: "Download CSV",
+    downloadHint:
+      "Opens in Excel and in Google Sheets. The file follows the panel's language: a comma separates the columns in English, a semicolon in Russian — that is what each Excel expects.",
+    columns: {
+      email: "Email",
+      directions: "Directions",
+      language: "Language",
+      source: "Came from",
+      viaInterested: "Via I'm interested",
+      unsubscribed: "Unsubscribed",
+      createdAt: "Subscribed on",
+      updatedAt: "Last change",
+    },
+    yes: "yes",
+    no: "no",
+    badges: {
+      viaInterested: "from a trip",
+      unsubscribed: "unsubscribed",
+    },
+    noDirections: "no directions",
+    remove: "Delete",
+    removeConfirm: "Delete this address for good?",
+    removeHint:
+      "Unsubscribing is what the link in the letter does, and it keeps the record. This removes the address entirely — for somebody who asked for exactly that.",
+    removed: "The address is deleted.",
+    removeFailed: (detail: string) => `Could not delete it: ${detail}`,
+    solutions:
+      "Solutions enquiries are not here yet: the form sends them by email and nothing stores them. The screen for them comes with item 4.2, which is where they start being saved.",
+  },
   tripForm: {
     edit: "Edit trip",
     create: "New trip",

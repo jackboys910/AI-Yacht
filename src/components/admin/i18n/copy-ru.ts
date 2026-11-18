@@ -262,6 +262,57 @@ const RU: AdminCopy = {
     loadFailed: (detail: string) => `Не удалось загрузить поездки: ${detail}`,
   },
 
+  subscriberList: {
+    loading: "Читаем список…",
+    loadFailed: (detail: string) => `Не удалось прочитать подписчиков: ${detail}`,
+    none: "Пока никто не подписался.",
+    count: (total: number, active: number) =>
+      total === active
+        ? `Подписчиков: ${total}.`
+        : `Адресов: ${total}, из них подписаны ${active}.`,
+    showing: (shown: number, total: number) => `Показано ${shown} из ${total}.`,
+    byDirection: "По направлениям",
+    filterDirection: "Направление",
+    filterState: "Кого показывать",
+    states: {
+      all: "Всех",
+      active: "Подписанных",
+      unsubscribed: "Отписавшихся",
+      viaInterested: "Пришедших с «Мне интересно»",
+    },
+    search: "Поиск по адресу",
+    searchPlaceholder: "часть почты",
+    emptyFilter: "С такими фильтрами никого нет.",
+    showAll: "Показать всех",
+    download: "Выгрузить CSV",
+    downloadHint:
+      "Открывается в Excel и в Google Таблицах. Файл следует языку панели: по-английски колонки разделяет запятая, по-русски — точка с запятой, именно этого ждёт соответствующий Excel.",
+    columns: {
+      email: "Почта",
+      directions: "Направления",
+      language: "Язык",
+      source: "Откуда пришёл",
+      viaInterested: "Через «Мне интересно»",
+      unsubscribed: "Отписался",
+      createdAt: "Подписался",
+      updatedAt: "Последнее изменение",
+    },
+    yes: "да",
+    no: "нет",
+    badges: {
+      viaInterested: "с поездки",
+      unsubscribed: "отписался",
+    },
+    noDirections: "без направлений",
+    remove: "Удалить",
+    removeConfirm: "Удалить этот адрес насовсем?",
+    removeHint:
+      "Отписка — это ссылка в письме, и она оставляет запись. Это удаление адреса целиком — для того, кто именно об этом попросил.",
+    removed: "Адрес удалён.",
+    removeFailed: (detail: string) => `Не удалось удалить: ${detail}`,
+    solutions:
+      "Заявок Solutions здесь пока нет: форма отправляет их письмом, и нигде они не хранятся. Экран для них приходит с пунктом 4.2 — там они и начинают сохраняться.",
+  },
   tripForm: {
     edit: "Изменить поездку",
     create: "Новая поездка",
