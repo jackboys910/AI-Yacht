@@ -51,6 +51,7 @@ export function AboutPage({
         interests={chrome.interests}
         solutionsHref={chrome.solutionsHref}
         aboutHref={chrome.aboutHref}
+        storyHref={chrome.storyHref}
         suggestHref={chrome.suggestHref}
         languageHrefs={chrome.languageHrefs}
         active="about"
@@ -75,6 +76,7 @@ export function AboutPage({
         interests={chrome.interests}
         solutionsHref={chrome.solutionsHref}
         aboutHref={chrome.aboutHref}
+        storyHref={chrome.storyHref}
         suggestHref={chrome.suggestHref}
         languageHrefs={chrome.languageHrefs}
       />

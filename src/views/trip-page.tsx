@@ -36,6 +36,8 @@ export interface SiteChrome {
   interests: NavLink[];
   solutionsHref: string;
   aboutHref: string;
+  /** ТЗ v3 §6.5 — the owner's own page. */
+  storyHref: string;
   suggestHref: string;
   languageHrefs: Record<Locale, string>;
 }
@@ -84,6 +86,7 @@ export function TripPage({
           interests={chrome.interests}
           solutionsHref={chrome.solutionsHref}
           aboutHref={chrome.aboutHref}
+        storyHref={chrome.storyHref}
           suggestHref={chrome.suggestHref}
           languageHrefs={chrome.languageHrefs}
           active={interestSlug}
@@ -161,6 +164,7 @@ export function TripPage({
           interests={chrome.interests}
           solutionsHref={chrome.solutionsHref}
           aboutHref={chrome.aboutHref}
+        storyHref={chrome.storyHref}
           suggestHref={chrome.suggestHref}
           languageHrefs={chrome.languageHrefs}
         />

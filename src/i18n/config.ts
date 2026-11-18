@@ -3,13 +3,16 @@ export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = "en";
 
 /** Every page of the site, independent of language. */
-export type PageId = "home" | "about" | "suggest" | "itSolutions";
+export type PageId = "home" | "about" | "story" | "suggest" | "itSolutions";
 
 const slugs: Record<PageId, string> = {
   home: "/",
   // ТЗ v4 §5: про сообщество, а не про владельца. Личная история живёт
   // отдельно, на /story/, и приходит пунктом 4.1.
   about: "/about/",
+  // ТЗ v3 §6.5: личная страница владельца — его текст, канал и ссылки.
+  // Про сообщество рассказывает About, и это нарочно разные страницы.
+  story: "/story/",
   // ТЗ v4 §3: предложить своё приключение может кто угодно, без аккаунта.
   suggest: "/suggest/",
   // §2 of the spec renames the page to "Solutions"; its content is rewritten in

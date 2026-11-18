@@ -19,6 +19,7 @@ export default async function Page() {
         interests: interestLinks(interests, "ru"),
         solutionsHref: pagePath("itSolutions", "ru"),
         aboutHref: pagePath("about", "ru"),
+        storyHref: pagePath("story", "ru"),
         suggestHref: pagePath("suggest", "ru"),
         languageHrefs: localeHrefs("/suggest/"),
       }}

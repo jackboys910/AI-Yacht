@@ -18,6 +18,7 @@ export function SiteFoot({
   interests,
   solutionsHref,
   aboutHref,
+  storyHref,
   suggestHref,
   languageHrefs,
 }: {
@@ -25,6 +26,7 @@ export function SiteFoot({
   interests: NavLink[];
   solutionsHref: string;
   aboutHref?: string;
+  storyHref?: string;
   /** ТЗ v4 §3.1 wants the way in on every page, footer included. */
   suggestHref?: string;
   languageHrefs: Record<Locale, string>;
@@ -51,6 +53,11 @@ export function SiteFoot({
           <a href={solutionsHref} className="hover:text-[color:var(--teal)]">
             Solutions
           </a>
+          {storyHref && (
+            <a href={storyHref} className="hover:text-[color:var(--teal)]">
+              Story
+            </a>
+          )}
           {aboutHref && (
             <a href={aboutHref} className="hover:text-[color:var(--teal)]">
               About
