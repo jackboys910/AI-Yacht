@@ -12,6 +12,8 @@ import {
 import { SiteFoot } from "@/components/site-foot";
 import { SiteNav } from "@/components/site-nav";
 import type { Locale } from "@/i18n/config";
+import type { Settings } from "@/lib/content/types";
+import { aboutClosing, aboutHero } from "@/lib/content/site-copy";
 import type { SiteChrome } from "./trip-page";
 
 /**
@@ -27,11 +29,20 @@ export function AboutPage({
   locale,
   chrome,
   tripsHref,
+  settings,
 }: {
   locale: Locale;
   chrome: SiteChrome;
   /** Back to the home page's "Upcoming trips" block. */
   tripsHref: string;
+  /**
+   * Where the owner's own wording lives, if he has written any (§7.7).
+   *
+   * Only the opening and the closing take it. The nine sections between
+   * them are the Community Concept, agreed as a document rather than edited
+   * as copy — see the settings model for why.
+   */
+  settings?: Settings | null;
 }) {
   return (
     <div className="bg-background text-foreground">
@@ -45,7 +56,7 @@ export function AboutPage({
         active="about"
       />
 
-      <AboutHero locale={locale} />
+      <AboutHero locale={locale} copy={aboutHero(settings ?? null)} />
       <AboutLetter locale={locale} />
       <AboutIdea locale={locale} />
       <AboutRoles locale={locale} />
@@ -53,7 +64,11 @@ export function AboutPage({
       <AboutFree locale={locale} />
       <AboutValues locale={locale} />
       <AboutTerms locale={locale} />
-      <AboutClosing locale={locale} tripsHref={tripsHref} />
+      <AboutClosing
+        locale={locale}
+        tripsHref={tripsHref}
+        copy={aboutClosing(settings ?? null)}
+      />
 
       <SiteFoot
         locale={locale}

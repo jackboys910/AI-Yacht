@@ -365,6 +365,25 @@ export function toCounters(tripId: string, data: DocumentData): TripCounters {
 
 export function toSettings(data: DocumentData): Settings {
   return {
+    // Empty is the normal state of these, not a missing value: an unset
+    // string means "keep whatever the page says now", and the resolver in
+    // lib/content/site-copy is where that falling back happens.
+    home: {
+      communityA: text(data.home?.communityA),
+      communityB: text(data.home?.communityB),
+      free: text(data.home?.free),
+      noFees: text(data.home?.noFees),
+      titleA: text(data.home?.titleA),
+      titleB: text(data.home?.titleB),
+    },
+    about: {
+      heroEyebrow: text(data.about?.heroEyebrow),
+      heroTitle: text(data.about?.heroTitle),
+      heroParagraphs: textList(data.about?.heroParagraphs),
+      closingTitle: text(data.about?.closingTitle),
+      closingParagraphs: textList(data.about?.closingParagraphs),
+      closingSign: text(data.about?.closingSign),
+    },
     story: {
       title: text(data.story?.title),
       text: text(data.story?.text),

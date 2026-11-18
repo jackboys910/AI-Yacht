@@ -10,6 +10,7 @@ import { ApplicationsView } from "./applications/applications-view";
 import { InterestsView } from "./interests/interests-view";
 import { RebuildBar } from "./rebuild-bar";
 import { PeopleView } from "./people/people-view";
+import { SettingsView } from "./settings/settings-view";
 import { SubscribersView } from "./subscribers/subscribers-view";
 import { SuggestionsView } from "./suggestions/suggestions-view";
 import { TripsView } from "./trips/trips-view";
@@ -185,6 +186,8 @@ export function AdminShell({ user, role }: { user: User; role: AdminRole }) {
             <ApplicationsView role={role} ownerEmail={user.email ?? ""} />
           ) : active === "subscribers" ? (
             <SubscribersView />
+          ) : active === "settings" ? (
+            <SettingsView />
           ) : (
             <div className="rounded-2xl border border-dashed border-border bg-card p-6 sm:p-10">
               <p className="text-sm text-muted-foreground">

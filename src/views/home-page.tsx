@@ -7,6 +7,7 @@ import { Subscribe } from "@/components/subscribe/subscribe";
 import { SiteNav } from "@/components/site-nav";
 import type { Locale } from "@/i18n/config";
 import type { CounterSet } from "@/lib/content/counters";
+import type { HomeOpeningCopy } from "@/lib/content/site-copy";
 import type { HomeChip, HomeLane, HomeTrip } from "@/lib/content/home";
 import { subscribeOptions } from "@/lib/content/nav";
 import type { ChannelVideo } from "@/lib/content/youtube";
@@ -31,6 +32,7 @@ export function HomePage({
   locale,
   today,
   counters,
+  opening,
   chrome,
 }: {
   lanes: HomeLane[];
@@ -42,6 +44,8 @@ export function HomePage({
   today: string;
   /** Going and Interested for the cards (§6.2). */
   counters?: CounterSet;
+  /** The first screen's words, with the owner's own merged in (§7.7). */
+  opening?: HomeOpeningCopy;
   chrome: SiteChrome;
 }) {
   return (
@@ -55,7 +59,7 @@ export function HomePage({
         languageHrefs={chrome.languageHrefs}
       />
 
-      <CommunityOpening lanes={lanes} locale={locale} />
+      <CommunityOpening lanes={lanes} locale={locale} copy={opening} />
       <CommunityActions
         locale={locale}
         solutionsHref={chrome.solutionsHref}

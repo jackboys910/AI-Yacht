@@ -1,22 +1,8 @@
 import type { Locale } from "@/i18n/config";
 import type { HomeLane } from "@/lib/content/home";
+import type { HomeOpeningCopy } from "@/lib/content/site-copy";
+import { HOME_OPENING } from "./home-copy";
 import { SLanes } from "./s-lanes";
-
-const COPY = {
-  communityA: { en: "A community,", ru: "Сообщество," },
-  communityB: { en: "not a business.", ru: "а не бизнес." },
-  free: { en: "100% free. Forever.", ru: "Бесплатно. Навсегда." },
-  noFees: {
-    en: "No fees · No subscriptions · No commissions",
-    ru: "Без взносов · Без подписок · Без комиссий",
-  },
-  titleA: { en: "Sail. Ride. Jump.", ru: "Плывём. Катаемся. Прыгаем." },
-  titleB: { en: "Explore. Build. Together.", ru: "Открываем. Создаём. Вместе." },
-  backdropAlt: {
-    en: "Yachts moored in a quiet bay at dusk",
-    ru: "Яхты на стоянке в тихой бухте в сумерках",
-  },
-} as const;
 
 /**
  * The first screen of the home page (ТЗ v4, §4.2).
@@ -39,9 +25,18 @@ const COPY = {
 export function CommunityOpening({
   lanes,
   locale,
+  copy = HOME_OPENING,
 }: {
   lanes: HomeLane[];
   locale: Locale;
+  /**
+   * The words, after the owner's own have been merged in (§7.7).
+   *
+   * A default rather than a required prop: the preview in the panel and any
+   * future caller get the text the site ships with, and only the page that
+   * has read the settings passes anything else.
+   */
+  copy?: HomeOpeningCopy;
 }) {
   return (
     <section
@@ -53,7 +48,7 @@ export function CommunityOpening({
           that the gold letter and the names stay the brightest things here. */}
       <img
         src="/assets/marina-bay.jpg"
-        alt={COPY.backdropAlt[locale]}
+        alt={copy.backdropAlt[locale]}
         width={1280}
         height={583}
         className="absolute inset-0 h-full w-full object-cover opacity-20"
@@ -63,8 +58,8 @@ export function CommunityOpening({
       <div className="container-narrow relative flex min-h-[100svh] flex-col justify-center pb-6 pt-16 sm:pb-10 sm:pt-24 lg:pb-8 lg:pt-20">
         <SLanes
           lanes={lanes}
-          banner={<CommunityBanner locale={locale} />}
-          headline={<Headline locale={locale} />}
+          banner={<CommunityBanner locale={locale} copy={copy} />}
+          headline={<Headline locale={locale} copy={copy} />}
         />
       </div>
     </section>
@@ -72,20 +67,26 @@ export function CommunityOpening({
 }
 
 /** One line, centred, above the letter: what this place is. */
-function CommunityBanner({ locale }: { locale: Locale }) {
+function CommunityBanner({
+  locale,
+  copy,
+}: {
+  locale: Locale;
+  copy: HomeOpeningCopy;
+}) {
   return (
     <div className="text-center">
       <p className="font-display text-base leading-tight sm:text-2xl">
-        {COPY.communityA[locale]}{" "}
-        <span className="text-white/55">{COPY.communityB[locale]}</span>
+        {copy.communityA[locale]}{" "}
+        <span className="text-white/55">{copy.communityB[locale]}</span>
       </p>
 
       <p className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
         <span className="inline-flex rounded-full bg-[color:var(--gold)] px-3 py-0.5 font-display text-xs text-[color:var(--gold-foreground)] sm:px-4 sm:py-1 sm:text-base">
-          {COPY.free[locale]}
+          {copy.free[locale]}
         </span>
         <span className="text-[9px] uppercase tracking-[0.12em] text-white/50 sm:text-[11px] sm:tracking-[0.14em]">
-          {COPY.noFees[locale]}
+          {copy.noFees[locale]}
         </span>
       </p>
     </div>
@@ -100,11 +101,11 @@ function CommunityBanner({ locale }: { locale: Locale }) {
  * nothing in it reads as a gap rather than as part of a letter. On a phone
  * there is no beside, so it goes under the letter.
  */
-function Headline({ locale }: { locale: Locale }) {
+function Headline({ locale, copy }: { locale: Locale; copy: HomeOpeningCopy }) {
   return (
     <h1 className="text-center font-display text-xl leading-[1.15] lg:text-left lg:text-[28px] xl:text-4xl">
-      {COPY.titleA[locale]}{" "}
-      <span className="block text-[color:var(--gold)]">{COPY.titleB[locale]}</span>
+      {copy.titleA[locale]}{" "}
+      <span className="block text-[color:var(--gold)]">{copy.titleB[locale]}</span>
     </h1>
   );
 }

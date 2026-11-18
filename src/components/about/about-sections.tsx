@@ -13,8 +13,15 @@ import { ABOUT } from "./about-copy";
  */
 
 /** The first screen: who wrote this and why the site exists. */
-export function AboutHero({ locale }: { locale: Locale }) {
-  const t = ABOUT.hero;
+export function AboutHero({
+  locale,
+  copy,
+}: {
+  locale: Locale;
+  /** The owner's own version of this block, where he has written one (§7.7). */
+  copy?: typeof ABOUT.hero;
+}) {
+  const t = copy ?? ABOUT.hero;
 
   return (
     <section className="relative isolate overflow-hidden bg-primary pb-16 pt-28 text-white sm:pb-24 sm:pt-36">
@@ -334,11 +341,13 @@ export function AboutTerms({ locale }: { locale: Locale }) {
 export function AboutClosing({
   locale,
   tripsHref,
+  copy,
 }: {
   locale: Locale;
   tripsHref: string;
+  copy?: typeof ABOUT.closing;
 }) {
-  const t = ABOUT.closing;
+  const t = copy ?? ABOUT.closing;
 
   return (
     <section className="bg-primary py-16 text-white sm:py-24">

@@ -29,9 +29,12 @@ export const DEFAULT_VIEW: AdminViewId = "trips";
  * placeholder says which item brings it instead. A section missing from this
  * table is one that works.
  */
-export const COMING_IN: Partial<Record<AdminViewId, string>> = {
-  settings: "4.3",
-};
+/**
+ * Every section is built now, so the table is empty — and it stays here
+ * rather than being deleted, because the next section added to the menu will
+ * want it before it has a screen.
+ */
+export const COMING_IN: Partial<Record<AdminViewId, string>> = {};
 
 /** The view named by `?view=`, or the default when it names nothing valid. */
 export function resolveView(value: string | null): AdminViewId {

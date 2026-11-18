@@ -514,6 +514,43 @@ export interface WorkProject {
 }
 
 export interface Settings {
+  /**
+   * The first screen of the home page (ТЗ v4, §4.2).
+   *
+   * Six short strings, and they are in the settings for one reason: they are
+   * the sentence the owner cares most about on the whole site — "A community,
+   * not a business" is his line — and asking a developer to change six words
+   * is exactly what §7.7 exists to avoid.
+   *
+   * An empty value means "whatever the site says now": the renderer falls
+   * back to the text in the code, per language. That is what keeps a
+   * half-filled settings document from wiping a finished page.
+   */
+  home: {
+    communityA: Localized<string>;
+    communityB: Localized<string>;
+    free: Localized<string>;
+    noFees: Localized<string>;
+    titleA: Localized<string>;
+    titleB: Localized<string>;
+  };
+  /**
+   * The top and the bottom of the About page.
+   *
+   * Not the whole of it. The middle is the Community Concept (ТЗ v4, §5) —
+   * nine sections of a manifesto that is agreed as a document rather than
+   * edited as copy, and a form with sixty nested fields is a form nobody
+   * opens. What the owner would actually rewrite is how the page opens and
+   * how it signs off, and that is what is here. Empty falls back to the code.
+   */
+  about: {
+    heroEyebrow: Localized<string>;
+    heroTitle: Localized<string>;
+    heroParagraphs: Localized<string[]>;
+    closingTitle: Localized<string>;
+    closingParagraphs: Localized<string[]>;
+    closingSign: Localized<string>;
+  };
   /** The Story page (§6.5). */
   story: {
     title: Localized<string>;
