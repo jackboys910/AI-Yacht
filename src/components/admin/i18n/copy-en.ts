@@ -258,6 +258,102 @@ const EN = {
     loadFailed: (detail: string) => `Could not load the trips: ${detail}`,
   },
 
+  settings: {
+    loading: "Reading the settings…",
+    loadFailed: (detail: string) => `Could not read the settings: ${detail}`,
+    saveFailed: (detail: string) => `Could not save: ${detail}`,
+    explain:
+      "Everything the site says outside a trip. An empty field keeps what the site says now — it never blanks a page, so there is no harm in saving with most of this untouched.",
+    save: "Save settings",
+    saved: "Saved. The site will show it after the next update.",
+    emptyMeansDefault: "Empty = keep the current wording.",
+
+    site: {
+      title: "The site",
+      subtitle: "Addresses and numbers the pages and the letters use.",
+    },
+    postalAddress: "Sender's postal address",
+    postalAddressHint:
+      "American law requires it in every mailing, and the announcement to subscribers will not send without it. A street address, a PO box or a registered agent's address.",
+    calendly: "Calendly address",
+    calendlyHint: "Where /solutions/ books a call. Empty keeps the one in use now.",
+    channelId: "YouTube channel id",
+    channelIdHint:
+      "Looks like UCxxxxxxxxxxxxxxxxxxxxxx. The videos on the home page and on Story come from it. Playlists are set per direction, in Directions.",
+    goingThreshold: "Show “going” from",
+    interestedThreshold: "Show “interested” from",
+    thresholdHint:
+      "Below these the numbers stay hidden: “1 going” puts people off more than no number at all.",
+
+    home: {
+      title: "The first screen",
+      subtitle: "The line above the letter S and the headline beside it.",
+    },
+    homeFields: {
+      communityA: "First half of the line",
+      communityB: "Second half, quieter",
+      free: "The badge",
+      noFees: "The small print beside it",
+      titleA: "Headline, first line",
+      titleB: "Headline, second line (gold)",
+    },
+    defaults: {
+      communityA: "A community,",
+      communityB: "not a business.",
+      free: "100% free. Forever.",
+      noFees: "No fees · No subscriptions · No commissions",
+      titleA: "Sail. Ride. Jump.",
+      titleB: "Explore. Build. Together.",
+    },
+
+    about: {
+      title: "About: the opening and the closing",
+      subtitle:
+        "The middle of that page is the community concept and is not edited here — it is a document, agreed as a whole.",
+    },
+    aboutFields: {
+      eyebrow: "Eyebrow",
+      title: "Opening headline",
+      paragraphs: "Opening paragraphs",
+      paragraphsHint: "One paragraph per line.",
+      closingTitle: "Closing headline",
+      closingParagraphs: "Closing paragraphs",
+      sign: "Signature",
+    },
+
+    story: {
+      title: "Story",
+      subtitle: "The owner's own page: the photograph, the text, the links.",
+    },
+    storyFields: {
+      title: "Headline",
+      text: "The text",
+      textHint: "An empty line starts a new paragraph.",
+      photo: "Photograph",
+      links: "Links",
+      linksHint: "Instagram, Facebook, YouTube — whatever belongs on that page.",
+      addLink: "Add a link",
+      link: "Link",
+      linkLabel: "Name",
+      linkUrl: "Address",
+    },
+
+    solutions: {
+      title: "Solutions",
+      subtitle: "The first screen of the services page and what is on it.",
+    },
+    solutionsFields: {
+      heroTitle: "Headline",
+      heroSubtitle: "Subtitle",
+      services: "Services",
+      addService: "Add a service",
+      service: "Service",
+      serviceTitle: "Name",
+      serviceText: "What it is",
+      process: "How we work",
+      processHint: "One step per line.",
+    },
+  },
   subscriberList: {
     loading: "Reading the list…",
     loadFailed: (detail: string) => `Could not read the subscribers: ${detail}`,

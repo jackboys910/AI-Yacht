@@ -128,9 +128,20 @@ function Hint({ children }: { children: ReactNode }) {
 }
 
 /** What the field says in the language the form is not currently showing. */
-function OtherLocale({ locale, value }: { locale: Locale; value: string }) {
+function OtherLocale({
+  locale,
+  value,
+  optional,
+}: {
+  locale: Locale;
+  value: string;
+  /** True where an empty field is an ordinary answer, not a gap to fill. */
+  optional?: boolean;
+}) {
   const { t } = useAdmin();
   const filled = value.trim().length > 0;
+  // Nothing to say: the other language is empty and that is allowed.
+  if (!filled && optional) return null;
   return (
     <p
       className={`mt-1 truncate text-xs ${
@@ -189,6 +200,7 @@ export function LocalizedInput({
   hint,
   placeholder,
   required,
+  optional,
 }: {
   id: string;
   label: string;
@@ -197,6 +209,8 @@ export function LocalizedInput({
   hint?: ReactNode;
   placeholder?: string;
   required?: boolean;
+  /** Where leaving it empty is a legitimate answer — see OtherLocale. */
+  optional?: boolean;
 }) {
   const locale = useFormLocale();
   const other = locales.find((l) => l !== locale)!;
@@ -215,7 +229,7 @@ export function LocalizedInput({
         onChange={(event) => onChange({ ...value, [locale]: event.target.value })}
         className={`mt-1.5 ${inputClass}`}
       />
-      <OtherLocale locale={other} value={value[other]} />
+      <OtherLocale locale={other} value={value[other]} optional={optional} />
       {hint && <Hint>{hint}</Hint>}
     </div>
   );
@@ -229,6 +243,7 @@ export function LocalizedTextarea({
   hint,
   rows = 4,
   required,
+  optional,
 }: {
   id: string;
   label: string;
@@ -237,6 +252,8 @@ export function LocalizedTextarea({
   hint?: ReactNode;
   rows?: number;
   required?: boolean;
+  /** Where leaving it empty is a legitimate answer — see OtherLocale. */
+  optional?: boolean;
 }) {
   const locale = useFormLocale();
   const other = locales.find((l) => l !== locale)!;
@@ -254,7 +271,7 @@ export function LocalizedTextarea({
         onChange={(event) => onChange({ ...value, [locale]: event.target.value })}
         className={`mt-1.5 ${inputClass} resize-y`}
       />
-      <OtherLocale locale={other} value={value[other]} />
+      <OtherLocale locale={other} value={value[other]} optional={optional} />
       {hint && <Hint>{hint}</Hint>}
     </div>
   );
@@ -279,6 +296,7 @@ export function LocalizedLines({
   hint,
   rows = 5,
   placeholder,
+  optional,
 }: {
   id: string;
   label: string;
@@ -287,6 +305,8 @@ export function LocalizedLines({
   hint?: ReactNode;
   rows?: number;
   placeholder?: string;
+  /** Where leaving it empty is a legitimate answer — see OtherLocale. */
+  optional?: boolean;
 }) {
   const { t } = useAdmin();
   const locale = useFormLocale();
@@ -310,10 +330,12 @@ export function LocalizedLines({
         }
         className={`mt-1.5 ${inputClass} resize-y`}
       />
-      <p className={`mt-1 text-xs ${otherCount ? "text-muted-foreground" : "text-amber-600"}`}>
-        <span className="font-semibold">{localeLabels[other]}:</span>{" "}
-        {otherCount ? t.field.lineCount(otherCount) : t.field.empty}
-      </p>
+      {(otherCount > 0 || !optional) && (
+        <p className={`mt-1 text-xs ${otherCount ? "text-muted-foreground" : "text-amber-600"}`}>
+          <span className="font-semibold">{localeLabels[other]}:</span>{" "}
+          {otherCount ? t.field.lineCount(otherCount) : t.field.empty}
+        </p>
+      )}
       {hint && <Hint>{hint}</Hint>}
     </div>
   );

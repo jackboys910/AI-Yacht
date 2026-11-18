@@ -13,6 +13,7 @@ export default async function Page() {
     <AboutPage
       locale="ru"
       tripsHref={`${pagePath("home", "ru")}#upcoming`}
+      settings={content.settings}
       chrome={{
         interests: interestLinks(content.interests, "ru"),
         solutionsHref: pagePath("itSolutions", "ru"),

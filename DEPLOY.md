@@ -326,9 +326,9 @@ deliberate.
 
 **The sender's postal address.** American law (CAN-SPAM) wants it in every
 mailing, so `/api/announce` answers 409 while it is empty rather than sending
-something unlawful. It lives in the settings document — the screen that
-writes one arrives with plan item 4.3; until then the panel says what is
-missing and the button stays off.
+something unlawful. Fill it in the panel: **Settings → The site → Sender's
+postal address**. A street address, a PO box or a registered agent's address —
+whatever the business can be reached at.
 
 **The unsubscribe page** is live (item 3.3): every letter links to
 `/unsubscribe/?key=…`, the key is written on every subscriber, and the page

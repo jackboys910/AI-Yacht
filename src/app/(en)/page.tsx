@@ -2,6 +2,7 @@ import { localeHrefs, pagePath } from "@/i18n/config";
 import { buildMetadata } from "@/i18n/metadata";
 import { homeLanes, homeUpcoming } from "@/lib/content/home";
 import { counterSet } from "@/lib/content/counters";
+import { homeOpening } from "@/lib/content/site-copy";
 import { interestLinks } from "@/lib/content/nav";
 import { todayUtc } from "@/lib/content/schedule";
 import { readChannelVideos } from "@/lib/content/youtube";
@@ -27,6 +28,7 @@ export default async function Page() {
       locale="en"
       today={today}
       counters={counterSet(content)}
+      opening={homeOpening(content.settings)}
       chrome={{
         interests: interestLinks(content.interests, "en"),
         solutionsHref: pagePath("itSolutions", "en"),
