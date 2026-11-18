@@ -258,10 +258,11 @@ API. A private key in a page would let anyone send mail from this account,
 which is why the Worker sends and the page does not. It is in the EmailJS
 dashboard under **Account → General → Private Key**.
 
-Four things need it. `/api/suggestion` writes to the owner and answers the
+Five things need it. `/api/suggestion` writes to the owner and answers the
 author of an idea, `/api/subscribe` greets a new subscriber (Н-05),
 `/api/interested` greets whoever presses the button on a trip — the press
-puts them on the list of that trip's direction — and `/api/organizer-invite`
+puts them on the list of that trip's direction — `/api/announce` sends the
+announcement of a new trip to everyone on that list, and `/api/organizer-invite`
 sends an organizer the letter
 that explains the panel (С-12) — that one addresses somebody who is not the
 owner, which a key visible in the browser may never do, because the template's
@@ -298,6 +299,7 @@ This is no longer one mailbox, and that matters for the template.
 | Join a trip | the owner, the trip's organizer, and a receipt to the applicant |
 | Suggest an adventure | the owner, and a confirmation to the author |
 | Subscribe | a welcome to the subscriber |
+| Announcement to subscribers | one letter per subscriber of the trip's direction, each in their own language |
 | I'm interested | a welcome to the new subscriber, and nothing at all when the address is already on that list |
 | Organizer invitation | the organizer |
 | IT Solutions | the owner |
@@ -309,6 +311,29 @@ Every letter addressed to **the owner** also goes to whoever is listed in
 subscribers are never copied — that is somebody else's mail. Several addresses
 separated by commas; an empty value switches the copies off; the default lives
 in `src/lib/email/recipients.ts`.
+
+
+### Before the first announcement
+
+The mailing refuses to start until two things are true, and both are
+deliberate.
+
+**The sender's postal address.** American law (CAN-SPAM) wants it in every
+mailing, so `/api/announce` answers 409 while it is empty rather than sending
+something unlawful. It lives in the settings document — the screen that
+writes one arrives with plan item 4.3; until then the panel says what is
+missing and the button stays off.
+
+**The unsubscribe page.** Every announcement carries a link to
+`/unsubscribe/?key=…` (plan item 3.3). The key is already written on every
+subscriber, so no letter sent later will have to be corrected — but a letter
+sent before that page exists would link to a 404.
+
+The mailing goes out in batches of a dozen with the panel open, because a
+Worker request may only make so many outgoing requests and EmailJS refuses a
+burst. Who has been written to is recorded as it happens: closing the tab
+stops the mailing and nothing else — reopening the trip offers to carry on,
+and nobody is written to twice.
 
 ### Recommended: a dedicated template for this site
 
