@@ -57,4 +57,28 @@ export interface Env {
    * never copied.
    */
   EMAILJS_COPY_TO?: string;
+
+  /* ---- Facebook pixel and Conversions API (Ш-06, П-20) ---- */
+
+  /**
+   * The pixel's id. A plain value, and the same one the page carries in
+   * `NEXT_PUBLIC_FACEBOOK_PIXEL_ID`: it names an advertising account rather
+   * than granting access to it.
+   */
+  FACEBOOK_PIXEL_ID?: string;
+  /**
+   * The Conversions API access token. **Secret.** It can send events as that
+   * advertising account, which is why the server half of every event exists
+   * here and not in the page.
+   *
+   * Without it — or without the id — `/api/capi` answers 503 and the browser
+   * half is off as well, so nothing of Facebook is on the site at all.
+   */
+  FACEBOOK_CAPI_TOKEN?: string;
+  /**
+   * The code from Events Manager → Test Events, while somebody is watching
+   * events arrive. Absent in normal use; present it marks every event as a
+   * test, so it must never be left set.
+   */
+  FACEBOOK_TEST_EVENT_CODE?: string;
 }

@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import type { Locale } from "@/i18n/config";
 import type { Settings } from "@/lib/content/types";
+import { reportEvent } from "@/lib/analytics/events";
 import { emailConfig } from "@/lib/email/config";
 import { publishInterested, useInterested } from "@/lib/firebase/counters";
 import { visitSource } from "@/lib/visit-source";
@@ -293,6 +294,7 @@ function DialogBody({
     if (sending) return;
 
     const data = new FormData(event.currentTarget);
+    const address = String(data.get("email") ?? "").trim();
     setStatus("sending");
     try {
       const response = await fetch("/api/interested", {
@@ -300,7 +302,7 @@ function DialogBody({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           tripId,
-          email: String(data.get("email") ?? "").trim(),
+          email: address,
           locale,
           source: visitSource(),
           turnstileToken: token,
@@ -322,6 +324,11 @@ function DialogBody({
         }
         setAlready(body.counted === false);
         setStatus("done");
+        // Ш-06. Counted means new to this trip; a repeat press is the same
+        // person saying the same thing, not a second piece of interest.
+        if (body.counted !== false) {
+          reportEvent("interested", { email: address, contentName: tripTitle });
+        }
         return;
       }
 

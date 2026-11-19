@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import type { Locale } from "@/i18n/config";
+import { reportEvent } from "@/lib/analytics/events";
 import { emailConfig } from "@/lib/email/config";
 import { visitSource } from "@/lib/visit-source";
 import { TurnstileCheck, type CheckState } from "../suggest/turnstile-check";
@@ -204,13 +205,14 @@ function DialogBody({
     if (sending || chosen.length === 0) return;
 
     const data = new FormData(event.currentTarget);
+    const address = String(data.get("email") ?? "").trim();
     setStatus("sending");
     try {
       const response = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          email: String(data.get("email") ?? "").trim(),
+          email: address,
           interestIds: chosen,
           locale,
           source: visitSource(),
@@ -227,6 +229,12 @@ function DialogBody({
       if (response.ok && body.ok) {
         setAlready(body.created === false);
         setStatus("done");
+        // Ш-06. Only a new subscriber is an event: somebody pressing the
+        // button a second time has not subscribed twice, and reporting it as
+        // a conversion would overstate what the advertising achieved.
+        if (body.created !== false) {
+          reportEvent("subscribe", { email: address, contentCategory: chosen.join(", ") });
+        }
         return;
       }
 

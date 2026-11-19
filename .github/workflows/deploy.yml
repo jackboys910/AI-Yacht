@@ -63,6 +63,10 @@ jobs:
           NEXT_PUBLIC_EMAILJS_TEMPLATE_ID: ${{ vars.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID }}
           NEXT_PUBLIC_EMAILJS_PUBLIC_KEY: ${{ vars.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY }}
           NEXT_PUBLIC_CONTACT_EMAIL: ${{ vars.NEXT_PUBLIC_CONTACT_EMAIL }}
+          # The Facebook pixel's id (Ш-06). A repository *variable*, not a
+          # secret: it travels to every visitor in the page. Unset means the
+          # site carries no advertising counters and no cookie banner at all.
+          NEXT_PUBLIC_FACEBOOK_PIXEL_ID: ${{ vars.NEXT_PUBLIC_FACEBOOK_PIXEL_ID }}
 
       - name: Verify build output
         run: |

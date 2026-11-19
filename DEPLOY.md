@@ -207,7 +207,7 @@ push and run the workflow again.
 
 ## 8a. Worker secrets
 
-The Worker holds four secrets. Each one exists because the value must never
+The Worker holds five secrets. Each one exists because the value must never
 reach a browser, and each is set the same way: Cloudflare dashboard →
 **Workers & Pages** → the worker → **Settings** → **Variables and Secrets** →
 **Add** → type **Secret**. **Production only** — the deploy workflow publishes
@@ -223,6 +223,7 @@ Cloudflare and refuses the build runner. Nothing to set, nothing to rotate.
 | `TURNSTILE_SECRET` | prove a form submission came from a browser | forms are accepted unchecked |
 | `FIREBASE_SERVICE_ACCOUNT` | write collections that browsers may not write to | the idea form, the subscription and "I'm interested" answer "not switched on yet" |
 | `EMAILJS_PRIVATE_KEY` | send mail server-side | the idea, the subscription and the Solutions enquiry are saved, no email goes out; the organizer's letter cannot be sent |
+| `FACEBOOK_CAPI_TOKEN` | report events to the advertising account from the server | no advertising counters anywhere: no pixel in the page, no cookie banner, `/api/capi` answers 503 |
 
 ### Turnstile
 
@@ -303,6 +304,56 @@ set up, rather than pretending the letter went.
 
 Everything else about EmailJS — service id, template id, public key, the
 recipient address — is public and lives in `wrangler.jsonc`.
+
+---
+
+### Facebook pixel and the Conversions API
+
+Two values, and the pair is deliberate: §11.1 of the spec explains that
+browser events are lost to ad blockers and to Apple's limits often enough
+that advertising cannot tell which clicks became subscribers. So every event
+goes twice — from the page and from the Worker — with one shared id, and
+Facebook keeps one copy.
+
+**Nothing of Facebook exists on the site until both values are set.** No
+script, no cookie, and no cookie banner either: asking permission for
+something that is not happening would be the one banner worse than none.
+That is also how П-20 is passed — open the site for the first time with the
+network tab open and there is not a single request to facebook.com before
+the banner is answered.
+
+In the client's Meta Business account:
+
+1. <https://business.facebook.com> → **Events Manager** → **Connect data
+   sources** → **Web** → **Meta Pixel** → **Connect**.
+2. Name it `nazarov.net`, enter the domain, **Continue**. Choose
+   **Conversions API** (not "Meta Pixel only") when asked how to connect.
+3. Copy the **pixel ID** — a 15-16 digit number. It is public.
+4. **Settings** tab of that data source → **Conversions API** → **Generate
+   access token**. Copy it once; it is not shown again.
+
+Then, in two places:
+
+- **GitHub** → **Settings** → **Secrets and variables** → **Actions** →
+  **Variables** → **New repository variable**:
+  `NEXT_PUBLIC_FACEBOOK_PIXEL_ID` = the pixel id. A variable, not a secret —
+  it travels to every visitor in the page.
+- **`wrangler.jsonc`** → `vars.FACEBOOK_PIXEL_ID` = the same id, committed.
+  And the token as a **secret** named `FACEBOOK_CAPI_TOKEN`, through
+  **Workers & Pages** → **ai-yacht** → **Settings** → **Variables and
+  Secrets**.
+
+Run the deploy workflow again. To watch events arrive: **Events Manager** →
+the pixel → **Test Events**, copy the code it shows and set it as the Worker
+variable `FACEBOOK_TEST_EVENT_CODE` — then **remove it**, because while it is
+set every event is marked as a test and none of them counts.
+
+What the four events are called in Events Manager: `Subscribe`,
+`Interested` (custom), `SubmitApplication` and `Lead` for a Solutions
+enquiry. Meta Pixel Helper in Chrome shows the browser half; the server half
+appears in Events Manager with "Server" beside it, and the two must not
+double — if a subscription shows up twice, the event ids are not matching and
+that is a bug, not a setting.
 
 ---
 
