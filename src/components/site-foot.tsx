@@ -1,4 +1,4 @@
-import { localeLabels, locales, type Locale } from "@/i18n/config";
+import { localeLabels, locales, pagePath, type Locale } from "@/i18n/config";
 import type { NavLink } from "@/lib/content/nav";
 
 /**
@@ -10,8 +10,9 @@ import type { NavLink } from "@/lib/content/nav";
  * subscription it is looking at, so it says so and points at the letters —
  * which is the honest answer to somebody who arrived from the footer.
  *
- * "Privacy Policy" joins them with item 5.2, which is where that page is
- * written. Linking to it now would mean linking to a 404.
+ * "Privacy Policy" is here from item 5.2. Its address is taken from the
+ * page map rather than written out, the way the nav links are: the footer
+ * appears on every page, so a typo here would be a typo everywhere.
  */
 export function SiteFoot({
   locale,
@@ -73,6 +74,9 @@ export function SiteFoot({
             className="hover:text-[color:var(--teal)]"
           >
             {locale === "en" ? "Unsubscribe" : "Отписаться"}
+          </a>
+          <a href={pagePath("privacy", locale)} className="hover:text-[color:var(--teal)]">
+            {locale === "en" ? "Privacy Policy" : "Конфиденциальность"}
           </a>
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a href="/admin/" className="hover:text-[color:var(--teal)]">

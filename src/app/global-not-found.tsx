@@ -4,17 +4,39 @@ import { fontVariables } from "@/lib/fonts";
 import { pagePath } from "@/i18n";
 
 export const metadata: Metadata = {
-  title: "404 — AI Yacht",
+  title: "404 — Nazarov.net",
   description: "This page does not exist.",
+  robots: { index: false, follow: true },
 };
 
-// Rendered for any URL that matches no route. It sits outside both locale
-// layouts, so it speaks both languages and links to both home pages.
+/**
+ * Rendered for any URL that matches no route (Т-06).
+ *
+ * It sits outside both locale layouts, which is why it speaks both languages
+ * at once: the address that missed could have been either, and a page that
+ * guessed wrong would be a dead end in the wrong language. So both ways home,
+ * and the four directions besides — somebody who mistyped a trip's address is
+ * usually after a trip, not the front page.
+ *
+ * The links are written out rather than read from the database on purpose.
+ * This file is one static page for the whole site, it has no language and no
+ * content of its own, and the four directions have been the four directions
+ * since ТЗ v3 §3. A build-time read here would tie the 404 page to a database
+ * request that must never be the reason somebody sees no page at all.
+ */
+
+const DIRECTIONS = [
+  { slug: "sailing", en: "Sailing", ru: "Sailing" },
+  { slug: "snowboarding", en: "Snowboarding", ru: "Snowboarding" },
+  { slug: "skydiving", en: "Skydiving", ru: "Skydiving" },
+  { slug: "son", en: "Son", ru: "Son" },
+];
+
 export default function GlobalNotFound() {
   return (
     <html lang="en" className={fontVariables}>
       <body>
-        <main className="relative isolate grid min-h-[100svh] place-items-center overflow-hidden bg-primary px-5 text-center text-white">
+        <main className="relative isolate grid min-h-[100svh] place-items-center overflow-hidden bg-primary px-5 py-16 text-center text-white">
           <img
             src="/assets/hero-catamaran.jpg"
             alt=""
@@ -29,12 +51,13 @@ export default function GlobalNotFound() {
               This page drifted off course.
             </h1>
             <p className="mt-2 text-white/70">Эта страница ушла с курса.</p>
+
             <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
               <a
                 href={pagePath("home", "en")}
                 className="inline-flex items-center justify-center rounded-full bg-[color:var(--gold)] px-8 py-4 text-base font-semibold text-[color:var(--gold-foreground)] shadow-elegant transition hover:brightness-110"
               >
-                Back to AI Yacht
+                Back to Nazarov.net
               </a>
               <a
                 href={pagePath("home", "ru")}
@@ -43,6 +66,27 @@ export default function GlobalNotFound() {
                 На главную (RU)
               </a>
             </div>
+
+            <p className="mt-10 text-xs uppercase tracking-[0.2em] text-white/45">
+              Looking for a trip? · Искали поездку?
+            </p>
+            <nav className="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-white/75">
+              {DIRECTIONS.map((direction) => (
+                <a
+                  key={direction.slug}
+                  href={`/${direction.slug}/`}
+                  className="hover:text-[color:var(--gold)]"
+                >
+                  {direction.en}
+                </a>
+              ))}
+              <a href={pagePath("story", "en")} className="hover:text-[color:var(--gold)]">
+                Story
+              </a>
+              <a href={pagePath("itSolutions", "en")} className="hover:text-[color:var(--gold)]">
+                Solutions
+              </a>
+            </nav>
           </div>
         </main>
       </body>

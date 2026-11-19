@@ -20,6 +20,11 @@ export const en = {
       description:
         "Propose a trip, an event or a project and gather people around it. No dates or prices needed yet; one person reads every idea.",
     },
+    privacy: {
+      title: "Privacy Policy — Nazarov.net",
+      description:
+        "What this site collects, why, who else sees it, how long it is kept and how to have it deleted. No accounts, no tracking of readers, no advertising cookies without your agreement.",
+    },
     itSolutions: {
       title: "Solutions — we build websites and apps",
       description:
