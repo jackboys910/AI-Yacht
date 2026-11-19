@@ -501,6 +501,127 @@ rebuild.
 
 ---
 
+## 11. Backups and restore (Т-04)
+
+Two scripts, no cloud setup. Google's own scheduled export needs the Blaze
+plan, a storage bucket and a format only Google reads back; this database is a
+few hundred documents, so a folder of JSON is both cheaper and easier to put
+back.
+
+### Taking a copy
+
+```bash
+FIREBASE_SERVICE_ACCOUNT="$(cat ~/Downloads/nazarov-net-firebase-adminsdk.json)" \
+  node scripts/firestore-backup.mjs
+```
+
+It asks the database which collections exist — so a collection added later is
+included without anybody editing the script — and writes `backup/<date>/`:
+one file per collection plus `manifest.json` with the counts.
+
+The documents are saved in Firestore's own shape, where a number says whether
+it is an integer or a double. That is what makes the restore exact rather than
+a guess.
+
+**What it does not copy: the photographs.** They are objects in Cloud Storage
+with their own durability, and copying a few hundred megabytes every night to
+guard against a risk Google already carries is the wrong trade. Every image's
+address is inside the documents that *are* copied, so a lost bucket is a known
+list of files to put back rather than a mystery.
+
+**Where the files go matters.** They hold addresses and what people wrote
+about themselves. Keep them where the database itself would be kept — not in
+a shared folder, not in the repository (`backup/` is in `.gitignore`).
+
+### Putting it back
+
+Rehearse first. With no flags the script writes nothing and only says what it
+holds:
+
+```bash
+node scripts/firestore-restore.mjs backup/2026-11-19
+```
+
+Then, into a **test** project — the rehearsal that proves the copy is good:
+
+```bash
+FIREBASE_SERVICE_ACCOUNT="$(cat key.json)" \
+  node scripts/firestore-restore.mjs backup/2026-11-19 --project nazarov-test --force
+```
+
+`--force` without `--project` is refused on purpose: the point of a rehearsal
+is not restoring over the live site, and a default of "the live one" is how a
+rehearsal becomes an incident. One collection at a time with
+`--only trips,interests`.
+
+The restore merges and keeps ids: a document the backup does not have is left
+alone, and a field added since the backup is not deleted. Clearing a
+collection first is a different operation with a different risk, and these
+scripts do not do it.
+
+### A test project for the rehearsal
+
+1. <https://console.firebase.google.com> → **Add project** → name it
+   `nazarov-test` → no Analytics.
+2. **Firestore Database** → **Create database** → production mode, any region.
+3. **Project settings** → **Service accounts** → **Generate new private key**.
+4. Restore into it with the command above, then look at the data in the
+   console. Delete the project when done; it costs nothing while it sits
+   there, but it holds a copy of real people's data.
+
+### If you want it to happen by itself
+
+A scheduled copy means the database — addresses and all — is written to
+GitHub's artifact storage every night. That is a decision about personal
+data, not a technical step, so it is yours to make rather than mine: the file
+below is not in the repository. If you want it, create
+`.github/workflows/backup.yml` with this content, then add the
+service-account JSON as a repository **secret** named
+`FIREBASE_SERVICE_ACCOUNT` (**Settings** → **Secrets and variables** →
+**Actions** → **New repository secret**).
+
+```yaml
+name: Back up Firestore
+
+on:
+  schedule:
+    # 02:00 UTC — an hour after the nightly deploy, so a backup is never
+    # taken in the middle of a build.
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node scripts/firestore-backup.mjs
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_PROJECT_ID: nazarov-net
+          BACKUP_DIR: backup
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firestore-${{ github.run_id }}
+          path: backup/
+          retention-days: 90
+          if-no-files-found: error
+```
+
+The artifact is private to this repository, which is the same audience as the
+database itself, and it expires after ninety days. Download a copy from the
+run's page under **Artifacts**.
+
+The alternative, if a nightly copy off-site is not wanted: run the backup
+script by hand before anything risky — before a restore, before a change to
+the rules, before deleting anybody — which is when a copy is actually needed.
+
+---
+
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
