@@ -38,8 +38,8 @@
   // replaces whatever the dashboard holds. Values that must not be in the
   // repository are secrets instead, and secrets survive a deploy untouched:
   // `wrangler secret put NAME`, or the dashboard's Variables and Secrets page.
-  // Those are GITHUB_TOKEN, FIREBASE_SERVICE_ACCOUNT, TURNSTILE_SECRET and
-  // EMAILJS_PRIVATE_KEY — see DEPLOY.md §8a.
+  // Those are GITHUB_TOKEN, FIREBASE_SERVICE_ACCOUNT, TURNSTILE_SECRET,
+  // EMAILJS_PRIVATE_KEY and FACEBOOK_CAPI_TOKEN — see DEPLOY.md §8a.
   //
   // Everything below is public by design. The EmailJS public key travels to
   // every visitor in the page bundle already; it names the account rather
@@ -57,7 +57,14 @@
     // separated. Letters to applicants, organizers and subscribers are never
     // copied — see src/lib/email/recipients.ts. Remove the value to switch
     // the copies off; remove the line and the default there applies.
-    "EMAILJS_COPY_TO": "george.jackboys@gmail.com"
+    "EMAILJS_COPY_TO": "george.jackboys@gmail.com",
+
+    // The Facebook pixel's id (Ш-06). Public: it names an advertising
+    // account, and the page carries the same value in
+    // NEXT_PUBLIC_FACEBOOK_PIXEL_ID. Empty means no advertising counters
+    // anywhere — no script in the page, no cookie banner, and /api/capi
+    // answers 503. The token that goes with it is a secret.
+    "FACEBOOK_PIXEL_ID": ""
   },
 
   "observability": {

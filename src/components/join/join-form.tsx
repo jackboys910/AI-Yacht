@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import type { Locale } from "@/i18n/config";
+import { reportEvent } from "@/lib/analytics/events";
 import { emailConfig } from "@/lib/email/config";
 import { visitSource } from "@/lib/visit-source";
 import { Field } from "../form-fields";
@@ -73,6 +74,7 @@ export function JoinForm({
 
       if (response.ok) {
         setStatus("sent");
+        reportEvent("application", { email: read("email"), contentName: tripId });
         return;
       }
 

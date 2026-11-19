@@ -32,6 +32,7 @@
  */
 
 import { announce } from "./announce";
+import { capi } from "./capi";
 import { application } from "./application";
 import { interested } from "./interested";
 import { organizerInvite } from "./organizer";
@@ -277,6 +278,20 @@ const worker = {
         // useful: "the letter did not go" with no reason is a dead end.
         console.log(`organizer invite failed: ${String(error)}`);
         return json({ error: "send-failed", detail: String(error) }, 502);
+      }
+    }
+
+    if (pathname === "/api/capi" || pathname === "/api/capi/") {
+      if (request.method !== "POST") {
+        return json({ error: "method-not-allowed" }, 405);
+      }
+      try {
+        return await capi(request, env);
+      } catch (error) {
+        // An advertising counter that did not answer must never be the
+        // reason a visitor hears that something went wrong.
+        console.log(`capi failed: ${String(error)}`);
+        return json({ ok: false, error: "server" }, 502);
       }
     }
 

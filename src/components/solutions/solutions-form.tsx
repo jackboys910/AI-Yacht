@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import type { Locale } from "@/i18n/config";
+import { reportEvent } from "@/lib/analytics/events";
 import { emailConfig } from "@/lib/email/config";
 import { visitSource } from "@/lib/visit-source";
 import { Eyebrow } from "../eyebrow";
@@ -61,6 +62,10 @@ export function SolutionsForm({ locale }: { locale: Locale }) {
 
       if (response.ok) {
         setStatus("sent");
+        reportEvent("solutions", {
+          email: read("email"),
+          contentCategory: projectType,
+        });
         return;
       }
 
