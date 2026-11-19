@@ -16,6 +16,7 @@ const ogImages: Record<PageId, string> = {
   story: "/assets/yasha-helm-sunrise.jpg",
   suggest: "/assets/yasha-wing-exit.jpg",
   itSolutions: "/assets/laptop-deck.jpg",
+  privacy: "/assets/hero-catamaran.jpg",
 };
 
 /** Title, description, Open Graph and hreflang alternates for one page. */

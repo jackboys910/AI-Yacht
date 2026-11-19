@@ -178,7 +178,26 @@ Once the zone is **Active** in Cloudflare:
 
 Cloudflare creates the DNS records and issues the TLS certificate
 automatically — usually under a minute, occasionally a few minutes. No
-certificate files to manage, HTTPS is on by default.
+certificate files to manage.
+
+### Turn on "Always Use HTTPS" — one switch, and it is off by default
+
+HTTPS works out of the box, but plain `http://nazarov.net` also works, and
+that is not the same thing: a visitor who types the address without the scheme,
+or follows an old link, gets the site over an unencrypted connection instead of
+being sent to the secure one. Т-03 asks for the redirect, and it is a zone
+setting rather than anything in this repository — the Worker never sees a page
+request (`run_worker_first` lists only `/api/*`), so no code here can answer
+it.
+
+1. Cloudflare dashboard → pick the **nazarov.net** zone.
+2. **SSL/TLS** → **Edge Certificates**.
+3. **Always Use HTTPS** → switch it **on**.
+4. While there: **Minimum TLS Version** 1.2, and **Automatic HTTPS Rewrites**
+   on. Both are one switch each and neither can break a static site.
+
+Check it with `curl -I http://nazarov.net/`: the answer must be `301` with a
+`Location: https://nazarov.net/`, not `200`.
 
 The code already uses `nazarov.net` for canonical URLs, hreflang tags and the
 footer (`src/lib/site.ts`). If the domain ever changes, edit it there, commit,

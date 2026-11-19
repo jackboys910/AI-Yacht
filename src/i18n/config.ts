@@ -3,7 +3,13 @@ export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = "en";
 
 /** Every page of the site, independent of language. */
-export type PageId = "home" | "about" | "story" | "suggest" | "itSolutions";
+export type PageId =
+  | "home"
+  | "about"
+  | "story"
+  | "suggest"
+  | "itSolutions"
+  | "privacy";
 
 const slugs: Record<PageId, string> = {
   home: "/",
@@ -18,6 +24,9 @@ const slugs: Record<PageId, string> = {
   // §2 of the spec renames the page to "Solutions"; its content is rewritten in
   // plan item 3.3, and /it-solutions redirects here (public/_redirects).
   itSolutions: "/solutions/",
+  // §6.7: нужна, потому что подключается пиксель Facebook и ходят письма.
+  // На неё ведут подвал и баннер cookies (пункт 5.1).
+  privacy: "/privacy/",
 };
 
 /**
