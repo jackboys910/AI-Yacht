@@ -493,6 +493,40 @@ branch → **Run**.
 The workflow installs dependencies, lints, builds, checks that `out/index.html`
 exists, and only then deploys.
 
+### Changing dependencies: write the lock file with npm 12
+
+The runner installs with `npm ci`, and `npm ci` refuses to run at all if
+`package-lock.json` does not match `package.json`. Two npm versions disagree
+about what "match" means here, and that disagreement has already broken one
+deploy:
+
+* **npm 11** (what Node 24.13 ships, and what a Windows machine is likely to
+  have) does not record the dependencies of packages built for another
+  platform. `@img/sharp-wasm32` is one of those — it is `cpu: wasm32` — so its
+  `@emnapi/runtime` never reaches the lock.
+* **npm 12** (what Node 24.22 on the runner ships) does look inside them, finds
+  `@emnapi/runtime@1.11.3` and `@emnapi/core@1.11.3` missing, and stops with
+  `EUSAGE … Missing: … from lock file`.
+
+So an `npm install` on Windows can produce a lock file that works perfectly
+here and cannot be installed on the runner. After adding or removing any
+dependency, regenerate the lock with the runner's npm:
+
+```bash
+npx -y npm@12 install --package-lock-only --allow-remote=all
+```
+
+and check it the way the runner will, in a directory holding nothing but
+`package.json` and the new lock, so the local `node_modules` cannot paper over
+a gap:
+
+```bash
+npx -y npm@12 ci --dry-run
+```
+
+`added N packages` means the lock is sound. Anything about being out of sync
+means the deploy would fail at its first step.
+
 ### Rolling back
 
 **Workers & Pages** → **ai-yacht** → **Deployments**. Every deploy is kept.
