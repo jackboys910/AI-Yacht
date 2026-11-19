@@ -18,6 +18,9 @@
  * ТЗ v4 adds two more endpoints for the same reason as the first.
  * `/api/suggestion` holds a Turnstile secret, a Firebase service account and
  * an EmailJS private key, none of which may travel to a browser;
+ * `/api/solutions` needs the same three: §6.6 asks for the enquiry to be
+ * saved as well as emailed, and the collection it is saved to is shut to
+ * browsers;
  * `/api/organizer-invite` needs that same private key, because a send from
  * the page can only ever address the owner's own mailbox. `/api/subscribe`
  * needs all three: the mailing list is shut to browsers, the spam check needs
@@ -33,6 +36,7 @@ import { application } from "./application";
 import { interested } from "./interested";
 import { organizerInvite } from "./organizer";
 import { bearerOf, isOwner } from "./owner";
+import { solutions } from "./solutions";
 import { subscribe } from "./subscribe";
 import { subscription } from "./subscription";
 import { suggestion } from "./suggestion";
@@ -188,6 +192,20 @@ const worker = {
         return await application(request, env);
       } catch (error) {
         console.log(`application failed: ${String(error)}`);
+        return json({ error: "server" }, 502);
+      }
+    }
+
+    if (pathname === "/api/solutions" || pathname === "/api/solutions/") {
+      if (request.method !== "POST") {
+        return json({ error: "method-not-allowed" }, 405);
+      }
+      try {
+        return await solutions(request, env);
+      } catch (error) {
+        // As with the forms above: the detail can name a Firestore path, and
+        // a form on a public page is the wrong place to print one.
+        console.log(`solutions failed: ${String(error)}`);
         return json({ error: "server" }, 502);
       }
     }

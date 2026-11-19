@@ -3,16 +3,18 @@ import { buildMetadata } from "@/i18n/metadata";
 import { interestLinks } from "@/lib/content/nav";
 import { DEFAULT_CALENDLY_URL } from "@/lib/content/visibility";
 import { getSiteContent } from "@/lib/firebase/content";
-import { ItSolutionsPage } from "@/views/it-solutions-page";
+import { SolutionsPage } from "@/views/solutions-page";
 
 export const metadata = buildMetadata("ru", "itSolutions");
 
 export default async function Page() {
-  const { interests, settings } = await getSiteContent();
+  const { interests, projects, settings } = await getSiteContent();
 
   return (
-    <ItSolutionsPage
+    <SolutionsPage
       locale="ru"
+      settings={settings}
+      projects={projects}
       chrome={{
         interests: interestLinks(interests, "ru"),
         solutionsHref: pagePath("itSolutions", "ru"),

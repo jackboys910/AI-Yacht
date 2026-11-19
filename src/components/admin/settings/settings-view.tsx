@@ -19,10 +19,12 @@ import {
   PrimaryButton,
   TextInput,
 } from "../fields";
+import { listProjects, saveProjects } from "@/lib/firebase/projects";
 import { failureText, useAdmin } from "../i18n";
 import { ImageField } from "../image-field";
 import { Repeatable } from "../repeatable";
 import { Section } from "../trips/section";
+import { WorkProjects, toRows, type ProjectRow } from "./work-projects";
 
 /**
  * §7.7 — everything site-wide the owner may change without a developer
@@ -43,6 +45,10 @@ export function SettingsView() {
   const c = t.settings;
 
   const [draft, setDraft] = useState<SettingsDraft | null>(null);
+  // The "Our work" projects are their own collection, read and saved beside
+  // the settings document — see settings/work-projects.
+  const [projects, setProjects] = useState<ProjectRow[]>([]);
+  const [removed, setRemoved] = useState<string[]>([]);
   const [locale, setLocale] = useState<Locale>("en");
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -50,9 +56,11 @@ export function SettingsView() {
 
   useEffect(() => {
     let alive = true;
-    readSettings().then(
-      (settings) => {
-        if (alive) setDraft(settings);
+    Promise.all([readSettings(), listProjects()]).then(
+      ([settings, work]) => {
+        if (!alive) return;
+        setDraft(settings);
+        setProjects(toRows(work));
       },
       (cause: unknown) => {
         if (!alive) return;
@@ -81,6 +89,12 @@ export function SettingsView() {
     setError(null);
     try {
       await saveSettings(draft);
+      // After the settings, not with them: a project keeps its id, and a
+      // failed write here must not leave the page's text saved under one
+      // arrangement of projects and the database under another.
+      const ids = await saveProjects(projects, removed);
+      setProjects((rows) => rows.map((row, index) => ({ ...row, id: ids[index] })));
+      setRemoved([]);
       setSaved(true);
       // The site is printed ahead of time, so a saved word is invisible until
       // the next build; А-09 is why the panel asks for one instead of leaving
@@ -371,6 +385,16 @@ export function SettingsView() {
                 />
               </div>
             </div>
+            <WorkProjects
+              rows={projects}
+              onChange={(rows) => {
+                setProjects(rows);
+                setSaved(false);
+              }}
+              onRemove={(id) =>
+                setRemoved((ids) => (ids.includes(id) ? ids : [...ids, id]))
+              }
+            />
             <LocalizedLines
               optional
               id="settings-solutions-process"
