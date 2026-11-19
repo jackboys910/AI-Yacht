@@ -10,7 +10,8 @@
   // /api/rebuild, which lets the admin panel start a build without the owner
   // ever opening GitHub (А-08, А-09); /api/suggestion, which checks a
   // Turnstile token and writes to a collection no browser may write to
-  // (ТЗ v4, §3); /api/subscribe, which keeps the mailing list browsers may
+  // (ТЗ v4, §3); /api/solutions, which does the same for a project enquiry
+  // (§6.6); /api/subscribe, which keeps the mailing list browsers may
   // not read and sends the welcome letter; and /api/organizer-invite, which
   // emails an organizer the way into the panel (С-12) with a key no page may
   // carry. /api/videos is the one that holds no secret: YouTube's feed answers

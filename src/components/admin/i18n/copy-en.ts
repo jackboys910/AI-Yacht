@@ -350,6 +350,17 @@ const EN = {
       service: "Service",
       serviceTitle: "Name",
       serviceText: "What it is",
+      projects: "Our work",
+      projectsHint:
+        "The cards on the services page, in this order. Until there is one here, the page shows nazarov.net and ctmass.com.",
+      projectsEmpty: "No projects yet.",
+      addProject: "Add a project",
+      project: "Project",
+      projectTitle: "Name",
+      projectText: "One line about it",
+      projectUrl: "Address",
+      projectUrlHint: "Where the card leads, e.g. https://ctmass.com.",
+      projectShot: "Screenshot",
       process: "How we work",
       processHint: "One step per line.",
     },
@@ -402,8 +413,6 @@ const EN = {
       "Unsubscribing is what the link in the letter does, and it keeps the record. This removes the address entirely — for somebody who asked for exactly that.",
     removed: "The address is deleted.",
     removeFailed: (detail: string) => `Could not delete it: ${detail}`,
-    solutions:
-      "Solutions enquiries are not here yet: the form sends them by email and nothing stores them. The screen for them comes with item 4.2, which is where they start being saved.",
   },
   tripForm: {
     edit: "Edit trip",
@@ -865,8 +874,30 @@ suggestions: {
       declined: "Declined",
     },
     languages: { en: "English", ru: "Russian" },
+    kinds: { trips: "Trips", solutions: "Solutions" },
     loadFailed: (detail: string) => `Could not load the applications: ${detail}`,
     saveFailed: (detail: string) => `Could not save the decision: ${detail}`,
+  },
+
+  inquiries: {
+    loading: "Loading the enquiries…",
+    none: "Nobody has asked for a project yet.",
+    noneHere: "No enquiries match this filter.",
+    count: (total: number, fresh: number) =>
+      fresh > 0
+        ? `Enquiries: ${total}, ${fresh} not dealt with`
+        : `Enquiries: ${total}`,
+    filter: "Show",
+    states: { all: "All", new: "Not dealt with", handled: "Dealt with" },
+    noName: "No name given",
+    email: "Email",
+    phone: "Phone",
+    source: "Came from",
+    message: "What they need",
+    markHandled: "Mark as dealt with",
+    undo: "Back to the queue",
+    loadFailed: (detail: string) => `Could not load the enquiries: ${detail}`,
+    saveFailed: (detail: string) => `Could not save that: ${detail}`,
   },
 
   error: {

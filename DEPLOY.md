@@ -203,7 +203,7 @@ Cloudflare and refuses the build runner. Nothing to set, nothing to rotate.
 | `GITHUB_TOKEN` | start a site rebuild | the panel says the rebuild is not set up |
 | `TURNSTILE_SECRET` | prove a form submission came from a browser | forms are accepted unchecked |
 | `FIREBASE_SERVICE_ACCOUNT` | write collections that browsers may not write to | the idea form, the subscription and "I'm interested" answer "not switched on yet" |
-| `EMAILJS_PRIVATE_KEY` | send mail server-side | the idea and the subscription are saved, no email goes out; the organizer's letter cannot be sent |
+| `EMAILJS_PRIVATE_KEY` | send mail server-side | the idea, the subscription and the Solutions enquiry are saved, no email goes out; the organizer's letter cannot be sent |
 
 ### Turnstile
 
@@ -233,6 +233,11 @@ and change a subscriber by their key, which is another collection no browser
 may touch. It holds no secret of its own: the key in the link is the whole of
 the authority, which is why it is 256 random bits rather than an email
 address.
+
+`/api/solutions` needs it because §6.6 asks for an enquiry to be **saved**
+as well as emailed, and `solutionsInquiries` holds a name, an address and a
+phone number for every business that ever asked for a quote — another
+collection no browser may read or write.
 
 `/api/interested` needs it for the same reason and for one more. It writes
 `interested` and `subscribers`, both shut to browsers, and it also
@@ -264,8 +269,9 @@ API. A private key in a page would let anyone send mail from this account,
 which is why the Worker sends and the page does not. It is in the EmailJS
 dashboard under **Account → General → Private Key**.
 
-Five things need it. `/api/suggestion` writes to the owner and answers the
-author of an idea, `/api/subscribe` greets a new subscriber (Н-05),
+Six things need it. `/api/suggestion` writes to the owner and answers the
+author of an idea, `/api/solutions` writes to support@ctmass.com and answers
+whoever asked for a project (П-17), `/api/subscribe` greets a new subscriber (Н-05),
 `/api/interested` greets whoever presses the button on a trip — the press
 puts them on the list of that trip's direction — `/api/announce` sends the
 announcement of a new trip to everyone on that list, and `/api/organizer-invite`
@@ -308,7 +314,7 @@ This is no longer one mailbox, and that matters for the template.
 | Announcement to subscribers | one letter per subscriber of the trip's direction, each in their own language |
 | I'm interested | a welcome to the new subscriber, and nothing at all when the address is already on that list |
 | Organizer invitation | the organizer |
-| IT Solutions | the owner |
+| Solutions enquiry | support@ctmass.com, and a receipt to whoever asked |
 
 Every letter addressed to **the owner** also goes to whoever is listed in
 `EMAILJS_COPY_TO` (a plain value in `wrangler.jsonc`, and
@@ -362,12 +368,14 @@ site regardless of how the shared template is set up, and locks the recipient.
      template that takes its recipient from the request can be used to send
      mail elsewhere. What holds that off instead is **Account → Security →
      allowed origins** (below) — only nazarov.net may use the key — and the
-     fact that everything except the Solutions form is sent by the Worker
-     with the private key, from an address nobody can read out of a page.
+     fact that every letter is now sent by the Worker with the private key,
+     from an address nobody can read out of a page. Item 4.2 moved the last
+     page-side send, the Solutions form, behind `/api/solutions`; the
+     browser SDK is gone from the site altogether.
    - **From Name:** `{{from_name}}`
    - **From Email:** keep *Use Default Email Address*.
-   - **Reply To:** `{{reply_to}}` — pressing *Reply* on an IT inquiry then
-     answers the client directly.
+   - **Reply To:** `{{reply_to}}` — pressing *Reply* on a Solutions enquiry
+     then answers the client directly.
 6. **Save**. Open the template's **Settings** tab and copy its **Template ID**
    (you may rename it, e.g. `template_aiyacht`).
 7. In GitHub: **Settings** → **Secrets and variables** → **Actions** →

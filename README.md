@@ -149,10 +149,16 @@ Firebase console → Firestore Database → Rules → Publish.
 `src/lib/email/` builds both messages. They always go out in **English** and
 say which site language the visitor used:
 
-- `yacht-application.ts` — `AI Yacht — new application from <name>`
-- `it-inquiry.ts` — `AI Yacht · IT Solutions — <service> inquiry from <name>`,
-  with `reply_to` set to the client's email
+- `application.ts` — a trip application, to the owner, the organizer and the
+  applicant
+- `solutions.ts` — a project enquiry, to support@ctmass.com and back to
+  whoever asked, with `reply_to` set to their address
+- `suggestion.ts`, `welcome.ts`, `announcement.ts`, `organizer.ts` — the
+  idea queue, the mailing list and the organizer's way into the panel
 - `shell.ts` — the shared branded HTML layout and plain-text fallback
+
+They are built here and sent by the Cloudflare Worker: the private key that
+lets a letter address somebody other than the owner may not travel to a page.
 
 > **If an email arrives as raw HTML source,** the EmailJS template is escaping
 > it: its content must be `{{{html}}}` (triple braces), not `{{html}}`. See
@@ -163,14 +169,14 @@ say which site language the visitor used:
 ```
 src/
   app/                route groups: (en), (ru), (admin) + globals.css
-  views/              home-page.tsx, it-solutions-page.tsx
-  components/         one file per home section; it/ for the IT page
+  views/              one file per page: home, interest, trip, story, solutions…
+  components/         one folder per page section (home/, trip/, solutions/…)
     admin/            the admin panel at /admin/
   i18n/               locales, dictionaries, metadata builder
   lib/
     site.ts           domain + EmailJS configuration
     fonts.ts          next/font setup
-    email/            email builders and the EmailJS sender
+    email/            email builders, shared with the Worker that sends them
     content/          the domain model: trips, interests, schedule, validation
     firebase/         project config, build-time reads, sign-in
 public/assets/        photography and nautical charts

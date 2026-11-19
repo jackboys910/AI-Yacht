@@ -9,11 +9,10 @@ import type { Env } from "./env";
  * exists (ТЗ v4, С-12).
  *
  * It is in the Worker for one reason: the EmailJS **private** key. A send
- * from the panel would have to carry the public key, and the public key can
- * only address the owner's own mailbox — the template's recipient is fixed in
- * `lib/email/send.ts` precisely so that a key visible in every visitor's
- * browser cannot be used to mail strangers. Sending to the organizer means
- * sending server-side.
+ * from the panel would have to carry the public key, which every visitor's
+ * browser can read — and a key anyone can read must not be able to address
+ * strangers. Sending to the organizer means sending server-side. Since item
+ * 4.2 nothing sends from a page at all.
  *
  * Who may be written to is decided by the database, not by the request. The
  * caller names a trip; the address comes out of that trip's `organizerEmail`.

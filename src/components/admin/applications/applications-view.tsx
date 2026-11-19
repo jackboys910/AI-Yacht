@@ -13,6 +13,7 @@ import { SecondaryButton } from "../fields";
 import { failureText, useAdmin, type AdminCopy } from "../i18n";
 import type { AdminRole } from "../role";
 import { Badge, Banner } from "../suggestions/suggestions-view";
+import { InquiriesView } from "./inquiries-view";
 
 /**
  * Who asked to come (ТЗ v4 §12, С-06).
@@ -32,12 +33,64 @@ import { Badge, Banner } from "../suggestions/suggestions-view";
 
 const FILTERS: (ApplicationStatus | "all")[] = ["all", "new", "accepted", "declined"];
 
+/**
+ * The "Applications" section: who asked to come, and who asked for a website.
+ *
+ * Two lists in one menu item because §7.6 is one section with two kinds of
+ * request in it, and because a panel with eight items in the menu is a panel
+ * where the owner hunts for the one he wants. The switch only exists for the
+ * owner: an organizer sees applications to their trip and nothing else, and
+ * a Solutions enquiry is none of their business (ТЗ v4 §2.4).
+ */
 export function ApplicationsView({
   role,
   ownerEmail,
 }: {
   role: AdminRole;
   /** The signed-in address — an organizer's own applications are found by it. */
+  ownerEmail: string;
+}) {
+  const { t } = useAdmin();
+  const [kind, setKind] = useState<"trips" | "solutions">("trips");
+
+  if (role === "organizer") {
+    return <TripApplications role={role} ownerEmail={ownerEmail} />;
+  }
+
+  return (
+    <div>
+      <div className="mb-6 inline-flex rounded-full border border-border bg-card p-1">
+        {(["trips", "solutions"] as const).map((value) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setKind(value)}
+            aria-pressed={kind === value}
+            className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+              kind === value
+                ? "bg-[color:var(--primary)] text-white"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t.applications.kinds[value]}
+          </button>
+        ))}
+      </div>
+
+      {kind === "trips" ? (
+        <TripApplications role={role} ownerEmail={ownerEmail} />
+      ) : (
+        <InquiriesView />
+      )}
+    </div>
+  );
+}
+
+function TripApplications({
+  role,
+  ownerEmail,
+}: {
+  role: AdminRole;
   ownerEmail: string;
 }) {
   const { locale, t } = useAdmin();

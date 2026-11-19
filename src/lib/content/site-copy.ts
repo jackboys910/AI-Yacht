@@ -1,6 +1,7 @@
 import { ABOUT } from "@/components/about/about-copy";
 import { HOME_OPENING } from "@/components/home/home-copy";
-import type { Localized, Settings } from "./types";
+import { solutionsCopy } from "@/components/solutions/solutions-copy";
+import type { Localized, Settings, TitledCard } from "./types";
 
 /**
  * The text of the pages whose words the owner may change (§7.7, А-15).
@@ -73,4 +74,40 @@ export function aboutClosing(settings: Settings | null): typeof ABOUT.closing {
     paragraphs: pickLines(about?.closingParagraphs, ABOUT.closing.paragraphs),
     sign: pick(about?.closingSign, ABOUT.closing.sign),
   };
+}
+
+/** The headline and subtitle of the Solutions page (§6.6, §7.7). */
+export function solutionsHero(settings: Settings | null): {
+  title: Localized<string>;
+  subtitle: Localized<string>;
+} {
+  const solutions = settings?.solutions;
+  return {
+    title: pick(solutions?.heroTitle, solutionsCopy.heroTitle),
+    subtitle: pick(solutions?.heroSubtitle, solutionsCopy.heroSubtitle),
+  };
+}
+
+/**
+ * The service cards.
+ *
+ * A list, so this one is all-or-nothing where the single fields above are
+ * per-field: there is no sensible way to merge "the four services we ship
+ * with" into "the three the owner typed" — a card half from each would
+ * describe a service nobody offers. An empty list, which is what an untouched
+ * settings document holds, means the four from §6.6.
+ */
+export function solutionsServices(settings: Settings | null): TitledCard[] {
+  const services = (settings?.solutions.services ?? []).filter(
+    (card) => card.title.en.trim() || card.title.ru.trim(),
+  );
+  return services.length > 0 ? services : [...solutionsCopy.services];
+}
+
+/** "How we work" — the same all-or-nothing rule as the services. */
+export function solutionsProcess(settings: Settings | null): Localized<string>[] {
+  const steps = (settings?.solutions.process ?? []).filter(
+    (step) => step.en.trim() || step.ru.trim(),
+  );
+  return steps.length > 0 ? steps : [...solutionsCopy.process];
 }

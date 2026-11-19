@@ -354,6 +354,17 @@ const RU: AdminCopy = {
       service: "Услуга",
       serviceTitle: "Название",
       serviceText: "Что это",
+      projects: "Наши работы",
+      projectsHint:
+        "Карточки на странице услуг, в этом порядке. Пока здесь пусто, страница показывает nazarov.net и ctmass.com.",
+      projectsEmpty: "Проектов пока нет.",
+      addProject: "Добавить проект",
+      project: "Проект",
+      projectTitle: "Название",
+      projectText: "Одна строка о проекте",
+      projectUrl: "Адрес",
+      projectUrlHint: "Куда ведёт карточка, например https://ctmass.com.",
+      projectShot: "Скриншот",
       process: "Как работаем",
       processHint: "По шагу в строке.",
     },
@@ -406,8 +417,6 @@ const RU: AdminCopy = {
       "Отписка — это ссылка в письме, и она оставляет запись. Это удаление адреса целиком — для того, кто именно об этом попросил.",
     removed: "Адрес удалён.",
     removeFailed: (detail: string) => `Не удалось удалить: ${detail}`,
-    solutions:
-      "Заявок Solutions здесь пока нет: форма отправляет их письмом, и нигде они не хранятся. Экран для них приходит с пунктом 4.2 — там они и начинают сохраняться.",
   },
   tripForm: {
     edit: "Изменить поездку",
@@ -868,8 +877,30 @@ suggestions: {
       declined: "Отклонены",
     },
     languages: { en: "английский", ru: "русский" },
+    kinds: { trips: "Поездки", solutions: "Solutions" },
     loadFailed: (detail: string) => `Не удалось загрузить заявки: ${detail}`,
     saveFailed: (detail: string) => `Не удалось сохранить решение: ${detail}`,
+  },
+
+  inquiries: {
+    loading: "Загружаем заявки…",
+    none: "Заявок на проекты пока нет.",
+    noneHere: "Под этот фильтр заявок нет.",
+    count: (total: number, fresh: number) =>
+      fresh > 0
+        ? `Заявок: ${total}, не обработано ${fresh}`
+        : `Заявок: ${total}`,
+    filter: "Показать",
+    states: { all: "Все", new: "Не обработаны", handled: "Обработаны" },
+    noName: "Имя не указано",
+    email: "Почта",
+    phone: "Телефон",
+    source: "Откуда пришли",
+    message: "Что нужно",
+    markHandled: "Отметить обработанной",
+    undo: "Вернуть в работу",
+    loadFailed: (detail: string) => `Не удалось загрузить заявки: ${detail}`,
+    saveFailed: (detail: string) => `Не удалось сохранить: ${detail}`,
   },
 
   error: {

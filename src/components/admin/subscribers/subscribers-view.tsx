@@ -311,10 +311,6 @@ export function SubscribersView() {
       )}
 
       {asking && <p className="mt-4 max-w-2xl text-xs text-muted-foreground">{c.removeHint}</p>}
-
-      <p className="mt-10 max-w-2xl border-t border-border pt-5 text-xs text-muted-foreground">
-        {c.solutions}
-      </p>
     </div>
   );
 }
