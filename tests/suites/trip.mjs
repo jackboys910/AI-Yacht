@@ -38,6 +38,13 @@ export async function run({ browser, base, run: report }) {
 
   report.group("Кнопки «Поделиться»");
   await page.goto(`${base}${trip}`, { waitUntil: "load" });
+  // The share links are built in the browser from the page's own address, so
+  // they appear with hydration rather than in the HTML.
+  await page
+    .locator("a[href*='facebook.com/sharer']")
+    .first()
+    .waitFor({ state: "attached", timeout: 15000 })
+    .catch(() => {});
 
   const share = await page.evaluate(() =>
     [...document.querySelectorAll("a[href*='facebook.com/sharer'], a[href*='wa.me'], a[href*='t.me/share']")].map(

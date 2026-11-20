@@ -1,3 +1,4 @@
+import { Photo } from "@/components/photo";
 import { SectionHead } from "@/components/section-head";
 import { SiteFoot } from "@/components/site-foot";
 import { SiteNav } from "@/components/site-nav";
@@ -79,11 +80,15 @@ export function InterestPage({
 
       <section className="relative isolate overflow-hidden bg-primary pb-16 pt-32 text-white sm:pb-24 sm:pt-44">
         {cover?.url && (
-          <img
+          <Photo
             src={cover.url}
             alt={pickOrOther(cover.alt, locale)}
             width={cover.width || 1920}
             height={cover.height || 1080}
+            // The banner spans the window, and it is the first thing this page
+            // paints — so it is asked for first and in the width it is shown.
+            sizes="100vw"
+            priority
             // The banner is far wider than it is tall, so a portrait photo is
             // cropped through its middle unless the owner says where to look.
             style={{
