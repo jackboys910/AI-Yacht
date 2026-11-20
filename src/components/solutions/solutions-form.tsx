@@ -6,7 +6,7 @@ import { reportEvent } from "@/lib/analytics/events";
 import { emailConfig } from "@/lib/email/config";
 import { visitSource } from "@/lib/visit-source";
 import { Eyebrow } from "../eyebrow";
-import { DotList, Field, SelectField, SentCard } from "../form-fields";
+import { DotList, Field, FormConsent, SelectField, SentCard } from "../form-fields";
 import { TurnstileCheck, type CheckState } from "../suggest/turnstile-check";
 import { PROJECT_TYPES, solutionsCopy } from "./solutions-copy";
 
@@ -232,7 +232,11 @@ export function SolutionsForm({ locale }: { locale: Locale }) {
                 {sending ? c.sending[locale] : c.submit[locale]}
               </button>
 
-              <p className="text-center text-xs text-white/50">{c.consent[locale]}</p>
+              <FormConsent
+                text={c.consent[locale]}
+                locale={locale}
+                className="text-center text-xs text-white/50"
+              />
             </form>
           )}
         </div>

@@ -61,7 +61,7 @@ export function SLanes({
               // headline goes in it.
               className={index < 2 ? "lg:w-[60%]" : ""}
             >
-              <Lane lane={lane} photoLeft={index < waist} />
+              <Lane lane={lane} photoLeft={index < waist} first={index === 0} />
             </li>
           ))}
         </ul>
@@ -128,7 +128,16 @@ function SStroke() {
   );
 }
 
-function Lane({ lane, photoLeft }: { lane: HomeLane; photoLeft: boolean }) {
+function Lane({
+  lane,
+  photoLeft,
+  first,
+}: {
+  lane: HomeLane;
+  photoLeft: boolean;
+  /** The first lane: its photograph is what the home page paints last (Т-01). */
+  first: boolean;
+}) {
   return (
     <a
       href={lane.href}
@@ -151,7 +160,13 @@ function Lane({ lane, photoLeft }: { lane: HomeLane; photoLeft: boolean }) {
             alt={lane.image.alt}
             width={lane.image.width}
             height={lane.image.height}
-            loading="lazy"
+            // The first photograph of the letter is the Largest Contentful
+            // Paint of the home page. Deferring it is what delayed that paint
+            // by a second: the browser will not even ask for a lazy image
+            // until it has laid the page out. The ones below the fold stay
+            // lazy — they are not what the visitor is waiting for.
+            loading={first ? "eager" : "lazy"}
+            fetchPriority={first ? "high" : undefined}
             // Where to crop. The frame is nothing like the shape of the
             // photograph, and the middle of a photograph of a person is
             // their chest.

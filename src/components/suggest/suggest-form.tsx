@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import type { Locale } from "@/i18n/config";
 import { emailConfig } from "@/lib/email/config";
 import { visitSource } from "@/lib/visit-source";
-import { Field, SelectField } from "../form-fields";
+import { Field, FormConsent, SelectField } from "../form-fields";
 import { suggestCopy } from "./suggest-copy";
 import { TurnstileCheck, type CheckState } from "./turnstile-check";
 
@@ -299,7 +299,7 @@ export function SuggestForm({
           {sending ? f.sending[locale] : f.submit[locale]}
         </button>
 
-        <p className="text-xs text-white/45">{f.consent[locale]}</p>
+        <FormConsent text={f.consent[locale]} locale={locale} />
       </div>
     </form>
   );
