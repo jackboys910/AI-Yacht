@@ -51,9 +51,30 @@ function readNumber(field: unknown): number | null {
     : null;
 }
 
+/**
+ * After the page has drawn itself, not during.
+ *
+ * The numbers are already on the page — the build printed them — so this
+ * request refreshes something the visitor can already read. Starting it while
+ * the page is still painting made it compete for the connection and the main
+ * thread with the first screen, and on a throttled mobile profile that is
+ * worth points of Lighthouse performance (Т-01). An idle callback with a
+ * timeout keeps the refresh prompt without putting it first.
+ */
+function whenIdle(work: () => void): void {
+  if (typeof window === "undefined") {
+    work();
+    return;
+  }
+  const idle = window.requestIdleCallback;
+  if (typeof idle === "function") idle(work, { timeout: 2500 });
+  else window.setTimeout(work, 1200);
+}
+
 async function load(): Promise<void> {
   try {
-    const response = await fetch(ENDPOINT, { cache: "no-store" });
+    // Low priority for the same reason: nothing on the page is waiting for it.
+    const response = await fetch(ENDPOINT, { cache: "no-store", priority: "low" });
     if (!response.ok) return;
 
     const body = (await response.json()) as {
@@ -94,10 +115,11 @@ export function publishInterested(tripId: string, count: number): void {
 function subscribe(listener: () => void): () => void {
   listeners.add(listener);
 
-  // The first component to subscribe starts the one request this page makes.
+  // The first component to subscribe starts the one request this page makes,
+  // once the browser has nothing more urgent to do.
   if (!asked && isFirebaseConfigured) {
     asked = true;
-    void load();
+    whenIdle(() => void load());
   }
 
   return () => {

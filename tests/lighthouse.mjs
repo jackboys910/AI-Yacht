@@ -3,6 +3,8 @@
  * Т-01: Lighthouse for mobile, on the home page, a direction page and a trip.
  *
  *   node tests/lighthouse.mjs                      # the live site
+ *   node tests/lighthouse.mjs --runs 3             # the median of three
+ *   node tests/lighthouse.mjs --psi                # measured on Google's machines
  *   node tests/lighthouse.mjs --site http://…      # anything else
  *   node tests/lighthouse.mjs --local              # the export in out/
  *
@@ -10,6 +12,14 @@
  * accessibility and for SEO. Best practices is measured and printed without a
  * threshold, because the ТЗ does not set one and a number nobody agreed to is
  * not a pass or a fail.
+ *
+ * **A local run needs a quiet machine.** Lighthouse slows the processor it
+ * measures on by a fixed factor, so whatever else the machine is doing lands
+ * on top of the result. Three runs of the same page here gave 98, 86 and 79
+ * with identical network timings — the image arrived in 150 ms every time and
+ * the paint waited between 115 and 2013 ms for the main thread. That is this
+ * laptop, not the site. `--runs` takes the median, and `--psi` asks Google to
+ * measure instead, which is the number to put in a report.
  *
  * Lighthouse is run through `npx` rather than added to the project. It pulls
  * in several hundred packages for something that runs by hand a few times a
@@ -35,6 +45,7 @@ const args = process.argv.slice(2);
 const local = args.includes("--local");
 const siteArg = args.indexOf("--site");
 const site = siteArg >= 0 ? args[siteArg + 1].replace(/\/$/, "") : null;
+const psi = args.includes("--psi");
 const runsArg = args.indexOf("--runs");
 /**
  * How many times to measure each page.
@@ -144,6 +155,52 @@ function run(address, name) {
   return { scores, warning, html: join(out, `${name}.report.html`) };
 }
 
+/**
+ * The same audit, run by Google instead of by this machine.
+ *
+ * PageSpeed Insights is Lighthouse on Google's hardware, so the number does
+ * not depend on what else is open here — which is the whole difficulty with a
+ * local run. Without a key the quota is shared with everyone on the network
+ * and runs out; `PSI_KEY` is a free key from the Google Cloud console, and the
+ * message says so when the quota refuses.
+ *
+ * Only public addresses can be measured this way: Google has to be able to
+ * open the page.
+ */
+async function askGoogle(address) {
+  const url = new URL("https://www.googleapis.com/pagespeedonline/v5/runPagespeed");
+  url.searchParams.set("url", address);
+  url.searchParams.set("strategy", "mobile");
+  for (const category of CATEGORIES) url.searchParams.append("category", category);
+  if (process.env.PSI_KEY) url.searchParams.set("key", process.env.PSI_KEY);
+
+  const response = await fetch(url, { headers: { accept: "application/json" } });
+  const body = await response.json().catch(() => ({}));
+  if (body.error) {
+    const quota = /Quota exceeded/i.test(body.error.message ?? "");
+    return {
+      error: quota
+        ? "квота PageSpeed Insights без ключа исчерпана — заведите бесплатный ключ и передайте его в PSI_KEY"
+        : String(body.error.message).slice(0, 160),
+    };
+  }
+  if (!response.ok || !body.lighthouseResult) {
+    return { error: `PageSpeed Insights ответил ${response.status}` };
+  }
+
+  const scores = {};
+  for (const key of CATEGORIES) {
+    scores[key] = Math.round((body.lighthouseResult.categories[key]?.score ?? 0) * 100);
+  }
+  const audits = body.lighthouseResult.audits ?? {};
+  return {
+    scores,
+    note:
+      `LCP ${audits["largest-contentful-paint"]?.displayValue ?? "?"}, ` +
+      `TBT ${audits["total-blocking-time"]?.displayValue ?? "?"}`,
+  };
+}
+
 const server = local ? await serveExport({ port: 0 }) : null;
 const base = site ?? (local ? server.url : "https://nazarov.net");
 
@@ -151,12 +208,36 @@ const base = site ?? (local ? server.url : "https://nazarov.net");
 const page = (path, name) => ({ address: `${base}${path}`, name });
 const targets = [page("/", "home"), page("/sailing/", "sailing"), page("/sailing/ai-yacht/", "trip")];
 
-rmSync(out, { recursive: true, force: true });
-mkdirSync(out, { recursive: true });
+if (!psi) {
+  rmSync(out, { recursive: true, force: true });
+  mkdirSync(out, { recursive: true });
+}
 
 console.log(`Lighthouse, мобильный профиль: ${base}`);
-console.log(`как запускается: ${lighthouseCommand().how}`);
+console.log(psi ? "где считается: PageSpeed Insights (машины Google)" : `как запускается: ${lighthouseCommand().how}`);
 console.log(`порог: производительность ${THRESHOLDS.performance}, доступность и SEO ${THRESHOLDS.accessibility}/${THRESHOLDS.seo}\n`);
+
+if (psi) {
+  let bad = 0;
+  for (const target of targets) {
+    process.stdout.write(`${target.address} … `);
+    const { scores, error, note } = await askGoogle(target.address);
+    if (error) {
+      console.log(`НЕ ПОЛУЧИЛОСЬ — ${error}`);
+      bad += 1;
+      continue;
+    }
+    const under = Object.entries(THRESHOLDS).filter(([key, least]) => scores[key] < least);
+    console.log(
+      `производительность ${scores.performance}, доступность ${scores.accessibility}, ` +
+        `SEO ${scores.seo}, практики ${scores["best-practices"]}  (${note})` +
+        (under.length === 0 ? "  — проходит" : `  — НЕ ПРОХОДИТ: ${under.map(([k, v]) => `${k} < ${v}`).join(", ")}`),
+    );
+    bad += under.length;
+  }
+  console.log(bad === 0 ? "\nТ-01: все три страницы проходят порог." : `\nТ-01: ${bad} показателей ниже порога.`);
+  process.exit(bad === 0 ? 0 : 1);
+}
 
 const median = (numbers) => {
   const sorted = [...numbers].sort((a, b) => a - b);
