@@ -1,3 +1,4 @@
+import { Photo } from "@/components/photo";
 import { Eyebrow } from "@/components/eyebrow";
 import { FaqList } from "@/components/faq-list";
 import { SectionHead } from "@/components/section-head";
@@ -433,12 +434,12 @@ export function TripRules({ trip, locale }: { trip: Trip; locale: Locale }) {
       className="relative overflow-hidden bg-primary py-20 text-white sm:py-28"
     >
       {backdrop?.url && (
-        <img
+        <Photo
           src={backdrop.url}
           alt=""
           width={backdrop.width || 1400}
           height={backdrop.height || 1000}
-          loading="lazy"
+          sizes="100vw"
           className="absolute inset-0 h-full w-full object-cover opacity-20"
         />
       )}
@@ -506,12 +507,12 @@ export function TripFaq({ trip, locale }: { trip: Trip; locale: Locale }) {
           <SectionHead>{say("faq", locale)}</SectionHead>
           {aside && (
             <div className="mt-8 aspect-[4/5] overflow-hidden rounded-3xl">
-              <img
+              <Photo
                 src={aside.url}
                 alt={pickOrOther(aside.alt, locale)}
                 width={aside.width || 1400}
                 height={aside.height || 1000}
-                loading="lazy"
+                sizes="(min-width: 1024px) 560px, 92vw"
                 className="h-full w-full object-cover"
               />
             </div>

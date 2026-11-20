@@ -1,3 +1,4 @@
+import { Photo } from "@/components/photo";
 import type { Locale } from "@/i18n/config";
 import type { Localized, WorkProject } from "@/lib/content/types";
 import { Eyebrow } from "../eyebrow";
@@ -72,12 +73,12 @@ export function WorkGrid({
                 className="flex flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-card transition hover:-translate-y-1 hover:border-[color:var(--teal)]"
               >
                 {card.screenshot?.url ? (
-                  <img
+                  <Photo
                     src={card.screenshot.thumbUrl || card.screenshot.url}
                     alt={title}
                     width={card.screenshot.width || 1200}
                     height={card.screenshot.height || 750}
-                    loading="lazy"
+                    sizes="(min-width: 1024px) 480px, 92vw"
                     className="aspect-[16/10] w-full border-b border-border object-cover"
                   />
                 ) : (

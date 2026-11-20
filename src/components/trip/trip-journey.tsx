@@ -1,3 +1,4 @@
+import { Photo } from "@/components/photo";
 import { SectionHead } from "@/components/section-head";
 import type { Locale } from "@/i18n/config";
 import type { Person, Trip } from "@/lib/content/types";
@@ -44,12 +45,12 @@ export function TripRouteDays({ trip, locale }: { trip: Trip; locale: Locale }) 
                 className="min-w-[78%] shrink-0 snap-start overflow-hidden rounded-2xl border border-border bg-card md:min-w-0"
               >
                 {day.photo?.url && (
-                  <img
+                  <Photo
                     src={day.photo.thumbUrl ?? day.photo.url}
                     alt={pickOrOther(day.photo.alt, locale)}
                     width={day.photo.width || 640}
                     height={day.photo.height || 420}
-                    loading="lazy"
+                    sizes="(min-width: 1024px) 360px, 92vw"
                     className="h-40 w-full object-cover"
                   />
                 )}
@@ -100,12 +101,12 @@ export function TripMap({ trip, locale }: { trip: Trip; locale: Locale }) {
                 key={image.url}
                 className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm"
               >
-                <img
+                <Photo
                   src={image.url}
                   alt={pickOrOther(image.alt, locale)}
                   width={image.width || 1600}
                   height={image.height || 900}
-                  loading="lazy"
+                  sizes="(min-width: 1024px) 960px, 100vw"
                   className="block w-full"
                 />
               </div>
@@ -135,13 +136,13 @@ export function TripMedia({ trip, locale }: { trip: Trip; locale: Locale }) {
         {photos.length > 0 && (
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {photos.map((photo) => (
-              <img
+              <Photo
                 key={photo.url}
                 src={photo.thumbUrl ?? photo.url}
                 alt={pickOrOther(photo.alt, locale)}
                 width={photo.width || 640}
                 height={photo.height || 420}
-                loading="lazy"
+                sizes="(min-width: 640px) 224px, 176px"
                 className="h-56 w-full rounded-2xl border border-border object-cover"
               />
             ))}

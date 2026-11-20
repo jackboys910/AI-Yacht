@@ -1,3 +1,4 @@
+import { Photo } from "@/components/photo";
 import { SiteFoot } from "@/components/site-foot";
 import { SiteNav } from "@/components/site-nav";
 import { storyCopy } from "@/components/story/story-copy";
@@ -67,11 +68,13 @@ export function StoryPage({
 
       <section className="relative isolate overflow-hidden bg-primary pb-16 pt-28 text-white sm:pb-24 sm:pt-36">
         {photo?.url && (
-          <img
+          <Photo
             src={photo.url}
             alt={photo.alt?.[locale] || c.photoAlt[locale]}
             width={photo.width || 1280}
             height={photo.height || 960}
+            sizes="100vw"
+            priority
             className="absolute inset-0 h-full w-full object-cover opacity-25"
           />
         )}
@@ -152,11 +155,12 @@ export function StoryPage({
               </div>
 
               {photo?.url && (
-                <img
+                <Photo
                   src={photo.thumbUrl || photo.url}
                   alt={photo.alt?.[locale] || c.photoAlt[locale]}
                   width={photo.width || 800}
                   height={photo.height || 1000}
+                  sizes="(min-width: 1024px) 380px, 92vw"
                   className="w-full rounded-2xl border border-border object-cover"
                 />
               )}

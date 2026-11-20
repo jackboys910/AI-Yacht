@@ -124,6 +124,10 @@ export function VideoWall({
                         src={video.thumbnail}
                         alt=""
                         loading="lazy"
+                        // Превью с YouTube: на медленной сети браузер тянет
+                        // ленивые картинки задолго до того, как до них
+                        // доскроллят, и они отбирают полосу у первого экрана.
+                        fetchPriority="low"
                         width={480}
                         height={360}
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
