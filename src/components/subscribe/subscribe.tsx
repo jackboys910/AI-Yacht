@@ -5,6 +5,7 @@ import type { Locale } from "@/i18n/config";
 import { reportEvent } from "@/lib/analytics/events";
 import { emailConfig } from "@/lib/email/config";
 import { visitSource } from "@/lib/visit-source";
+import { FormConsent } from "../form-fields";
 import { TurnstileCheck, type CheckState } from "../suggest/turnstile-check";
 import { nameList, subscribeCopy } from "./subscribe-copy";
 
@@ -359,11 +360,13 @@ function DialogBody({
 
         {/* Consent is a sentence, not a checkbox: pressing "Subscribe" under
             it is the agreement, and a box to tick before a button that means
-            the same thing is a second click for nothing. The Privacy Policy
-            link joins it when that page exists (plan item 4.2). */}
-        <p className="text-xs leading-relaxed text-muted-foreground">
-          {c.dialog.consent[locale]} {c.dialog.consentNote[locale]}
-        </p>
+            the same thing is a second click for nothing. The policy itself is
+            linked from it (Т-05). */}
+        <FormConsent
+          text={`${c.dialog.consent[locale]} ${c.dialog.consentNote[locale]}`}
+          locale={locale}
+          className="text-xs leading-relaxed text-muted-foreground"
+        />
 
         <TurnstileCheck locale={locale} onToken={setToken} onState={setCheck} />
       </fieldset>

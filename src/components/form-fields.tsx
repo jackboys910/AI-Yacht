@@ -1,5 +1,7 @@
 /** Dark-glass form controls shared by the AI Yacht and IT Solutions forms. */
 
+import { pagePath, type Locale } from "@/i18n/config";
+
 export const fieldClass =
   "w-full rounded-2xl border border-white/15 bg-white/[0.06] px-4 py-3.5 text-[15px] text-white placeholder:text-white/40 outline-none transition focus:border-[color:var(--gold)] focus:bg-white/[0.09] disabled:opacity-60";
 
@@ -136,6 +138,42 @@ export function SentCard({ title, text }: { title: string; text: string }) {
       <h3 className="mt-6 font-display text-2xl">{title}</h3>
       <p className="mt-3 max-w-sm text-sm text-white/75">{text}</p>
     </div>
+  );
+}
+
+/**
+ * The line under a form's button: what happens to what was typed, and the
+ * policy that says so in full (Т-05).
+ *
+ * The sentence stays what each form wrote for itself — a form asking for a
+ * passport photograph and one asking for an email address do not promise the
+ * same thing — and the link is added here so that all four forms point at one
+ * policy rather than four copies of a sentence about it.
+ *
+ * It is a link rather than a tick box on purpose: a box to tick in front of a
+ * button that already means consent is a second click for nothing, and the
+ * policy has to be readable before the button is pressed, not after.
+ */
+export function FormConsent({
+  text,
+  locale,
+  className = "text-xs text-white/45",
+}: {
+  text: string;
+  locale: Locale;
+  className?: string;
+}) {
+  return (
+    <p className={className}>
+      {text}{" "}
+      <a
+        href={pagePath("privacy", locale)}
+        className="underline decoration-white/30 underline-offset-2 transition hover:decoration-white"
+      >
+        {locale === "ru" ? "Политика конфиденциальности" : "Privacy Policy"}
+      </a>
+      .
+    </p>
   );
 }
 

@@ -5,7 +5,7 @@ import type { Locale } from "@/i18n/config";
 import { reportEvent } from "@/lib/analytics/events";
 import { emailConfig } from "@/lib/email/config";
 import { visitSource } from "@/lib/visit-source";
-import { Field } from "../form-fields";
+import { Field, FormConsent } from "../form-fields";
 import { TurnstileCheck, type CheckState } from "../suggest/turnstile-check";
 import { joinCopy } from "./join-copy";
 
@@ -252,7 +252,7 @@ export function JoinForm({
           {sending ? c.sending[locale] : c.submit[locale]}
         </button>
 
-        <p className="text-xs text-white/45">{c.consent[locale]}</p>
+        <FormConsent text={c.consent[locale]} locale={locale} />
       </div>
     </form>
   );

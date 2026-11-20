@@ -33,8 +33,62 @@ export function TurnstileCheck({
   // the cleanup needs the current value rather than the one it closed over.
   const widget = useRef<string | null>(null);
   const [, force] = useState(0);
+  // Whether the widget has been asked for yet (see the effect below).
+  const [wanted, setWanted] = useState(false);
+
+  /**
+   * The widget is not asked for until it is nearly needed.
+   *
+   * Turnstile is not a small script: on a trip page it fetched about 1.7 MB
+   * and kept the network and the main thread busy for close to four seconds,
+   * which took that page's Largest Contentful Paint to fifteen seconds and
+   * its Lighthouse score to 69 (Т-01 asks for 85). None of that work has
+   * anything to do with what the visitor is reading — the form it guards is
+   * at the bottom of the page.
+   *
+   * So it starts on either of two signals, whichever comes first: the widget
+   * coming within half a screen of the viewport, or the first touch of the
+   * form around it. The second one matters because Enter in a text field
+   * submits a form, and a submission without a token is refused by the
+   * Worker — the visitor must not be able to reach the button before the
+   * check has had its chance to start.
+   *
+   * Where the form is already on screen — `/suggest/`, `/solutions/`, the
+   * subscribe dialog — the observer fires at once and nothing changes.
+   */
+  useEffect(() => {
+    if (wanted) return;
+    const node = host.current;
+    if (!node) return;
+
+    const start = () => setWanted(true);
+
+    if (typeof IntersectionObserver === "undefined") {
+      start();
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) start();
+      },
+      { rootMargin: "50% 0px" },
+    );
+    observer.observe(node);
+
+    const form = node.closest("form") ?? node.parentElement;
+    form?.addEventListener("focusin", start, { once: true });
+    form?.addEventListener("input", start, { once: true });
+
+    return () => {
+      observer.disconnect();
+      form?.removeEventListener("focusin", start);
+      form?.removeEventListener("input", start);
+    };
+  }, [wanted]);
 
   useEffect(() => {
+    if (!wanted) return;
     let alive = true;
 
     loadTurnstile().then(
@@ -79,7 +133,7 @@ export function TurnstileCheck({
     // Re-rendering the widget because a callback identity changed would throw
     // away a token the visitor has already earned.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [locale]);
+  }, [locale, wanted]);
 
   return <div ref={host} className="min-h-[65px]" />;
 }

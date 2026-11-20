@@ -45,6 +45,10 @@ export function TripHero({
           alt={pickOrOther(cover.alt, locale)}
           width={cover.width || 1920}
           height={cover.height || 1280}
+          // The cover fills the first screen, so it is this page's Largest
+          // Contentful Paint and has to be asked for before anything below it
+          // (Т-01).
+          fetchPriority="high"
           className="absolute inset-0 h-full w-full object-cover opacity-70"
         />
       )}
