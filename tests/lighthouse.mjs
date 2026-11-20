@@ -35,6 +35,17 @@ const args = process.argv.slice(2);
 const local = args.includes("--local");
 const siteArg = args.indexOf("--site");
 const site = siteArg >= 0 ? args[siteArg + 1].replace(/\/$/, "") : null;
+const runsArg = args.indexOf("--runs");
+/**
+ * How many times to measure each page.
+ *
+ * One run is not a number. Lighthouse simulates a slow connection and a slow
+ * processor on top of whatever the machine is actually doing, and two runs of
+ * the same page half an hour apart differed here by fourteen points — 91 and
+ * 77 — with nothing changed in between. Lighthouse's own advice is the median
+ * of several runs, so that is what this reports when asked for more than one.
+ */
+const runs = runsArg >= 0 ? Math.max(1, Number(args[runsArg + 1]) || 1) : 1;
 const out = join(process.cwd(), "lighthouse");
 
 /** A Chrome for Lighthouse to drive: the one Playwright already downloaded. */
@@ -147,24 +158,51 @@ console.log(`Lighthouse, мобильный профиль: ${base}`);
 console.log(`как запускается: ${lighthouseCommand().how}`);
 console.log(`порог: производительность ${THRESHOLDS.performance}, доступность и SEO ${THRESHOLDS.accessibility}/${THRESHOLDS.seo}\n`);
 
+const median = (numbers) => {
+  const sorted = [...numbers].sort((a, b) => a - b);
+  return sorted[Math.floor(sorted.length / 2)];
+};
+
 let failures = 0;
 for (const target of targets) {
-  process.stdout.write(`${target.address} … `);
-  const { scores, error, warning, html } = run(target.address, target.name);
-  if (error) {
-    console.log(`НЕ ПОЛУЧИЛОСЬ — ${error}`);
+  console.log(`${target.address}`);
+  const taken = [];
+  let warning = null;
+  let html = null;
+  let broke = null;
+
+  for (let attempt = 1; attempt <= runs; attempt += 1) {
+    const name = runs === 1 ? target.name : `${target.name}-${attempt}`;
+    const result = run(target.address, name);
+    if (result.error) {
+      broke = result.error;
+      break;
+    }
+    taken.push(result.scores);
+    warning = result.warning ?? warning;
+    html = result.html;
+    if (runs > 1) {
+      console.log(`   прогон ${attempt}: производительность ${result.scores.performance}`);
+    }
+  }
+
+  if (broke || taken.length === 0) {
+    console.log(`   НЕ ПОЛУЧИЛОСЬ — ${broke}`);
     failures += 1;
     continue;
   }
 
+  const scores = {};
+  for (const key of CATEGORIES) scores[key] = median(taken.map((one) => one[key]));
+
   const bad = Object.entries(THRESHOLDS).filter(([key, least]) => scores[key] < least);
   console.log(
-    `производительность ${scores.performance}, доступность ${scores.accessibility}, ` +
-      `SEO ${scores.seo}, практики ${scores["best-practices"]}` +
+    `   ${runs > 1 ? "медиана: " : ""}производительность ${scores.performance}, ` +
+      `доступность ${scores.accessibility}, SEO ${scores.seo}, практики ${scores["best-practices"]}` +
       (bad.length === 0 ? "  — проходит" : `  — НЕ ПРОХОДИТ: ${bad.map(([k, v]) => `${k} < ${v}`).join(", ")}`),
   );
   if (warning) console.log(`   замечание: ${warning}`);
-  console.log(`   отчёт: ${html}`);
+  if (html) console.log(`   отчёт: ${html}`);
   failures += bad.length;
 }
 

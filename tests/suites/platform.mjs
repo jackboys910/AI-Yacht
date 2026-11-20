@@ -31,6 +31,12 @@ export async function run({ browser, base, run: report, browserName, site }) {
     const text = await pageText(page, "body");
     const ok = (response?.status() ?? 0) < 400 && text.length > 200 && (await page.locator("h1").count()) > 0;
     report.check("Т-02", `${engine}: ${address}`, ok, `статус ${response?.status()}, символов ${text.length}`);
+    // Let the page settle before leaving it. The counters are fetched after
+    // hydration, and a request still in the air when the next navigation
+    // starts is reported by WebKit as "cannot load … due to access control
+    // checks" — a cancelled request, not a broken page, and not something to
+    // fail an engine over.
+    await page.waitForTimeout(1500);
   }
 
   // A page that throws while it hydrates looks fine in a screenshot and does
