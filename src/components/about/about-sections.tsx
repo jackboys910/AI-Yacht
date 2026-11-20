@@ -1,3 +1,4 @@
+import { Photo } from "@/components/photo";
 import { Eyebrow } from "@/components/eyebrow";
 import { SectionHead } from "@/components/section-head";
 import type { Locale } from "@/i18n/config";
@@ -25,11 +26,13 @@ export function AboutHero({
 
   return (
     <section className="relative isolate overflow-hidden bg-primary pb-16 pt-28 text-white sm:pb-24 sm:pt-36">
-      <img
+      <Photo
         src="/assets/yasha-helm-sunrise.jpg"
         alt={t.imageAlt[locale]}
         width={1280}
         height={960}
+        sizes="100vw"
+        priority
         className="absolute inset-0 h-full w-full object-cover opacity-25"
       />
       <div className="absolute inset-0 bg-gradient-to-b from-primary/85 via-primary/85 to-primary" />
@@ -113,12 +116,12 @@ export function AboutIdea({ locale }: { locale: Locale }) {
         </div>
 
         <div>
-          <img
+          <Photo
             src="/assets/heliski-group.jpg"
             alt={t.imageAlt[locale]}
             width={1280}
             height={960}
-            loading="lazy"
+            sizes="(min-width: 1024px) 480px, 92vw"
             className="aspect-[4/3] w-full rounded-2xl object-cover shadow-card"
           />
           <ul className="mt-8 space-y-3">
