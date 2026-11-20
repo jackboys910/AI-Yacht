@@ -1,3 +1,4 @@
+import { Photo } from "@/components/photo";
 import type { Locale } from "@/i18n/config";
 import type { HomeLane } from "@/lib/content/home";
 import type { HomeOpeningCopy } from "@/lib/content/site-copy";
@@ -46,11 +47,14 @@ export function CommunityOpening({
       {/* A photograph, not a flat colour: the page is dark, and a dark page
           with nothing behind it reads as a loading state. Dimmed far enough
           that the gold letter and the names stay the brightest things here. */}
-      <img
+      <Photo
         src="/assets/marina-bay.jpg"
         alt={copy.backdropAlt[locale]}
         width={1280}
         height={583}
+        // It fills the window, but at a fifth of its opacity under a gradient:
+        // a copy sized for the window is already more than this needs.
+        sizes="100vw"
         className="absolute inset-0 h-full w-full object-cover opacity-20"
       />
       <div className="absolute inset-0 bg-gradient-to-b from-primary/88 via-primary/82 to-primary" />

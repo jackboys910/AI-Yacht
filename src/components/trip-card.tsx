@@ -1,3 +1,4 @@
+import { Photo } from "@/components/photo";
 import { CardCounters } from "@/components/trip/interested";
 import type { Locale } from "@/i18n/config";
 import { localized } from "@/i18n/config";
@@ -60,12 +61,13 @@ export function TripCard({
       <a href={href} className="block">
         <div className="relative aspect-[4/3] overflow-hidden bg-primary">
           {cover && (
-            <img
-              src={thumbOf(cover)}
+            <Photo
+              src={thumbOf(cover) ?? cover.url}
               alt={pickOrOther(cover.alt, locale)}
               width={cover.width || 640}
               height={cover.height || 480}
-              loading="lazy"
+              // Three cards to a row on a wide screen, one on a phone.
+              sizes="(min-width: 1024px) 360px, 92vw"
               className={`h-full w-full object-cover transition duration-700 group-hover:scale-[1.03] ${
                 past ? "saturate-50" : ""
               }`}

@@ -1,3 +1,4 @@
+import { Photo } from "@/components/photo";
 import type { Locale } from "@/i18n/config";
 import type { Trip } from "@/lib/content/types";
 import {
@@ -40,15 +41,16 @@ export function TripHero({
       className="relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-primary text-white"
     >
       {cover && (
-        <img
+        <Photo
           src={cover.url}
           alt={pickOrOther(cover.alt, locale)}
           width={cover.width || 1920}
           height={cover.height || 1280}
           // The cover fills the first screen, so it is this page's Largest
-          // Contentful Paint and has to be asked for before anything below it
-          // (Т-01).
-          fetchPriority="high"
+          // Contentful Paint: asked for first, and in the width of the window
+          // rather than the width of the original (Т-01).
+          sizes="100vw"
+          priority
           className="absolute inset-0 h-full w-full object-cover opacity-70"
         />
       )}
@@ -96,13 +98,16 @@ export function TripHero({
         <div className="relative shrink-0 pb-10">
           <div className="container-narrow flex snap-x snap-mandatory gap-4 overflow-x-auto scrollbar-hide pb-2">
             {rest.map((photo) => (
-              <img
+              <Photo
                 key={photo.url}
                 src={photo.thumbUrl ?? photo.url}
                 alt={pickOrOther(photo.alt, locale)}
                 width={photo.width || 640}
                 height={photo.height || 420}
-                loading="lazy"
+                // A strip of thumbnails on the first screen: 176 pixels wide,
+                // 224 from the small breakpoint up. They download with the
+                // cover, so their size counts towards this page’s paint.
+                sizes="(min-width: 640px) 224px, 176px"
                 className="h-28 w-44 shrink-0 snap-start rounded-xl border border-white/15 object-cover sm:h-36 sm:w-56"
               />
             ))}

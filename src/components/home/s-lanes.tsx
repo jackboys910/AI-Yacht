@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Photo } from "@/components/photo";
 import type { HomeLane } from "@/lib/content/home";
 
 /**
@@ -155,18 +156,23 @@ function Lane({
         }`}
       >
         {lane.image ? (
-          <img
+          <Photo
             src={lane.image.url}
             alt={lane.image.alt}
             width={lane.image.width}
             height={lane.image.height}
+            // The box is 42–44% of the column, and the column stops growing
+            // at the container's width — so about 480 pixels on a wide screen
+            // and a little over 160 on a phone. Without this the browser
+            // assumes the photograph fills the window and takes the widest
+            // copy there is.
+            sizes="(min-width: 1024px) 480px, 44vw"
             // The first photograph of the letter is the Largest Contentful
             // Paint of the home page. Deferring it is what delayed that paint
             // by a second: the browser will not even ask for a lazy image
-            // until it has laid the page out. The ones below the fold stay
-            // lazy — they are not what the visitor is waiting for.
-            loading={first ? "eager" : "lazy"}
-            fetchPriority={first ? "high" : undefined}
+            // until it has laid the page out. The ones below the fold wait —
+            // they are not what the visitor is looking at.
+            priority={first}
             // Where to crop. The frame is nothing like the shape of the
             // photograph, and the middle of a photograph of a person is
             // their chest.

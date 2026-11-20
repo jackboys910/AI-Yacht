@@ -199,6 +199,11 @@ export async function run({ browser, base, run: report }) {
     await fillIfPresent(page, one, "Проверка");
   }
 
+  // Before sending: a successful send replaces the form with a card, and
+  // there is no form left to look in.
+  report.check("Т-05", "у формы идеи есть ссылка на политику",
+    (await page.locator("form a[href*='/privacy/']").count()) > 0);
+
   await page.getByRole("button", { name: /Send the idea|Отправить идею/ }).first().click();
   const gotIdea = await until(async () => idea().length > 0, { timeout: 8000 });
   report.check("С-07", "идея уходит на сервер", gotIdea);
@@ -208,8 +213,6 @@ export async function run({ browser, base, run: report }) {
       Boolean(body.title && body.description && body.email), Object.keys(body).join(", "));
     report.check("Н-12", "в идее есть токен Turnstile", Boolean(body.turnstileToken));
   }
-  report.check("Т-05", "у формы идеи есть ссылка на политику",
-    (await page.locator("form a[href*='/privacy/']").count()) > 0);
   // That the idea is not on the site until it is published is the other half
   // of С-07, and it is the panel that can show it.
   report.skip("С-07", "идея не видна на сайте до публикации", "проверяется в наборе admin");
