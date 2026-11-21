@@ -255,7 +255,15 @@ export async function run({ browser, base, run: report, site }) {
 
   // ——— a trip page ————————————————————————————————————————————
   report.group("Страница поездки");
-  await page.goto(`${base}/sailing/ai-yacht/`, { waitUntil: "load" });
+  // Whichever trip the section shows first, not a slug written in here: the
+  // owner archives and publishes trips, and a suite that holds on to one
+  // address reports a 404 as a broken site.
+  const tripHref =
+    (await page.evaluate(
+      () => document.querySelector("#upcoming article a")?.getAttribute("href") ?? null,
+    )) ?? everything[0];
+  report.check("П-03", "у раздела есть страница поездки", Boolean(tripHref), String(tripHref));
+  await page.goto(`${base}${tripHref}`, { waitUntil: "load" });
   const blocks = await page.evaluate(() => [...document.querySelectorAll("[id]")].map((one) => one.id));
   report.check("П-06", "страница поездки собрана из блоков", blocks.includes("join") && blocks.includes("top"), `блоков: ${blocks.length}`);
   report.check("П-09", "на странице поездки виден статус набора",
@@ -326,7 +334,7 @@ export async function run({ browser, base, run: report, site }) {
   report.group("Ширины от 320 px (П-15)");
   for (const width of WIDTHS) {
     await page.setViewportSize({ width, height: 900 });
-    for (const address of ["/", "/sailing/", "/sailing/ai-yacht/", "/about/"]) {
+    for (const address of ["/", "/sailing/", tripHref, "/about/"]) {
       await page.goto(`${base}${address}`, { waitUntil: "load" });
       await page.waitForTimeout(150);
       const spills = await hasSideScroll(page);
