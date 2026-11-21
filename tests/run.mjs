@@ -21,7 +21,7 @@ import { existsSync } from "node:fs";
 import { BROWSERS, createRun, loadPlaywright, openBrowser, summarise } from "./harness.mjs";
 import { serveExport } from "./serve.mjs";
 
-const ALL = ["public", "trip", "forms", "platform", "admin"];
+const ALL = ["public", "trip", "forms", "links", "platform", "admin"];
 
 function parse(argv) {
   const args = { browsers: ["chromium"], suites: null, site: null, headed: false };
