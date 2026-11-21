@@ -135,51 +135,56 @@ export async function run({ browser, base, run: report }) {
   const application = await captureApi(page, "/api/application", { ok: true });
 
   await page.goto(`${base}/`, { waitUntil: "load" });
-  const trip =
-    (await page.evaluate(() => document.querySelector("#upcoming article a")?.getAttribute("href") ?? null)) ??
-    "/sailing/ai-yacht/";
-  await page.goto(`${base}${trip}`, { waitUntil: "load" });
+  // Whichever trip is first on the home page. A slug written in here would
+  // turn an archived trip into a failing suite.
+  const trip = await page.evaluate(
+    () => document.querySelector("#upcoming article a")?.getAttribute("href") ?? null,
+  );
+  if (!trip) {
+    report.skip("С-06", "заявка на поездку", "на сайте нет опубликованных поездок — заявку отправлять некуда");
+    report.skip("А-17", "заявка попадает в панель", "на сайте нет опубликованных поездок");
+  } else {
+    await page.goto(`${base}${trip}`, { waitUntil: "load" });
 
-  await field(page, "name").fill("Проверка набора");
-  await field(page, "email").fill("tests@example.invalid");
-  await fillIfPresent(page, "city", "Glastonbury");
-  await fillIfPresent(page, "instagram", "https://instagram.com/example");
-  await fillIfPresent(page, "about", "Строка для проверки формы, не заявка.");
-  await fillIfPresent(page, "why", "Проверка.");
+    await field(page, "name").fill("Проверка набора");
+    await field(page, "email").fill("tests@example.invalid");
+    await fillIfPresent(page, "city", "Glastonbury");
+    await fillIfPresent(page, "instagram", "https://instagram.com/example");
+    await fillIfPresent(page, "about", "Строка для проверки формы, не заявка.");
+    await fillIfPresent(page, "why", "Проверка.");
 
-  await page.getByRole("button", { name: /Send the application|Отправить заявку/ }).first().click();
-  const gotApplication = await until(async () => application().length > 0, { timeout: 8000 });
-  report.check("С-06", "заявка уходит на сервер", gotApplication);
-  if (gotApplication) {
-    const body = application()[0] ?? {};
-    // The social addresses travel together in `links`, which is what the
-    // panel shows — the criterion asks for the link, not for a field name.
-    // `links` is a list of whichever addresses were given, which is what the
-    // panel shows; the criterion asks for a link, not for a field name.
-    const links = body.links ?? [];
-    const social = Array.isArray(links)
-      ? links.length > 0
-      : Boolean(links.instagram || links.facebook || links.linkedin);
-    report.check("С-06", "в заявке имя, почта, соцсеть и рассказ о себе",
-      Boolean(body.name && body.email && body.about) && social,
-      JSON.stringify({ name: body.name, email: body.email, links, about: Boolean(body.about) }).slice(0, 120));
-    report.check("А-17", "в заявке указана поездка", Boolean(body.tripId || body.tripSlug || body.trip),
-      JSON.stringify({ tripId: body.tripId, tripSlug: body.tripSlug }));
-    report.check("Н-12", "в заявке есть токен Turnstile", Boolean(body.turnstileToken));
+    await page.getByRole("button", { name: /Send the application|Отправить заявку/ }).first().click();
+    const gotApplication = await until(async () => application().length > 0, { timeout: 8000 });
+    report.check("С-06", "заявка уходит на сервер", gotApplication);
+    if (gotApplication) {
+      const body = application()[0] ?? {};
+      // `links` is a list of whichever addresses were given, which is what the
+      // panel shows; the criterion asks for a link, not for a field name.
+      const links = body.links ?? [];
+      const social = Array.isArray(links)
+        ? links.length > 0
+        : Boolean(links.instagram || links.facebook || links.linkedin);
+      report.check("С-06", "в заявке имя, почта, соцсеть и рассказ о себе",
+        Boolean(body.name && body.email && body.about) && social,
+        JSON.stringify({ name: body.name, email: body.email, links, about: Boolean(body.about) }).slice(0, 120));
+      report.check("А-17", "в заявке указана поездка", Boolean(body.tripId || body.tripSlug || body.trip),
+        JSON.stringify({ tripId: body.tripId, tripSlug: body.tripSlug }));
+      report.check("Н-12", "в заявке есть токен Turnstile", Boolean(body.turnstileToken));
+    }
+    await page.waitForTimeout(1200);
+    report.check("С-06", "посетителю показано, что заявка принята",
+      /Got it|Заявка принята|thank/i.test(await pageText(page, "body")));
+
+    // An empty form must not reach the server at all: a required field that is
+    // only decoration is how junk gets into the database.
+    await page.context().close();
+    page = await openPage(browser, { viewport: DESKTOP });
+    const empty = await captureApi(page, "/api/application", { ok: true });
+    await page.goto(`${base}${trip}`, { waitUntil: "load" });
+    await page.getByRole("button", { name: /Send the application|Отправить заявку/ }).first().click();
+    await page.waitForTimeout(1500);
+    report.check("А-17", "пустая заявка не отправляется", empty().length === 0);
   }
-  await page.waitForTimeout(1200);
-  report.check("С-06", "посетителю показано, что заявка принята",
-    /Got it|Заявка принята|thank/i.test(await pageText(page, "body")));
-
-  // An empty form must not reach the server at all: a required field that is
-  // only decoration is how junk gets into the database.
-  await page.context().close();
-  page = await openPage(browser, { viewport: DESKTOP });
-  const empty = await captureApi(page, "/api/application", { ok: true });
-  await page.goto(`${base}${trip}`, { waitUntil: "load" });
-  await page.getByRole("button", { name: /Send the application|Отправить заявку/ }).first().click();
-  await page.waitForTimeout(1500);
-  report.check("А-17", "пустая заявка не отправляется", empty().length === 0);
 
   // ——— an idea ————————————————————————————————————————————————
   report.group("Идея поездки");
