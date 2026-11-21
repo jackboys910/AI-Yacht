@@ -7,16 +7,16 @@ import {
   type Locale,
   type PageId,
 } from "@/i18n/config";
-import { publishedTripPaths } from "@/lib/content/visibility";
+import { publishedTripPaths, visibleInterests } from "@/lib/content/visibility";
 import { getSiteContent } from "@/lib/firebase/content";
 import { siteConfig } from "@/lib/site";
 
 /**
- * `sitemap.xml` (Т-03, Т-05).
+ * `sitemap.xml` (Т-06).
  *
  * Built from the same database read the pages are built from, so it cannot
  * drift away from them: a trip that is a draft or in the archive is not in
- * `getSiteContent`, which means it cannot reach this file either — Т-03 asks
+ * `getSiteContent`, which means it cannot reach this file either — Т-06 asks
  * for exactly that, and the guarantee is structural rather than a filter
  * somebody has to remember.
  *
@@ -26,7 +26,7 @@ import { siteConfig } from "@/lib/site";
  * forbids is a sitemap that argues with itself.
  *
  * Every entry carries its other language as `alternates.languages`, which is
- * the hreflang pair in sitemap form (Т-05). The pages say the same thing in
+ * the hreflang pair in sitemap form (П-08). The pages say the same thing in
  * their own `<head>`; search engines are happy to be told twice and this is
  * the half that covers the trip pages without crawling them first.
  */
@@ -81,7 +81,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ),
   );
 
-  const tabs = interests.flatMap((interest) =>
+  // `visibleInterests`, not every interest: a hidden interest has no tab page
+  // at all — `resolveInterest` refuses it, so the build emits nothing for that
+  // address — and the four directions that exist only as categories of the
+  // Suggest form (Family Travel, Hiking & Camping, Road Trips, Other
+  // Adventures) are hidden for exactly that reason. Listed anyway, they were
+  // eight entries of the map answering 404, which is the one thing a sitemap
+  // must never contain. Their trips keep their own addresses either way:
+  // `hidden` hides the tab without touching them (§7.3).
+  const tabs = visibleInterests(interests).flatMap((interest) =>
     rows(
       everyLanguage((locale) => localized(`/${interest.slug}/`, locale)),
       WEIGHT.interest,
