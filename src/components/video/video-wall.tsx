@@ -88,9 +88,21 @@ export function VideoWall({
           )}
         </div>
 
-        <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {/* A row that slides on a phone and a grid from the first breakpoint
+            up. Six videos stacked vertically is most of a screen's height of
+            scrolling for a block people browse rather than read, so on a
+            phone they go sideways: one card at a time, snapped, with the edge
+            of the next one showing — which is what says "there are more"
+            without a word or an arrow.
+
+            The negative margin is the container's own gutter, given back so
+            the row can reach both edges of the screen while the first card
+            still lines up with the heading above it. The scrollbar is hidden
+            because on a phone it is drawn over the cards and fades out
+            anyway; the peeking card is the affordance. */}
+        <ul className="-mx-5 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:grid sm:snap-none sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden">
           {videos.map((video) => (
-            <li key={video.id}>
+            <li key={video.id} className="w-[82%] shrink-0 snap-start sm:w-auto sm:shrink">
               <article className="overflow-hidden rounded-2xl border border-border bg-card">
                 <div className="relative aspect-video bg-[color:var(--primary)]">
                   {playing === video.id ? (

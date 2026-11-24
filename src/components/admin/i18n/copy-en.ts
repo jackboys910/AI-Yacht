@@ -241,6 +241,9 @@ const EN = {
     restoredLive: "The trip is back on the site.",
     restoredDraft: "The trip is back in drafts.",
     archived: "The trip was taken off the site into the archive.",
+    delete: "Delete",
+    deleteConfirm: "Delete for good?",
+    deleted: "The trip was deleted. Its photographs stay in storage.",
     emptyFilter: "No trips match this filter.",
     showAll: "Show all",
     mine: {

@@ -59,7 +59,7 @@ export function SiteNav({
 
   const home = locale === "en" ? "/" : `/${locale}/`;
   const panelLabel = locale === "en" ? "Panel" : "Панель";
-  const suggestLabel = locale === "en" ? "Suggest an idea" : "Предложить идею";
+  const suggestLabel = locale === "en" ? "Suggest an Adventure" : "Предложить приключение";
   const panelTitle =
     locale === "en"
       ? "For the owner and trip organizers"

@@ -1,3 +1,4 @@
+import { siteConfig } from "../site";
 import {
   esc,
   renderEmailHtml,
@@ -75,9 +76,18 @@ export function buildSuggestionOwnerEmail(data: SuggestionEmailData): OutgoingEm
       text: [data.description, ...extras].filter(Boolean).join("\n\n"),
       emptyText: "— nothing written —",
     },
+    // The letter is a notification, and the thing it notifies about lives one
+    // click away — so the click is a button rather than a sentence explaining
+    // where to find the panel. `?view=suggestions` is the queue itself: the
+    // panel reads that parameter on load, so the owner lands on the list of
+    // ideas instead of on the trips he was not looking for.
+    button: {
+      label: "Open Trip ideas",
+      href: `${siteConfig.url}/admin/?view=suggestions`,
+    },
     calloutHtml:
-      `Open <strong>Trip ideas</strong> in the panel to read it in full, change its status ` +
-      `or turn it into a draft trip. Replying goes straight to <strong>${esc(data.email)}</strong>.`,
+      `There you can read it in full, change its status or turn it into a draft trip. ` +
+      `Replying to this letter goes straight to <strong>${esc(data.email)}</strong>.`,
   };
 
   return {
