@@ -382,11 +382,35 @@ export async function run({ browser, base, run: report }) {
     }
 
     // Delete asks before it does anything (А-12), then does it.
+    //
+    // Twice over, because since 24.11.2026 there are two ways to delete a
+    // trip: the button in the row and the one inside the form. The row is
+    // tried first — it is the one the client asked for and the one a stray
+    // press can reach — and the form is the fallback that also finishes the
+    // clean-up if the row refuses.
     report.group("Уборка за собой");
     let left = await countRows(page, MARK);
     let asked = false;
-    for (let attempt = 0; attempt < 5 && left > 0; attempt += 1) {
+    let fromRow = false;
+
+    for (let attempt = 0; attempt < 6 && left > 0; attempt += 1) {
       await go(page, base, "trips");
+
+      // The row's own Delete, on the first two passes.
+      if (attempt < 2 && (await rowAction(page, MARK, /^(Delete|Удалить)$/))) {
+        await page.waitForTimeout(600);
+        const yes = page.getByRole("button", { name: /Yes, delete|Да, удалить/ }).first();
+        if ((await yes.count()) > 0) {
+          asked = true;
+          await yes.click();
+          await page.waitForTimeout(4000);
+          const now = await countRows(page, MARK);
+          if (now < left) fromRow = true;
+          left = now;
+          continue;
+        }
+      }
+
       await openRow(page, MARK);
       await page.waitForTimeout(3000);
       const remove = page.getByRole("button", { name: /^(Delete|Удалить)$/ }).first();
@@ -402,7 +426,9 @@ export async function run({ browser, base, run: report }) {
       await go(page, base, "trips");
       left = await countRows(page, MARK);
     }
+
     report.check("А-12", "удаление спрашивает подтверждение", asked);
+    report.check("А-12", "поездка удаляется прямо из списка", fromRow);
     report.check("А-12", "проверочные поездки удалены", left === 0,
       left > 0 ? `осталось строк: ${left} — удалите «${MARK}» вручную` : undefined);
   }

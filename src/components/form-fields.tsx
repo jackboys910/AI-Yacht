@@ -55,8 +55,12 @@ export function Field({
           // A number field is a sum of money here, never a dial: the spinner
           // arrows invite a click that changes an amount by one, and the
           // wheel over a focused field changes it without a click at all.
+          // `step` is "any" rather than 1 on purpose: a number field refuses
+          // to submit a value that does not fit its step, so with whole
+          // numbers only, "1500.50" typed into a budget stopped the whole
+          // form with "please enter a valid value".
           {...(type === "number"
-            ? { inputMode: "numeric" as const, min: 0, step: 1 }
+            ? { inputMode: "decimal" as const, min: 0, step: "any" }
             : {})}
           className={`${fieldClass}${
             type === "number"

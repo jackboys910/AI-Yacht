@@ -36,6 +36,9 @@ interface Found {
   lng: number;
 }
 
+/** The same point, to within a metre or so. */
+const near = (one: number, two: number) => Math.abs(one - two) < 1e-5;
+
 async function ask(path: string): Promise<unknown> {
   const response = await fetch(`${NOMINATIM}${path}`, {
     headers: { accept: "application/json" },
@@ -63,6 +66,13 @@ export default function MapPanel({
   const [searching, setSearching] = useState(false);
   const [reading, setReading] = useState(false);
   const [failed, setFailed] = useState(false);
+  // The place chosen out of the search results, kept with the name it was
+  // chosen by. Without this the button underneath threw that name away and
+  // asked the map service what is at those coordinates instead — which
+  // answers with the nearest thing it knows, so picking "Lofoten, Norway"
+  // from the list could put "Osterøy, Vestland" in the field. It is cleared
+  // the moment the visitor moves the map off that point.
+  const [chosen, setChosen] = useState<Found | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -85,8 +95,11 @@ export default function MapPanel({
 
       // The panel opens with a width animation on some screens, and Leaflet
       // measures its container once. Without this the tiles come out half a
-      // panel wide.
-      setTimeout(() => created?.invalidateSize(), 120);
+      // panel wide. `live` is checked again inside: the map is torn down the
+      // moment the panel is closed, and measuring a map that is gone throws.
+      setTimeout(() => {
+        if (live) created?.invalidateSize();
+      }, 120);
     });
 
     return () => {
@@ -119,6 +132,10 @@ export default function MapPanel({
         }));
 
       setResults(found);
+      // The map goes to the best answer so there is something to look at,
+      // but nothing is chosen until the visitor says which one: the first
+      // answer to "Lofoten" was a hamlet four hundred kilometres away.
+      setChosen(null);
       const first = found[0];
       if (first) map.current?.setView([first.lat, first.lng], 11);
     } catch {
@@ -135,6 +152,16 @@ export default function MapPanel({
     if (!current || reading) return;
 
     const { lat, lng } = current.getCenter();
+
+    // Still exactly on the place that was picked from the list, so it keeps
+    // the name it was picked by. Zooming in on it does not move the centre,
+    // which is why this survives a closer look; dragging the map does, and
+    // then the question below is the honest one to ask.
+    if (chosen && near(lat, chosen.lat) && near(lng, chosen.lng)) {
+      onPick(chosen.name, chosen.lat, chosen.lng);
+      return;
+    }
+
     setReading(true);
     setFailed(false);
     try {
@@ -197,6 +224,7 @@ export default function MapPanel({
                 type="button"
                 onClick={() => {
                   map.current?.setView([one.lat, one.lng], 13);
+                  setChosen(one);
                   setResults(null);
                 }}
                 className="block w-full rounded-lg px-2 py-1.5 text-left text-white/75 transition hover:bg-white/10 hover:text-white"
@@ -228,8 +256,17 @@ export default function MapPanel({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 p-3">
+        {/* What the button is about to take, so nobody presses it to find
+            out. A chosen place is named; otherwise it is whatever the pin is
+            standing on, and the line says how to move it. */}
         <p className="max-w-xs text-xs leading-relaxed text-white/50">
-          {failed ? f.placeFailed[locale] : f.placeDrag[locale]}
+          {failed ? (
+            f.placeFailed[locale]
+          ) : chosen ? (
+            <span className="text-white/75">{chosen.name}</span>
+          ) : (
+            f.placeDrag[locale]
+          )}
         </p>
         <button
           type="button"

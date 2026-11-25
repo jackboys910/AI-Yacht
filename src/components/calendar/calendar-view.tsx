@@ -12,6 +12,8 @@ import {
   type MonthKey,
 } from "@/lib/content/calendar";
 import type { Locale } from "@/i18n/config";
+import { todayInBrowserUtc, useClientValue } from "@/lib/client-value";
+import { writeMonth, writeSpan } from "@/lib/dates";
 import { calendarCopy } from "./calendar-copy";
 
 /**
@@ -50,37 +52,40 @@ export function CalendarView({
   const c = calendarCopy;
   const weekStart = weekStartFor(locale);
 
-  // Which month to open on: the one holding the next trip that has not
-  // finished, or the last month there is when everything is over.
-  //
-  // Not simply this month, because this month is often empty — there are
-  // four or five trips in a year — and a calendar that opens on an empty
-  // grid looks like a calendar with nothing in it. And decided here rather
-  // than at build time: the build's "today" is right until midnight, and a
-  // page served from a cache outlives that by days.
-  const [month, setMonth] = useState<MonthKey>(() => {
-    const now = new Date().toISOString().slice(0, 10);
+  /**
+   * Which month to open on: the one holding the next trip that has not
+   * finished, or the last month there is when everything is over.
+   *
+   * Not simply the current month, because the current month is usually empty
+   * — there are four or five trips in a year — and a calendar that opens on
+   * an empty grid reads as a calendar with nothing in it.
+   */
+  const opening = (now: string): MonthKey => {
     const next = events.find((event) => event.end >= now);
     if (next) return monthOf(next.start);
     const { last } = monthRange(events);
     return last ?? monthOf(now);
-  });
+  };
+
+  // "Today" has two values here: the day the file was printed and the day
+  // the visitor is reading it, and on a static page served from a cache they
+  // are rarely the same. `useClientValue` renders the printed one while
+  // hydrating and the real one immediately after — see its own file for what
+  // happens without that.
+  const now = useClientValue(todayInBrowserUtc, today);
+
+  // The month on screen is the one the visitor last asked for, and until
+  // they ask, the one this works out for itself. Derived rather than copied
+  // into state, so the correction above moves it too.
+  const [asked, setAsked] = useState<MonthKey | null>(null);
+  const month = asked ?? opening(now);
+  const setMonth = setAsked;
 
   const { first, last } = useMemo(() => monthRange(events), [events]);
   const cells = useMemo(() => monthGrid(month, weekStart), [month, weekStart]);
   const listed = useMemo(() => eventsInMonth(events, month), [events, month]);
 
-  const title = useMemo(() => {
-    const [year, number] = month.split("-").map(Number);
-    // The month and the year are joined by hand rather than asked for
-    // together: Russian answers "январь 2027 г." to that question, and the
-    // abbreviation belongs in a document, not in a heading.
-    const name = new Intl.DateTimeFormat(tagFor(locale), {
-      month: "long",
-      timeZone: "UTC",
-    }).format(new Date(Date.UTC(year, number - 1, 1)));
-    return `${name} ${year}`;
-  }, [month, locale]);
+  const title = useMemo(() => writeMonth(month, locale), [month, locale]);
 
   const weekdays = useMemo(() => {
     const format = new Intl.DateTimeFormat(tagFor(locale), {
@@ -146,7 +151,7 @@ export function CalendarView({
                     ? over
                       ? "bg-muted font-medium text-foreground"
                       : "bg-[color:var(--gold)]/85 font-semibold text-[color:var(--gold-foreground)]"
-                    : cell.iso === today
+                    : cell.iso === now
                       ? "border border-[color:var(--teal)] font-semibold"
                       : "bg-card/60"
                 }`}
@@ -181,7 +186,7 @@ export function CalendarView({
                   }`}
                 >
                   <span className="text-xs uppercase tracking-wider text-[color:var(--teal)]">
-                    {span(event.start, event.end, locale)}
+                    {writeSpan(event.start, event.end, locale)}
                   </span>
                   <span className="mt-1 block font-medium">{event.title}</span>
                   <span className="mt-1 block text-sm text-muted-foreground">
@@ -199,38 +204,6 @@ export function CalendarView({
       </div>
     </div>
   );
-}
-
-/** "8 — 16 May 2027", with the year and the month said once where they match. */
-function span(start: string, end: string, locale: Locale): string {
-  const tag = tagFor(locale);
-  const from = new Date(`${start}T00:00:00Z`);
-  const to = new Date(`${end}T00:00:00Z`);
-
-  const full = new Intl.DateTimeFormat(tag, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-
-  if (start === end) return full.format(from);
-
-  const sameMonth =
-    from.getUTCFullYear() === to.getUTCFullYear() && from.getUTCMonth() === to.getUTCMonth();
-
-  if (sameMonth) {
-    return `${from.getUTCDate()} — ${full.format(to)}`;
-  }
-
-  const short = new Intl.DateTimeFormat(tag, {
-    day: "numeric",
-    month: "short",
-    timeZone: "UTC",
-  });
-  return from.getUTCFullYear() === to.getUTCFullYear()
-    ? `${short.format(from)} — ${full.format(to)}`
-    : `${full.format(from)} — ${full.format(to)}`;
 }
 
 function Arrow({
