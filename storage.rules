@@ -1,10 +1,18 @@
 rules_version = '2';
 
-// Who may upload and read the trip photos.
+// Who may upload and read the photographs.
 //
-// Reads are open because these files are the pictures on the public pages.
-// Uploads are the owner's alone, and the owner is defined the same way as in
-// firestore.rules: an entry under /owners, not merely a signed-in account.
+// Reading one file by its address is open, because these files are the
+// pictures on the public pages. Reading the *list* of them is not, and the
+// difference matters: `read` in these rules covers both, so a bucket that
+// says `allow read: if true` hands any stranger its whole inventory —
+// including the folder below, which holds photographs people attached to an
+// idea meant for one reader. Hence `get` and `list` are granted separately
+// here. Nothing in the site or the panel ever lists the bucket.
+//
+// Uploads are the owner's alone, except for that one folder, and the owner is
+// defined the same way as in firestore.rules: an entry under /owners, not
+// merely a signed-in account.
 //
 // Deploy with `firebase deploy --only storage`, or paste into
 // Firebase console → Storage → Rules → Publish.
@@ -26,21 +34,34 @@ service firebase.storage {
     // their photographs were on their phone, not on the web. Nobody is signed
     // in on that page and nobody can be: the form is open to strangers by
     // design. So this rule gives away the one verb it has to — create — and
-    // nothing else. No overwrite, no delete, no listing: a stranger can put a
-    // picture here and can never come back for it or find anybody else's,
-    // which is what stops the bucket becoming free file hosting.
+    // as little as it can of the rest: no overwrite, no delete, and no
+    // listing. A stranger can put a picture here and can never come back for
+    // it or find anybody else's, which is what stops the bucket becoming
+    // free file hosting and what keeps one person's photographs from being
+    // enumerated by the next.
+    //
+    // `get` stays open, and that is deliberate rather than an oversight. The
+    // name of every file is a random UUID, so an address cannot be guessed —
+    // it can only be held, by the owner reading his panel or by the mail
+    // client showing him the letter. The browser also needs it one moment
+    // after uploading, to read back the address it just wrote.
     //
     // The browser compresses to 1920px before it uploads, which lands well
     // under a megabyte. A file over the cap is therefore not a large
     // photograph but something that did not come through the form.
     match /suggestions/{month}/{file} {
-      allow read: if true;
+      allow get: if true;
+      allow list: if isOwner();
       allow create: if request.resource.size < 6 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
     }
 
     match /{allPaths=**} {
-      allow read: if true;
+      // Rules are ORed: whatever this one grants, the folder above cannot
+      // take back. So the inventory of the bucket is closed here too, or
+      // closing it there would mean nothing.
+      allow get: if true;
+      allow list: if isOwner();
 
       // The admin panel compresses and resizes before uploading, so a file
       // over 10 MB means something went wrong rather than a large photo, and
