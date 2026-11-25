@@ -272,8 +272,13 @@ export function SuggestForm({
               disabled={sending}
             />
           </div>
-          <Hint>{f.whenHint[locale]}</Hint>
         </div>
+        {/* Outside the block above rather than inside it. A hint is pulled up
+            by a negative margin so it sits close under the field it explains,
+            and that only works where the gap it eats is the fieldset's own
+            20px. Inside a plain <div> there was no gap to eat, so the line
+            was drawn straight through the bottom edge of the "To" field. */}
+        <Hint>{f.whenHint[locale]}</Hint>
 
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="grid grid-cols-[1fr_auto] gap-3">
