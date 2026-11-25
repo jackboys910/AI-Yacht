@@ -15,21 +15,24 @@ export const metadata: Metadata = {
  * It sits outside both locale layouts, which is why it speaks both languages
  * at once: the address that missed could have been either, and a page that
  * guessed wrong would be a dead end in the wrong language. So both ways home,
- * and the four directions besides — somebody who mistyped a trip's address is
+ * and the directions besides — somebody who mistyped a trip’s address is
  * usually after a trip, not the front page.
  *
  * The links are written out rather than read from the database on purpose.
  * This file is one static page for the whole site, it has no language and no
- * content of its own, and the four directions have been the four directions
- * since ТЗ v3 §3. A build-time read here would tie the 404 page to a database
- * request that must never be the reason somebody sees no page at all.
+ * content of its own. A build-time read here would tie the 404 page to a
+ * database request that must never be the reason somebody sees no page at
+ * all — so the list is written out, and it is the only place that has to be
+ * edited by hand when the owner renames a direction (24.11.2026: Son became
+ * Sidekicks, and Summits joined them).
  */
 
 const DIRECTIONS = [
   { slug: "sailing", en: "Sailing", ru: "Sailing" },
   { slug: "snowboarding", en: "Snowboarding", ru: "Snowboarding" },
   { slug: "skydiving", en: "Skydiving", ru: "Skydiving" },
-  { slug: "son", en: "Son", ru: "Son" },
+  { slug: "sidekicks", en: "Sidekicks", ru: "Sidekicks" },
+  { slug: "summits", en: "Summits", ru: "Summits" },
 ];
 
 export default function GlobalNotFound() {

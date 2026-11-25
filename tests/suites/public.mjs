@@ -20,6 +20,9 @@ const PAIRS = [
 ];
 
 export const id = "public";
+/** The directions the site shows, as the owner renamed them on 24.11.2026. */
+const DIRECTIONS = ["/sailing/", "/snowboarding/", "/sidekicks/", "/summits/", "/skydiving/"];
+
 export const title = "Публичная часть (П-01…П-16, С-01…С-04, С-14…С-17)";
 
 export async function run({ browser, base, run: report, site }) {
@@ -38,7 +41,8 @@ export async function run({ browser, base, run: report, site }) {
   const hrefs = menu.map((one) => one.href);
 
   report.check("П-01", "логотип ведёт на главную", hrefs.includes("/"));
-  report.check("П-01", "направления в меню", ["/sailing/", "/snowboarding/", "/son/"].every((one) => hrefs.includes(one)));
+  report.check("П-01", "направления в меню", DIRECTIONS.every((one) => hrefs.includes(one)),
+    DIRECTIONS.filter((one) => !hrefs.includes(one)).join(", ") || "все на месте");
   report.check("П-01", "Solutions в меню", hrefs.includes("/solutions/"));
   report.check("П-01", "About и Story в меню", hrefs.includes("/about/") && hrefs.includes("/story/"));
   report.check("П-01", "«Предложить идею» в меню", hrefs.includes("/suggest/"));
@@ -78,10 +82,12 @@ export async function run({ browser, base, run: report, site }) {
   const lanes = await phone.evaluate(() => {
     // The lanes of the letter: the links that carry a photograph, as opposed
     // to the same addresses in the menu and on the cards.
-    const links = [...document.querySelectorAll("a.group")].filter(
-      (one) =>
-        ["/sailing/", "/snowboarding/", "/skydiving/", "/son/"].includes(one.getAttribute("href") || "") &&
-        !one.closest("article"),
+    // Every section of the letter, whatever it leads to: the directions,
+    // "Something Else" which leads to the idea form, and Software which
+    // leads to Solutions. A section is the one link on the page that has a
+    // title of its own and is not a card.
+    const links = [...document.querySelectorAll("a.group[title]")].filter(
+      (one) => !one.closest("article"),
     );
     const boxes = links.map((one) => one.getBoundingClientRect()).filter((box) => box.width > 0);
     if (boxes.length === 0) return null;
