@@ -39,6 +39,8 @@ export interface SiteChrome {
   /** ТЗ v3 §6.5 — the owner's own page. */
   storyHref: string;
   suggestHref: string;
+  /** Every trip by date (the client's list of 24.11.2026). */
+  calendarHref: string;
   languageHrefs: Record<Locale, string>;
 }
 

@@ -20,6 +20,11 @@ export const en = {
       description:
         "Propose a trip, an event or a project and gather people around it. No dates or prices needed yet; one person reads every idea.",
     },
+    calendar: {
+      title: "Calendar — every trip on Nazarov.net, month by month",
+      description:
+        "Every trip on the site on one calendar: sailing, snowboarding, skydiving and family trips, what is coming up and what has already happened.",
+    },
     privacy: {
       title: "Privacy Policy — Nazarov.net",
       description:

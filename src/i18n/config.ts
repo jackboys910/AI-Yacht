@@ -8,6 +8,7 @@ export type PageId =
   | "about"
   | "story"
   | "suggest"
+  | "calendar"
   | "itSolutions"
   | "privacy";
 
@@ -21,6 +22,8 @@ const slugs: Record<PageId, string> = {
   story: "/story/",
   // ТЗ v4 §3: предложить своё приключение может кто угодно, без аккаунта.
   suggest: "/suggest/",
+  // Список заказчика от 24.11.2026: календарь всех мероприятий сайта.
+  calendar: "/calendar/",
   // §2 of the spec renames the page to "Solutions"; its content is rewritten in
   // plan item 3.3, and /it-solutions redirects here (public/_redirects).
   itSolutions: "/solutions/",

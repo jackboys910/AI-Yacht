@@ -15,6 +15,7 @@ const ogImages: Record<PageId, string> = {
   about: "/assets/yasha-helm-sunrise.jpg",
   story: "/assets/yasha-helm-sunrise.jpg",
   suggest: "/assets/yasha-wing-exit.jpg",
+  calendar: "/assets/sunset-cat.jpg",
   itSolutions: "/assets/laptop-deck.jpg",
   privacy: "/assets/hero-catamaran.jpg",
 };

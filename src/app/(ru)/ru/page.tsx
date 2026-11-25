@@ -40,6 +40,7 @@ export default async function Page() {
         aboutHref: pagePath("about", "ru"),
         storyHref: pagePath("story", "ru"),
         suggestHref: pagePath("suggest", "ru"),
+        calendarHref: pagePath("calendar", "ru"),
         languageHrefs: localeHrefs("/"),
       }}
     />

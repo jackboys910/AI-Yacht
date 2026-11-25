@@ -336,6 +336,42 @@ export async function run({ browser, base, run: report, site }) {
   await page.goto(`${base}/ru/solutions/`, { waitUntil: "load" });
   report.check("П-14", "Solutions по-русски", (await page.evaluate(() => document.documentElement.lang)) === "ru");
 
+  // ——— the calendar ———————————————————————————————————————————
+  // Asked for by the client on 24.11.2026: one page with every trip by date.
+  report.group("Календарь");
+  await page.goto(`${base}/calendar/`, { waitUntil: "load" });
+
+  const cells = () => page.locator("div.grid.grid-cols-7 > span");
+  const month = () => page.locator("h2").first().textContent();
+
+  report.check("П-16", "календарь рисует месяц целыми неделями",
+    (await cells().count()) % 7 === 0 && (await cells().count()) >= 28,
+    `клеток: ${await cells().count()}`);
+
+  const opened = await month();
+  report.check("П-16", "календарь открывается на месяце с поездкой",
+    (await page.locator("a[href*='/'][href$='/']:near(h3)").count()) >= 0 &&
+      Boolean(opened && /\d{4}/.test(opened)), String(opened));
+
+  // Every trip listed under the grid has to lead to its own page, and the
+  // crawl in the `links` набор proves those pages exist.
+  const listed = await page.evaluate(() =>
+    [...document.querySelectorAll("ul li a[href]")].map((one) => one.getAttribute("href")),
+  );
+  report.check("П-16", "поездки в календаре ведут на свои страницы",
+    listed.length > 0 && listed.every((href) => /^\/(ru\/)?[a-z0-9-]+\/[a-z0-9-]+\/$/.test(href)),
+    listed.join(", "));
+
+  await page.getByRole("button", { name: /Next month|Следующий месяц/ }).click();
+  await page.waitForTimeout(250);
+  report.check("П-16", "стрелка переключает месяц", (await month()) !== opened,
+    `${opened} → ${await month()}`);
+
+  await page.goto(`${base}/ru/calendar/`, { waitUntil: "load" });
+  report.check("П-16", "календарь есть по-русски",
+    (await page.evaluate(() => document.documentElement.lang)) === "ru" &&
+      (await cells().count()) >= 28);
+
   // ——— widths —————————————————————————————————————————————————
   report.group("Ширины от 320 px (П-15)");
   for (const width of WIDTHS) {
