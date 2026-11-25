@@ -72,7 +72,13 @@ export function SiteNav({
 
   return (
     <header
-      className={`fixed top-0 z-40 w-full transition-colors duration-300 ${
+      // The height is capped at the screen so that an open menu can never
+      // run off the bottom of it. A fixed element does not scroll with the
+      // page, so everything below the edge used to be simply unreachable —
+      // on a short phone that was the language switch, and in landscape
+      // half the menu. `dvh` rather than `vh` because the two differ by the
+      // height of the address bar, and it is `vh` that lies.
+      className={`fixed top-0 z-40 flex max-h-dvh w-full flex-col transition-colors duration-300 ${
         scrolled || menuOpen
           ? "border-b border-white/10 bg-[color:var(--primary)]/92 backdrop-blur-md"
           : "bg-transparent"
@@ -86,7 +92,7 @@ export function SiteNav({
           and the language switch in 1112 pixels, which left four to spare —
           close enough that one more word would have pushed the language
           switch off the screen. */}
-      <div className="mx-auto flex w-full max-w-[90rem] items-center justify-between gap-3 px-5 py-3 sm:py-4 lg:gap-5 lg:px-8">
+      <div className="mx-auto flex w-full max-w-[90rem] shrink-0 items-center justify-between gap-3 px-5 py-3 sm:py-4 lg:gap-5 lg:px-8">
         <a
           href={home}
           onClick={() => setMenuOpen(false)}
@@ -240,7 +246,11 @@ export function SiteNav({
       </div>
 
       {menuOpen && (
-        <div className="border-t border-white/10 bg-[color:var(--primary)]/95 backdrop-blur-md min-[1200px]:hidden">
+        // Whatever is left of the screen under the row, and scrolling
+        // inside it when the list is longer than that. `overscroll-contain`
+        // keeps the page behind from being dragged along once the menu has
+        // been scrolled to its end.
+        <div className="min-h-0 overflow-y-auto overscroll-contain border-t border-white/10 bg-[color:var(--primary)]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md min-[1200px]:hidden">
           <div className="container-narrow flex flex-col py-3">
             {/* §6.1: on a phone the interests come first in the menu. */}
             {interests.length > 0 && (
