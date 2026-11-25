@@ -9,6 +9,7 @@ import { tripsForOrganizer } from "@/lib/firebase/organizer";
 import { listPeople } from "@/lib/firebase/people";
 import {
   blankTrip,
+  deleteTrip,
   duplicateTrip,
   listTrips,
   setTripStatus,
@@ -70,6 +71,10 @@ export function TripsView({
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  // Which row is asking "delete for good?". One at a time: opening the
+  // question on another row closes this one, which is what stops two armed
+  // buttons sitting on the screen together.
+  const [confirming, setConfirming] = useState<string | null>(null);
   const [status, setStatus] = useState<StatusFilter>("all");
   const [interestId, setInterestId] = useState("all");
   const [reloadToken, setReloadToken] = useState(0);
@@ -362,6 +367,48 @@ export function TripsView({
                       }
                     >
                       {t.trips.archive}
+                    </SecondaryButton>
+                  )}
+
+                  {/* А-12 in the list, not only inside the form. The archive
+                      is the everyday way to take a trip off the site, and it
+                      is reversible — this is the other one, for a trip that
+                      should never have existed: a test, a duplicate made by
+                      mistake. It asks first and it asks in place, because a
+                      row of buttons is exactly where a stray press happens.
+                      The photographs are left in storage on purpose: a
+                      duplicate shares its original's files, and deleting them
+                      with one copy would empty the other. */}
+                  {confirming === trip.id ? (
+                    <span className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {t.trips.deleteConfirm}
+                      </span>
+                      <SecondaryButton
+                        tone="danger"
+                        disabled={busy}
+                        onClick={() => {
+                          setConfirming(null);
+                          void act(trip, async () => {
+                            await deleteTrip(trip.id);
+                            if (trip.status === "published") rebuildSoon();
+                            return t.trips.deleted;
+                          });
+                        }}
+                      >
+                        {busy ? "…" : t.field.deleteYes}
+                      </SecondaryButton>
+                      <SecondaryButton disabled={busy} onClick={() => setConfirming(null)}>
+                        {t.field.deleteNo}
+                      </SecondaryButton>
+                    </span>
+                  ) : (
+                    <SecondaryButton
+                      tone="danger"
+                      disabled={busy}
+                      onClick={() => setConfirming(trip.id)}
+                    >
+                      {t.trips.delete}
                     </SecondaryButton>
                   )}
                 </div>

@@ -106,6 +106,10 @@ export const privacyCopy = {
           ru: "**YouTube** — блоки с видео. Пока вы сами не нажмёте «играть», с YouTube ничего не загружается и его cookies не ставятся.",
         } satisfies Text,
         {
+          en: "**OpenStreetMap** — the map on the Suggest an Adventure form, and only if you open it. Pressing the map button asks openstreetmap.org for the picture of the area you are looking at; nothing is requested from it before that press, and no account of theirs is involved.",
+          ru: "**OpenStreetMap** — карта в форме «Предложите приключение», и только если вы её открыли. Нажатие на кнопку карты просит у openstreetmap.org картинку того участка, который вы смотрите; до нажатия туда не уходит ни один запрос, и никакого аккаунта там не нужно.",
+        } satisfies Text,
+        {
           en: "**Calendly** — the booking calendar on the Solutions page, loaded only when you scroll down to it.",
           ru: "**Calendly** — календарь записи на странице Solutions, загружается только когда вы до него доходите.",
         } satisfies Text,

@@ -18,3 +18,15 @@ export const siteConfig = {
   domain: "nazarov.net",
   url: "https://nazarov.net",
 } as const;
+
+/**
+ * The picture a page falls back to when it has none of its own (Ш-05).
+ *
+ * А-14 lets the owner add a direction from the panel, and a direction starts
+ * without a photograph: the tab exists on the site the moment it is saved,
+ * while the cover is uploaded afterwards. Shared in between, it would have
+ * gone out as a bare grey link in a messenger — which is what Summits did
+ * the day it appeared. One picture of the site is a worse preview than the
+ * right one and a far better one than none.
+ */
+export const defaultPreviewImage = "/assets/hero-catamaran.jpg";

@@ -87,6 +87,7 @@ export function homeLanes(
   interests: Interest[],
   locale: Locale,
   solutionsHref: string,
+  suggestHref: string,
 ): HomeLane[] {
   const fromInterests = visibleInterests(interests).map((interest) => ({
     id: interest.slug,
@@ -96,8 +97,34 @@ export function homeLanes(
     image: laneImage(interest.cover, locale),
   }));
 
+  // "Something Else", and it leads to the idea form rather than to a tab.
+  //
+  // It is the direction the form keeps for everything that fits nowhere —
+  // the one with `suggestOther` — and it is hidden, so it has no page of its
+  // own and no place in the menu. On the home page it still belongs: the
+  // client's letter of 24.11.2026 lists it among the sections, and what it
+  // asks of a visitor ("Got an idea? Let's go together") is exactly what the
+  // Suggest form is for. Written like this rather than as a constant beside
+  // Software, because its name, its line and its photograph stay the owner's
+  // to change from the panel.
+  const other = interests.find(
+    (interest) => interest.hidden && interest.suggestOther && interest.suggestable,
+  );
+  const elsewhere: HomeLane[] = other
+    ? [
+        {
+          id: other.slug,
+          label: interestLabel(other),
+          caption: other.tileCaption[locale] || other.tileCaption.en || "",
+          href: suggestHref,
+          image: laneImage(other.cover, locale),
+        },
+      ]
+    : [];
+
   return [
     ...fromInterests,
+    ...elsewhere,
     {
       id: SOFTWARE.id,
       label: SOFTWARE.label,

@@ -34,7 +34,15 @@ import { siteConfig } from "@/lib/site";
 /** A metadata route is a route handler, and a static export insists on this. */
 export const dynamic = "force-static";
 
-const FIXED: PageId[] = ["home", "about", "story", "suggest", "itSolutions", "privacy"];
+const FIXED: PageId[] = [
+  "home",
+  "about",
+  "story",
+  "suggest",
+  "calendar",
+  "itSolutions",
+  "privacy",
+];
 
 /** How often each kind of page is worth re-reading, and how much it matters. */
 const WEIGHT = {
@@ -77,7 +85,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pages = FIXED.flatMap((page) =>
     rows(
       everyLanguage((locale) => pagePath(page, locale)),
-      page === "home" ? WEIGHT.home : page === "privacy" ? WEIGHT.legal : WEIGHT.page,
+      page === "home"
+        ? WEIGHT.home
+        : page === "privacy"
+          ? WEIGHT.legal
+          : // The calendar changes whenever a trip does, which is more often
+            // than anything else in this list.
+            page === "calendar"
+            ? WEIGHT.interest
+            : WEIGHT.page,
     ),
   );
 

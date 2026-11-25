@@ -241,6 +241,9 @@ const EN = {
     restoredLive: "The trip is back on the site.",
     restoredDraft: "The trip is back in drafts.",
     archived: "The trip was taken off the site into the archive.",
+    delete: "Delete",
+    deleteConfirm: "Delete for good?",
+    deleted: "The trip was deleted. Its photographs stay in storage.",
     emptyFilter: "No trips match this filter.",
     showAll: "Show all",
     mine: {
@@ -815,6 +818,8 @@ suggestions: {
     experience: "Their experience organizing",
     audience: "Who they want to bring together",
     photoLinks: "Photos and references",
+    onMap: "on the map",
+    openPhoto: "Open the file",
     source: "Sent from",
     empty: "— not filled in —",
 

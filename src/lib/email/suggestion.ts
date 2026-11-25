@@ -1,3 +1,4 @@
+import { siteConfig } from "../site";
 import {
   esc,
   renderEmailHtml,
@@ -24,6 +25,8 @@ export interface SuggestionEmailData {
   category: string;
   description: string;
   place?: string;
+  placeLat?: number;
+  placeLng?: number;
   when?: string;
   budget?: string;
   groupSize?: string;
@@ -40,13 +43,27 @@ export interface SuggestionEmailData {
 
 const LANGUAGE_NAMES = { en: "English", ru: "Russian" } as const;
 
+/** The point on a map anybody can open, or nothing when none was chosen. */
+function mapLink(data: SuggestionEmailData): string | undefined {
+  const { placeLat: lat, placeLng: lng } = data;
+  if (typeof lat !== "number" || typeof lng !== "number") return undefined;
+  return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=12/${lat}/${lng}`;
+}
+
 /** The idea, as a letter to the owner. */
 export function buildSuggestionOwnerEmail(data: SuggestionEmailData): OutgoingEmail {
   const who = data.name.trim() || "Someone";
   const extras = [
     data.experience?.trim() && `Experience organizing: ${data.experience.trim()}`,
     data.audience?.trim() && `Wants to bring together: ${data.audience.trim()}`,
-    data.photoLinks.length > 0 && `References: ${data.photoLinks.join(", ")}`,
+    // Since the photographs are uploads rather than typed links, their
+    // addresses are three hundred characters of storage token each — unusable
+    // in a letter. The first one is shown at the top instead, and the rest
+    // are a click away in the panel.
+    data.photoLinks.length > 0 &&
+      (data.photoLinks.length === 1
+        ? "One photograph is attached, above."
+        : `${data.photoLinks.length} photographs are attached; the first is above.`),
   ].filter((line): line is string => Boolean(line));
 
   const content: EmailContent = {
@@ -59,7 +76,10 @@ export function buildSuggestionOwnerEmail(data: SuggestionEmailData): OutgoingEm
     rows: [
       { label: "Title", value: data.title },
       { label: "Category", value: data.category },
-      { label: "Destination", value: data.place ?? "" },
+      // When the author pointed at the map, the line is clickable and lands
+      // on the point itself. "Glastonbury" is four towns in three countries,
+      // and the one thing the owner needs first is which of them.
+      { label: "Destination", value: data.place ?? "", href: mapLink(data) },
       { label: "When", value: data.when ?? "" },
       { label: "Budget", value: data.budget ?? "" },
       { label: "Group size", value: data.groupSize ?? "" },
@@ -70,14 +90,26 @@ export function buildSuggestionOwnerEmail(data: SuggestionEmailData): OutgoingEm
       { label: "Site language", value: LANGUAGE_NAMES[data.locale] },
       { label: "Sent from", value: data.source ?? "" },
     ],
+    hero: data.photoLinks[0]
+      ? { url: data.photoLinks[0], alt: `Reference photograph for ${data.title}` }
+      : undefined,
     block: {
       label: "In their words",
       text: [data.description, ...extras].filter(Boolean).join("\n\n"),
       emptyText: "— nothing written —",
     },
+    // The letter is a notification, and the thing it notifies about lives one
+    // click away — so the click is a button rather than a sentence explaining
+    // where to find the panel. `?view=suggestions` is the queue itself: the
+    // panel reads that parameter on load, so the owner lands on the list of
+    // ideas instead of on the trips he was not looking for.
+    button: {
+      label: "Open Trip ideas",
+      href: `${siteConfig.url}/admin/?view=suggestions`,
+    },
     calloutHtml:
-      `Open <strong>Trip ideas</strong> in the panel to read it in full, change its status ` +
-      `or turn it into a draft trip. Replying goes straight to <strong>${esc(data.email)}</strong>.`,
+      `There you can read it in full, change its status or turn it into a draft trip. ` +
+      `Replying to this letter goes straight to <strong>${esc(data.email)}</strong>.`,
   };
 
   return {

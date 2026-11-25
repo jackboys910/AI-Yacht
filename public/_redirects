@@ -11,5 +11,17 @@
 /ru/it-solutions/ /ru/solutions/ 301
 /ru/it-solutions /ru/solutions/ 301
 
+# The client renamed the directions on 24.11.2026 — Son became Sidekicks — and
+# a tab's name is its address. /son/ was live, linked and indexed, so it keeps
+# working rather than becoming a 404 somebody finds through Google.
+/son/ /sidekicks/ 301
+/son /sidekicks/ 301
+/ru/son/ /ru/sidekicks/ 301
+/ru/son /ru/sidekicks/ 301
+
+# The other two renamed directions — Hiking & Camping became Summits, Other
+# Adventures became Something Else — never had a page: both were hidden, so
+# nothing was ever built at the old address and there is nothing to redirect.
+
 # /about → /story joins this list with plan item 3.1, when there is a Story
 # page for it to lead to. A redirect to a 404 is worse than no redirect.

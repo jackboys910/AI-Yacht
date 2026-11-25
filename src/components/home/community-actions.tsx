@@ -10,7 +10,7 @@ const COPY = {
     },
   },
   suggest: {
-    title: { en: "Suggest an idea", ru: "Предложить идею" },
+    title: { en: "Suggest an Adventure", ru: "Предложить приключение" },
     text: {
       en: "Propose a trip, an event or a project — and gather people around it.",
       ru: "Предложить поездку, событие или проект — и собрать вокруг людей.",
@@ -46,7 +46,7 @@ interface Action {
  * actually do on this site, said in four lines.
  *
  * Only the ones that lead somewhere are drawn. "Join the community" waits for
- * the About page (item 2.2) and "Suggest an idea" for the submission form
+ * the About page (item 2.2) and "Suggest an Adventure" for the submission form
  * (item 2.5); until then they are absent rather than present and dead, which
  * is the same rule the header's "+ Subscribe" follows.
  */

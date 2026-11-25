@@ -21,7 +21,12 @@ export default async function Page() {
 
   return (
     <HomePage
-      lanes={homeLanes(content.interests, "ru", pagePath("itSolutions", "ru"))}
+      lanes={homeLanes(
+        content.interests,
+        "ru",
+        pagePath("itSolutions", "ru"),
+        pagePath("suggest", "ru"),
+      )}
       trips={trips}
       chips={chips}
       videos={videos}
@@ -35,6 +40,7 @@ export default async function Page() {
         aboutHref: pagePath("about", "ru"),
         storyHref: pagePath("story", "ru"),
         suggestHref: pagePath("suggest", "ru"),
+        calendarHref: pagePath("calendar", "ru"),
         languageHrefs: localeHrefs("/"),
       }}
     />

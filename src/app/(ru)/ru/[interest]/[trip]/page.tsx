@@ -84,6 +84,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         aboutHref: pagePath("about", "ru"),
         storyHref: pagePath("story", "ru"),
         suggestHref: pagePath("suggest", "ru"),
+        calendarHref: pagePath("calendar", "ru"),
         languageHrefs: localeHrefs(`/${interest}/${tripSlug}/`),
       }}
     />

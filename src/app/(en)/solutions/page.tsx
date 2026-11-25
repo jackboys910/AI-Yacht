@@ -21,6 +21,7 @@ export default async function Page() {
         aboutHref: pagePath("about", "en"),
         storyHref: pagePath("story", "en"),
         suggestHref: pagePath("suggest", "en"),
+        calendarHref: pagePath("calendar", "en"),
         languageHrefs: localeHrefs(pagePath("itSolutions", "en")),
       }}
       // No settings document at all yet, so the fallback lives here too:

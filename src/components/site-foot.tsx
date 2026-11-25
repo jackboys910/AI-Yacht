@@ -21,6 +21,7 @@ export function SiteFoot({
   aboutHref,
   storyHref,
   suggestHref,
+  calendarHref,
   languageHrefs,
 }: {
   locale: Locale;
@@ -30,6 +31,8 @@ export function SiteFoot({
   storyHref?: string;
   /** ТЗ v4 §3.1 wants the way in on every page, footer included. */
   suggestHref?: string;
+  /** Every trip by date (the client's list of 24.11.2026). */
+  calendarHref?: string;
   languageHrefs: Record<Locale, string>;
 }) {
   return (
@@ -51,6 +54,11 @@ export function SiteFoot({
               {link.label}
             </a>
           ))}
+          {calendarHref && (
+            <a href={calendarHref} className="hover:text-[color:var(--teal)]">
+              {locale === "en" ? "Calendar" : "Календарь"}
+            </a>
+          )}
           <a href={solutionsHref} className="hover:text-[color:var(--teal)]">
             Solutions
           </a>
@@ -66,7 +74,7 @@ export function SiteFoot({
           )}
           {suggestHref && (
             <a href={suggestHref} className="hover:text-[color:var(--teal)]">
-              {locale === "en" ? "Suggest an idea" : "Предложить идею"}
+              {locale === "en" ? "Suggest an Adventure" : "Предложить приключение"}
             </a>
           )}
           <a

@@ -32,6 +32,7 @@ export function SiteNav({
   aboutHref,
   storyHref,
   suggestHref,
+  calendarHref,
   languageHrefs,
   active,
 }: {
@@ -43,8 +44,11 @@ export function SiteNav({
   storyHref?: string;
   /** ТЗ v4 §3.1 asks for this in the menu on every page. */
   suggestHref?: string;
+  /** Every trip by date (the client's list of 24.11.2026). */
+  calendarHref?: string;
   languageHrefs: Record<Locale, string>;
-  /** Slug of the current interest, or "solutions", "about", "suggest". */
+  /** Slug of the current interest, or "solutions", "about", "suggest",
+   *  "calendar". */
   active?: string;
 }) {
   const [scrolled, setScrolled] = useState(false);
@@ -59,7 +63,8 @@ export function SiteNav({
 
   const home = locale === "en" ? "/" : `/${locale}/`;
   const panelLabel = locale === "en" ? "Panel" : "Панель";
-  const suggestLabel = locale === "en" ? "Suggest an idea" : "Предложить идею";
+  const suggestLabel = locale === "en" ? "Suggest an Adventure" : "Предложить приключение";
+  const calendarLabel = locale === "en" ? "Calendar" : "Календарь";
   const panelTitle =
     locale === "en"
       ? "For the owner and trip organizers"
@@ -85,12 +90,22 @@ export function SiteNav({
         {/* Tighter at 1024 than at 1280: with Story added (item 4.1) the row
             no longer fit on a laptop, and what it lost there is the caption
             over the interests — a label, not a way anywhere. */}
-        <nav className="hidden items-center gap-4 lg:flex xl:gap-6">
+        <nav className="hidden items-center gap-4 lg:flex">
           {interests.length > 0 && (
-            <>
-              <span className="hidden text-[10px] uppercase tracking-[0.18em] text-white/45 xl:inline">
-                My interests
-              </span>
+            // From 1280 up, not from 1024, and without the "My interests"
+            // caption that used to stand in front of them.
+            //
+            // There are five directions now rather than four, and the button
+            // beside them says "Suggest an Adventure" rather than "Suggest an
+            // idea" (the client's list of 24.11.2026). Together that is more
+            // than the row holds: at 1280 the language switch was pushed off
+            // the right edge of the screen, and the caption would not fit at
+            // any width at all, because the row is capped at 72rem however
+            // wide the window is. The caption was the right thing to drop —
+            // it named the links rather than leading anywhere. On a laptop
+            // the directions themselves are in the menu, one press away,
+            // where they already were below 1024.
+            <span className="hidden items-center gap-4 xl:flex">
               {interests.map((link) => (
                 <a
                   key={link.id}
@@ -104,7 +119,7 @@ export function SiteNav({
                 </a>
               ))}
               <span aria-hidden="true" className="h-5 w-px bg-white/20" />
-            </>
+            </span>
           )}
 
           <a
@@ -145,7 +160,7 @@ export function SiteNav({
             <a
               href={suggestHref}
               aria-current={active === "suggest" ? "page" : undefined}
-              className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${
+              className={`whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${
                 active === "suggest"
                   ? "border-[color:var(--gold)] text-[color:var(--gold)]"
                   : "border-[color:var(--gold)]/50 text-white hover:border-[color:var(--gold)] hover:text-[color:var(--gold)]"
@@ -218,6 +233,22 @@ export function SiteNav({
                 {link.label}
               </a>
             ))}
+
+            {/* The calendar sits with the directions rather than with the
+                pages: it is another way of looking at the same trips, and
+                somebody who opened this menu to find a direction is as
+                likely to want the month. */}
+            {calendarHref && (
+              <a
+                href={calendarHref}
+                onClick={() => setMenuOpen(false)}
+                className={`border-t border-white/10 py-3 text-base font-medium ${
+                  active === "calendar" ? "text-[color:var(--gold)]" : "text-white/90"
+                }`}
+              >
+                {calendarLabel}
+              </a>
+            )}
 
             <a
               href={solutionsHref}

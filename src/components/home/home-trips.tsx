@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { calendarCopy } from "@/components/calendar/calendar-copy";
 import { SectionHead } from "@/components/section-head";
 import { ALL_CHIP, FilterChips } from "@/components/filter-chips";
 import { TripGrid } from "@/components/trip-grid";
@@ -41,12 +42,15 @@ export function HomeTrips({
   locale,
   today,
   counters,
+  calendarHref,
 }: {
   trips: HomeTrip[];
   chips: HomeChip[];
   locale: Locale;
   today: string;
   counters?: CounterSet;
+  /** Every trip by date (the client's list of 24.11.2026). */
+  calendarHref?: string;
 }) {
   const [filter, setFilter] = useState<string>(ALL_CHIP);
   const [expanded, setExpanded] = useState(false);
@@ -58,7 +62,22 @@ export function HomeTrips({
   return (
     <section id="upcoming" className="bg-muted/40 py-16 sm:py-24">
       <div className="container-narrow">
-        <SectionHead>{COPY.heading[locale]}</SectionHead>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <SectionHead>{COPY.heading[locale]}</SectionHead>
+
+          {/* The way to the calendar from the one block that makes people
+              want it. This list answers "what is next"; the question it
+              raises is "and when is the rest", and until now the only answer
+              was the menu. */}
+          {calendarHref && (
+            <a
+              href={calendarHref}
+              className="rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium transition hover:border-foreground"
+            >
+              {calendarCopy.seeAll[locale]}
+            </a>
+          )}
+        </div>
 
         {trips.length === 0 ? (
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">

@@ -9,7 +9,7 @@ import { pick, pickOrOther } from "@/lib/content/trip-view";
 import { visibleInterests } from "@/lib/content/visibility";
 import { readPlaylistVideos } from "@/lib/content/youtube";
 import { getSiteContent } from "@/lib/firebase/content";
-import { siteConfig } from "@/lib/site";
+import { defaultPreviewImage, siteConfig } from "@/lib/site";
 import { InterestPage } from "@/views/interest-page";
 
 type Params = { interest: string };
@@ -51,13 +51,13 @@ export async function generateMetadata({
       description: pick(found.interest.description, "en"),
       type: "website",
       url: path,
-      images: found.interest.cover?.url ? [found.interest.cover.url] : undefined,
+      images: [found.interest.cover?.url || defaultPreviewImage],
     },
     twitter: {
       card: "summary_large_image",
       title: pickOrOther(found.interest.name, "en"),
       description: pick(found.interest.description, "en"),
-      images: found.interest.cover?.url ? [found.interest.cover.url] : undefined,
+      images: [found.interest.cover?.url || defaultPreviewImage],
     },
   };
 }
@@ -84,6 +84,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         aboutHref: pagePath("about", "en"),
         storyHref: pagePath("story", "en"),
         suggestHref: pagePath("suggest", "en"),
+        calendarHref: pagePath("calendar", "en"),
         languageHrefs: localeHrefs(`/${slug}/`),
       }}
     />

@@ -73,6 +73,7 @@ export function HomePage({
         locale={locale}
         today={today}
         counters={counters}
+        calendarHref={chrome.calendarHref}
       />
 
       <VideoWall
