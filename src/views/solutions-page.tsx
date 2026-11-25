@@ -62,6 +62,8 @@ export function SolutionsPage({
         aboutHref={chrome.aboutHref}
         storyHref={chrome.storyHref}
         suggestHref={chrome.suggestHref}
+
+        calendarHref={chrome.calendarHref}
         languageHrefs={chrome.languageHrefs}
         active="solutions"
       />
@@ -179,6 +181,8 @@ export function SolutionsPage({
         aboutHref={chrome.aboutHref}
         storyHref={chrome.storyHref}
         suggestHref={chrome.suggestHref}
+
+        calendarHref={chrome.calendarHref}
         languageHrefs={chrome.languageHrefs}
       />
     </div>

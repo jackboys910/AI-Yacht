@@ -41,6 +41,8 @@ export function UnsubscribePage({
         aboutHref={chrome.aboutHref}
         storyHref={chrome.storyHref}
         suggestHref={chrome.suggestHref}
+
+        calendarHref={chrome.calendarHref}
         languageHrefs={chrome.languageHrefs}
       />
 
@@ -73,6 +75,8 @@ export function UnsubscribePage({
         aboutHref={chrome.aboutHref}
         storyHref={chrome.storyHref}
         suggestHref={chrome.suggestHref}
+
+        calendarHref={chrome.calendarHref}
         languageHrefs={chrome.languageHrefs}
       />
     </div>

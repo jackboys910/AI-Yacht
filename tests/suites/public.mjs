@@ -45,7 +45,10 @@ export async function run({ browser, base, run: report, site }) {
     DIRECTIONS.filter((one) => !hrefs.includes(one)).join(", ") || "все на месте");
   report.check("П-01", "Solutions в меню", hrefs.includes("/solutions/"));
   report.check("П-01", "About и Story в меню", hrefs.includes("/about/") && hrefs.includes("/story/"));
-  report.check("П-01", "«Предложить идею» в меню", hrefs.includes("/suggest/"));
+  report.check("П-01", "«Suggest an Adventure» в меню", hrefs.includes("/suggest/"));
+  // На 1440 px ряд показывает и календарь; уже — он в подвале и в бургере,
+  // и это проверяет набор links, который обходит сайт по ссылкам.
+  report.check("П-16", "календарь в меню на десктопе", hrefs.includes("/calendar/"));
   report.check("П-01", "переключатель языка", hrefs.includes("/ru/"));
   report.check(
     "П-01",

@@ -40,6 +40,8 @@ export function SuggestPage({
         aboutHref={chrome.aboutHref}
         storyHref={chrome.storyHref}
         suggestHref={chrome.suggestHref}
+
+        calendarHref={chrome.calendarHref}
         languageHrefs={chrome.languageHrefs}
         active="suggest"
       />
@@ -90,6 +92,8 @@ export function SuggestPage({
         aboutHref={chrome.aboutHref}
         storyHref={chrome.storyHref}
         suggestHref={chrome.suggestHref}
+
+        calendarHref={chrome.calendarHref}
         languageHrefs={chrome.languageHrefs}
       />
     </div>

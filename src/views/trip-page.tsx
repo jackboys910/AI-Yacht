@@ -90,6 +90,8 @@ export function TripPage({
           aboutHref={chrome.aboutHref}
         storyHref={chrome.storyHref}
           suggestHref={chrome.suggestHref}
+
+          calendarHref={chrome.calendarHref}
           languageHrefs={chrome.languageHrefs}
           active={interestSlug}
         />
@@ -168,6 +170,8 @@ export function TripPage({
           aboutHref={chrome.aboutHref}
         storyHref={chrome.storyHref}
           suggestHref={chrome.suggestHref}
+
+          calendarHref={chrome.calendarHref}
           languageHrefs={chrome.languageHrefs}
         />
       )}
