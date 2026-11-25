@@ -1,4 +1,5 @@
 import type { Locale } from "@/i18n/config";
+import { writeDay } from "@/lib/dates";
 
 /**
  * Turning what the form's controls hold into the two lines a person reads.
@@ -53,18 +54,6 @@ export function composeBudget(amount: string, currency: string): string {
   return code === "RUB" ? `${written} ${SYMBOLS.RUB}` : `${SYMBOLS[code]}${written}`;
 }
 
-/** A date as the language writes it, read as a calendar day and not an instant. */
-function day(iso: string, locale: Locale): string {
-  const date = new Date(`${iso}T00:00:00Z`);
-  if (Number.isNaN(date.getTime())) return iso;
-  return new Intl.DateTimeFormat(locale === "ru" ? "ru-RU" : "en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(date);
-}
-
 /**
  * "8 May 2027 — 16 May 2027", or whichever half of it was filled in.
  *
@@ -74,8 +63,8 @@ function day(iso: string, locale: Locale): string {
  */
 export function composeWhen(from: string, to: string, locale: Locale): string {
   const ru = locale === "ru";
-  if (from && to) return `${day(from, locale)} — ${day(to, locale)}`;
-  if (from) return ru ? `с ${day(from, locale)}` : `from ${day(from, locale)}`;
-  if (to) return ru ? `до ${day(to, locale)}` : `until ${day(to, locale)}`;
+  if (from && to) return `${writeDay(from, locale)} — ${writeDay(to, locale)}`;
+  if (from) return ru ? `с ${writeDay(from, locale)}` : `from ${writeDay(from, locale)}`;
+  if (to) return ru ? `до ${writeDay(to, locale)}` : `until ${writeDay(to, locale)}`;
   return "";
 }

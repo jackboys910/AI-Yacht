@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import type { Locale } from "@/i18n/config";
+import { todayInBrowser, useClientValue } from "@/lib/client-value";
 import { emailConfig } from "@/lib/email/config";
 import { visitSource } from "@/lib/visit-source";
 import { DateField, Field, FormConsent, SelectField } from "../form-fields";
@@ -23,14 +24,6 @@ type Status = "idle" | "sending" | "sent" | "failed" | "spam" | "off" | "rejecte
 
 const LEVELS = ["", "beginner", "intermediate", "advanced", "allLevels"] as const;
 
-/**
- * No date before today, because an idea for last March is a typo.
- *
- * Read when the module loads rather than per render: the page is a static
- * file served from a cache, so this is the day the visitor opened it, which
- * is the only "today" a browser can be sure of.
- */
-const TODAY = new Date().toISOString().slice(0, 10);
 
 /**
  * The Suggest an Adventure form (ТЗ v4, §3.2).
@@ -77,6 +70,12 @@ export function SuggestForm({
   const [to, setTo] = useState("");
   const [currency, setCurrency] = useState<string>(CURRENCIES[0]);
   const [photos, setPhotos] = useState<string[]>([]);
+  // The floor under both date fields, and it arrives after the first render
+  // rather than with it. This page is a file printed on the day it was built
+  // and then served from a cache for weeks: a date written into that file is
+  // the build's date, and rendering the browser's instead would be a
+  // different page than the one the browser was given to hydrate.
+  const today = useClientValue(todayInBrowser, "");
   // Which answer the Worker would not take. The browser stops the five
   // required fields on its own, so reaching this means something subtler —
   // an address it accepted and the Worker did not, most likely.
@@ -159,7 +158,29 @@ export function SuggestForm({
   }
 
   if (status === "sent") {
-    return <Sent locale={locale} homeHref={homeHref} onAgain={() => setStatus("idle")} />;
+    return (
+      <Sent
+        locale={locale}
+        homeHref={homeHref}
+        // A second idea starts empty. The text fields empty themselves — the
+        // form is unmounted while this card is on screen and comes back
+        // blank — but everything held here would survive that, and the
+        // visitor would be sending the first idea's photographs, map pin and
+        // dates attached to the second one without seeing any of them.
+        onAgain={() => {
+          setCategory("");
+          setLevel("");
+          setPlace("");
+          setPoint(null);
+          setFrom("");
+          setTo("");
+          setCurrency(CURRENCIES[0]);
+          setPhotos([]);
+          setRejected("");
+          setStatus("idle");
+        }}
+      />
+    );
   }
 
   const mail = (
@@ -239,7 +260,7 @@ export function SuggestForm({
                 // refused.
                 if (to && next && to < next) setTo(next);
               }}
-              min={TODAY}
+              min={today || undefined}
               disabled={sending}
             />
             <DateField
@@ -247,7 +268,7 @@ export function SuggestForm({
               name="whenTo"
               value={to}
               onChange={setTo}
-              min={from || TODAY}
+              min={from || today || undefined}
               disabled={sending}
             />
           </div>

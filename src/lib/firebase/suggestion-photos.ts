@@ -26,9 +26,6 @@ import { firebaseApp } from "./app";
 /** As many as the form takes. More than this is a gallery, not a reference. */
 export const MAX_PHOTOS = 5;
 
-/** What `storage.rules` refuses, checked here so the refusal is readable. */
-export const MAX_PHOTO_BYTES = 6 * 1024 * 1024;
-
 function monthFolder(): string {
   const now = new Date();
   return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
