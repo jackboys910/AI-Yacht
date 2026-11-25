@@ -78,7 +78,15 @@ export function SiteNav({
           : "bg-transparent"
       }`}
     >
-      <div className="container-narrow flex items-center justify-between gap-2 py-3 sm:py-4">
+      {/* The header has a wider measure than the page under it, and that is
+          deliberate. The content column is 72rem because a column of text
+          wider than that is hard to read; a row of links has no such problem
+          and every pixel it is given is a pixel the links are not fighting
+          over. At 72rem the row had five directions, five pages, the panel
+          and the language switch in 1112 pixels, which left four to spare —
+          close enough that one more word would have pushed the language
+          switch off the screen. */}
+      <div className="mx-auto flex w-full max-w-[90rem] items-center justify-between gap-3 px-5 py-3 sm:py-4 lg:gap-5 lg:px-8">
         <a
           href={home}
           onClick={() => setMenuOpen(false)}
@@ -87,25 +95,24 @@ export function SiteNav({
           NAZAROV
         </a>
 
-        {/* Tighter at 1024 than at 1280: with Story added (item 4.1) the row
-            no longer fit on a laptop, and what it lost there is the caption
-            over the interests — a label, not a way anywhere. */}
-        <nav className="hidden items-center gap-4 lg:flex">
+        {/* The row appears whole or not at all, from 1100px up.
+
+            Whole, because a header that shows the pages but hides the
+            directions is a header with no way to a direction at all: the
+            burger that holds them would be gone by then. That is what the
+            first attempt at squeezing this row did between 1024 and 1280.
+            And from 1200 rather than 1024 because that is where it genuinely
+            fits — measured at every width from 320 to 2560, in both
+            languages, rather than guessed. Russian is what sets the number:
+            «Предложить приключение» and «Панель» are longer than their
+            English counterparts, and one breakpoint has to hold both. Below
+            it the burger, which has everything in it anyway.
+
+            The gaps grow with the window instead of the row changing shape:
+            12px where it is tight, 16 at 1280, 20 at 1536. */}
+        <nav className="hidden items-center gap-3 min-[1200px]:flex xl:gap-4 2xl:gap-5">
           {interests.length > 0 && (
-            // From 1280 up, not from 1024, and without the "My interests"
-            // caption that used to stand in front of them.
-            //
-            // There are five directions now rather than four, and the button
-            // beside them says "Suggest an Adventure" rather than "Suggest an
-            // idea" (the client's list of 24.11.2026). Together that is more
-            // than the row holds: at 1280 the language switch was pushed off
-            // the right edge of the screen, and the caption would not fit at
-            // any width at all, because the row is capped at 72rem however
-            // wide the window is. The caption was the right thing to drop —
-            // it named the links rather than leading anywhere. On a laptop
-            // the directions themselves are in the menu, one press away,
-            // where they already were below 1024.
-            <span className="hidden items-center gap-4 xl:flex">
+            <span className="flex items-center gap-3 xl:gap-4 2xl:gap-5">
               {interests.map((link) => (
                 <a
                   key={link.id}
@@ -156,6 +163,26 @@ export function SiteNav({
             </a>
           )}
 
+          {/* From 1440 up, where the row has room to spare for it.
+
+              It took the place of the "My interests" caption, which is the
+              right trade: the caption named the links beside it, this leads
+              somewhere. Below 1440 the calendar is in the footer of every
+              page and in the block of upcoming trips on the home page, which
+              is where somebody wondering "and when is the rest" already is.
+              Narrower still, it is in the menu with everything else. */}
+          {calendarHref && (
+            <a
+              href={calendarHref}
+              aria-current={active === "calendar" ? "page" : undefined}
+              className={`hidden text-sm font-medium transition hover:text-[color:var(--gold)] min-[1440px]:inline ${
+                active === "calendar" ? "text-[color:var(--gold)]" : "text-white/80"
+              }`}
+            >
+              {calendarLabel}
+            </a>
+          )}
+
           {suggestHref && (
             <a
               href={suggestHref}
@@ -199,7 +226,7 @@ export function SiteNav({
             aria-label={locale === "en" ? "Menu" : "Меню"}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((open) => !open)}
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/30 text-white lg:hidden"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/30 text-white min-[1200px]:hidden"
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
               {menuOpen ? (
@@ -213,7 +240,7 @@ export function SiteNav({
       </div>
 
       {menuOpen && (
-        <div className="border-t border-white/10 bg-[color:var(--primary)]/95 backdrop-blur-md lg:hidden">
+        <div className="border-t border-white/10 bg-[color:var(--primary)]/95 backdrop-blur-md min-[1200px]:hidden">
           <div className="container-narrow flex flex-col py-3">
             {/* §6.1: on a phone the interests come first in the menu. */}
             {interests.length > 0 && (

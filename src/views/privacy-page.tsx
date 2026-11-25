@@ -40,6 +40,8 @@ export function PrivacyPage({
         aboutHref={chrome.aboutHref}
         storyHref={chrome.storyHref}
         suggestHref={chrome.suggestHref}
+
+        calendarHref={chrome.calendarHref}
         languageHrefs={chrome.languageHrefs}
       />
 
@@ -124,6 +126,8 @@ export function PrivacyPage({
         aboutHref={chrome.aboutHref}
         storyHref={chrome.storyHref}
         suggestHref={chrome.suggestHref}
+
+        calendarHref={chrome.calendarHref}
         languageHrefs={chrome.languageHrefs}
       />
     </div>

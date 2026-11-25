@@ -53,6 +53,8 @@ export function AboutPage({
         aboutHref={chrome.aboutHref}
         storyHref={chrome.storyHref}
         suggestHref={chrome.suggestHref}
+
+        calendarHref={chrome.calendarHref}
         languageHrefs={chrome.languageHrefs}
         active="about"
       />
@@ -78,6 +80,8 @@ export function AboutPage({
         aboutHref={chrome.aboutHref}
         storyHref={chrome.storyHref}
         suggestHref={chrome.suggestHref}
+
+        calendarHref={chrome.calendarHref}
         languageHrefs={chrome.languageHrefs}
       />
     </div>

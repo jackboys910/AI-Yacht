@@ -43,6 +43,7 @@ export function CalendarPage({
         aboutHref={chrome.aboutHref}
         storyHref={chrome.storyHref}
         suggestHref={chrome.suggestHref}
+
         calendarHref={chrome.calendarHref}
         languageHrefs={chrome.languageHrefs}
         active="calendar"
@@ -75,6 +76,7 @@ export function CalendarPage({
         aboutHref={chrome.aboutHref}
         storyHref={chrome.storyHref}
         suggestHref={chrome.suggestHref}
+
         calendarHref={chrome.calendarHref}
         languageHrefs={chrome.languageHrefs}
       />
