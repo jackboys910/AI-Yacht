@@ -9,7 +9,7 @@
  * refusing a request with no Turnstile token, is checked against its routes.
  */
 
-import { DESKTOP, captureApi, field, fillIfPresent, openPage, pageText, until } from "../harness.mjs";
+import { DESKTOP, WIDTHS, captureApi, field, fillIfPresent, openPage, pageText, until } from "../harness.mjs";
 
 export const id = "forms";
 export const title = "Формы: подписка, заявка, идея, Solutions (Н-01…Н-12, С-05…С-07)";
@@ -283,6 +283,57 @@ export async function run({ browser, base, run: report }) {
     report.check("Н-10", "у карты есть ссылка на OpenStreetMap",
       (await page.locator(".leaflet-container a[href*='openstreetmap.org']").count()) > 0);
   }
+
+  // ——— что ни одна надпись не лежит поверх поля ————————————————
+  report.group("Вёрстка формы идеи (П-15)");
+  await page.context().close();
+  page = await openPage(browser, { viewport: DESKTOP });
+
+  // A hint is pulled up by a negative margin so that it sits close under the
+  // field it explains, and that works only where there is a gap for it to
+  // eat. Put one where there is none and the line is drawn straight through
+  // the field above it, at every width at once — which is what happened to
+  // the hint under the dates. Two rectangles are enough to catch the whole
+  // family of that mistake, and cheaper than an eye on every screenshot.
+  const laidOver = () =>
+    page.evaluate(() => {
+      const controls = [...document.querySelectorAll("input, textarea, select, button")];
+      const texts = [...document.querySelectorAll("p, span, label, h1, h2, h3, a")].filter((one) =>
+        [...one.childNodes].some((node) => node.nodeType === 3 && node.textContent.trim()));
+      const over = (a, b) =>
+        a.left < b.right - 0.5 && b.left < a.right - 0.5 &&
+        a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5;
+
+      const found = [];
+      for (const one of texts) {
+        const text = one.getBoundingClientRect();
+        if (!text.width || !text.height) continue;
+        for (const control of controls) {
+          // A caption wrapping its own field overlaps it by construction.
+          if (one.contains(control) || control.contains(one)) continue;
+          const box = control.getBoundingClientRect();
+          if (!box.width || !box.height) continue;
+          if (over(text, box)) {
+            found.push(`«${one.textContent.trim().slice(0, 40)}» поверх ${
+              control.tagName.toLowerCase()}[${control.name || ""}]`);
+          }
+        }
+      }
+      return [...new Set(found)];
+    });
+
+  for (const path of ["/suggest/", "/ru/suggest/"]) {
+    await page.goto(`${base}${path}`, { waitUntil: "load" });
+    const over = [];
+    for (const width of WIDTHS) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.waitForTimeout(120);
+      for (const line of await laidOver()) over.push(`${width}px — ${line}`);
+    }
+    report.check("П-15", `${path}: ни одна надпись не лежит поверх поля`,
+      over.length === 0, over.slice(0, 3).join("; "));
+  }
+  await page.setViewportSize(DESKTOP);
 
   // ——— Solutions ——————————————————————————————————————————————
   report.group("Форма Solutions");
