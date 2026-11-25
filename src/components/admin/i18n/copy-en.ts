@@ -818,6 +818,8 @@ suggestions: {
     experience: "Their experience organizing",
     audience: "Who they want to bring together",
     photoLinks: "Photos and references",
+    onMap: "on the map",
+    openPhoto: "Open the file",
     source: "Sent from",
     empty: "— not filled in —",
 

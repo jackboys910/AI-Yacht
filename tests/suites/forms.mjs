@@ -200,9 +200,31 @@ export async function run({ browser, base, run: report }) {
   await field(page, "description").fill("Описание для проверки формы, не настоящая идея.");
   await field(page, "name").fill("Проверка набора");
   await field(page, "email").fill("tests@example.invalid");
-  for (const one of ["place", "when", "experience", "audience"]) {
+  for (const one of ["place", "experience", "audience"]) {
     await fillIfPresent(page, one, "Проверка");
   }
+
+  // The four answers the client asked to stop being free text (24.11.2026):
+  // a date picked from a calendar, a number with a currency beside it, a
+  // place that can come off a map, and photographs that are uploaded. Here
+  // the first two are filled and checked through what the form sends; the
+  // map and the uploader reach the network, so they have their own group.
+  const fields = await page.evaluate(() =>
+    [...document.querySelectorAll("form input, form select")].map((one) => `${one.name}:${one.type}`),
+  );
+  report.check("Н-10", "даты выбираются календарём, а не вписываются",
+    fields.includes("whenFrom:date") && fields.includes("whenTo:date"), fields.join(" "));
+  report.check("Н-10", "у бюджета есть валюта",
+    fields.includes("budgetAmount:number") && fields.some((one) => one.startsWith("budgetCurrency:")));
+  report.check("Н-10", "поля LinkedIn в форме идеи нет",
+    !fields.some((one) => /linkedin/i.test(one)));
+  report.check("Н-10", "фотографии загружаются, а не вписываются ссылками",
+    fields.some((one) => one.endsWith(":file")));
+
+  await field(page, "whenFrom").fill("2027-05-08");
+  await field(page, "whenTo").fill("2027-05-16");
+  await field(page, "budgetAmount").fill("1500");
+  await field(page, "budgetCurrency").selectOption("EUR");
 
   // Before sending: a successful send replaces the form with a card, and
   // there is no form left to look in.
@@ -217,10 +239,50 @@ export async function run({ browser, base, run: report }) {
     report.check("С-07", "в идее есть название, описание и автор",
       Boolean(body.title && body.description && body.email), Object.keys(body).join(", "));
     report.check("Н-12", "в идее есть токен Turnstile", Boolean(body.turnstileToken));
+    // Two controls, one line in the record: what the owner reads in the
+    // letter is "€1 500" and "8 May 2027 — 16 May 2027", and what can be
+    // sorted on is the pair of ISO dates beside them.
+    report.check("Н-10", "бюджет уходит с валютой",
+      typeof body.budget === "string" && /[€$£₽]/.test(body.budget), String(body.budget));
+    report.check("Н-10", "даты уходят и словами, и как даты",
+      body.whenFrom === "2027-05-08" && body.whenTo === "2027-05-16" &&
+        typeof body.when === "string" && body.when.includes("2027"),
+      `${body.when} (${body.whenFrom} … ${body.whenTo})`);
   }
   // That the idea is not on the site until it is published is the other half
   // of С-07, and it is the panel that can show it.
   report.skip("С-07", "идея не видна на сайте до публикации", "проверяется в наборе admin");
+
+  // ——— the map behind the destination ————————————————————————————
+  report.group("Карта в форме идеи");
+  await page.context().close();
+  page = await openPage(browser, { viewport: DESKTOP });
+
+  const toOsm = [];
+  page.on("request", (one) => {
+    if (/openstreetmap\.org/.test(one.url())) toOsm.push(one.url());
+  });
+
+  await page.goto(`${base}/suggest/`, { waitUntil: "load" });
+  await page.waitForTimeout(800);
+  // The privacy half of the feature: a visitor who never opens the map is
+  // never shown to OpenStreetMap. The same promise the video wall makes.
+  report.check("Т-05", "без нажатия к OpenStreetMap не ходят", toOsm.length === 0,
+    toOsm.slice(0, 2).join(" "));
+
+  const mapButton = page.getByRole("button", { name: /Choose on the map|Выбрать на карте/ }).first();
+  report.check("Н-10", "у поля «куда» есть кнопка карты", await mapButton.count() > 0);
+
+  if (await mapButton.count()) {
+    await mapButton.click();
+    const drawn = await until(
+      async () => (await page.locator(".leaflet-container").count()) > 0,
+      { timeout: 10000 },
+    );
+    report.check("Н-10", "карта открывается по нажатию", drawn);
+    report.check("Н-10", "у карты есть ссылка на OpenStreetMap",
+      (await page.locator(".leaflet-container a[href*='openstreetmap.org']").count()) > 0);
+  }
 
   // ——— Solutions ——————————————————————————————————————————————
   report.group("Форма Solutions");

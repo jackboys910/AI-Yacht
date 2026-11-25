@@ -821,6 +821,8 @@ suggestions: {
     experience: "Опыт организации",
     audience: "Кого хочет собрать",
     photoLinks: "Фото и примеры",
+    onMap: "на карте",
+    openPhoto: "Открыть файл",
     source: "Откуда отправлено",
     empty: "— не заполнено —",
 

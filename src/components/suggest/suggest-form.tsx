@@ -4,7 +4,10 @@ import { useState, type FormEvent } from "react";
 import type { Locale } from "@/i18n/config";
 import { emailConfig } from "@/lib/email/config";
 import { visitSource } from "@/lib/visit-source";
-import { Field, FormConsent, SelectField } from "../form-fields";
+import { DateField, Field, FormConsent, SelectField } from "../form-fields";
+import { CURRENCIES, composeBudget, composeWhen } from "./compose";
+import { PhotoUpload } from "./photo-upload";
+import { PlacePicker } from "./place-picker";
 import { suggestCopy } from "./suggest-copy";
 import { TurnstileCheck, type CheckState } from "./turnstile-check";
 
@@ -21,6 +24,15 @@ type Status = "idle" | "sending" | "sent" | "failed" | "spam" | "off" | "rejecte
 const LEVELS = ["", "beginner", "intermediate", "advanced", "allLevels"] as const;
 
 /**
+ * No date before today, because an idea for last March is a typo.
+ *
+ * Read when the module loads rather than per render: the page is a static
+ * file served from a cache, so this is the day the visitor opened it, which
+ * is the only "today" a browser can be sure of.
+ */
+const TODAY = new Date().toISOString().slice(0, 10);
+
+/**
  * The Suggest an Adventure form (ТЗ v4, §3.2).
  *
  * One column, five required fields out of fourteen. Everything goes to
@@ -29,10 +41,14 @@ const LEVELS = ["", "beginner", "intermediate", "advanced", "allLevels"] as cons
  * write about themselves, and a Turnstile token means nothing until something
  * holding a secret has asked Cloudflare about it.
  *
- * Photographs are links, never uploads. A bucket open to strangers is other
- * people's files on the owner's bill, and at the idea stage there is nothing
- * worth that risk — the real photography arrives when the owner builds the
- * trip.
+ * Four of its answers are no longer free text (the client's list of
+ * 24.11.2026). The destination can be pointed at on a map, which is the only
+ * way to tell four Glastonburys apart; the dates come from a calendar; the
+ * budget has a currency beside the number, because "1500" on its own told the
+ * owner nothing; and the photographs are uploaded rather than linked, since
+ * the picture that explains an idea is usually in a phone and nowhere else.
+ * What each of them produces is still one short line in the record — see
+ * `compose.ts`.
  */
 export function SuggestForm({
   locale,
@@ -51,6 +67,16 @@ export function SuggestForm({
   const [level, setLevel] = useState("");
   const [token, setToken] = useState("");
   const [check, setCheck] = useState<CheckState>("loading");
+  // The four controlled answers. They are state rather than form fields
+  // because each is assembled from more than one control — a point on a map
+  // and a line of text, two calendars, a number and a currency, a list of
+  // uploads — and what the Worker receives is the assembled version.
+  const [place, setPlace] = useState("");
+  const [point, setPoint] = useState<{ lat: number; lng: number } | null>(null);
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [currency, setCurrency] = useState<string>(CURRENCIES[0]);
+  const [photos, setPhotos] = useState<string[]>([]);
   // Which answer the Worker would not take. The browser stops the five
   // required fields on its own, so reaching this means something subtler —
   // an address it accepted and the Worker did not, most likely.
@@ -65,11 +91,6 @@ export function SuggestForm({
 
     const data = new FormData(event.currentTarget);
     const read = (key: string) => String(data.get(key) ?? "").trim();
-    const lines = (key: string) =>
-      read(key)
-        .split("\n")
-        .map((line) => line.trim())
-        .filter(Boolean);
 
     setStatus("sending");
     try {
@@ -84,17 +105,21 @@ export function SuggestForm({
             : (chosen?.label ?? ""),
           title: read("title"),
           description: read("description"),
-          place: read("place"),
-          when: read("when"),
-          budget: read("budget"),
+          place,
+          placeLat: point?.lat,
+          placeLng: point?.lng,
+          when: composeWhen(from, to, locale),
+          whenFrom: from,
+          whenTo: to,
+          budget: composeBudget(read("budgetAmount"), currency),
           groupSize: read("groupSize"),
           experienceLevel: level,
           name: read("name"),
           email: read("email"),
-          links: [read("facebook"), read("instagram"), read("linkedin")].filter(Boolean),
+          links: [read("facebook"), read("instagram")].filter(Boolean),
           experience: read("experience"),
           audience: read("audience"),
-          photoLinks: lines("photos"),
+          photoLinks: photos,
           locale,
           // The page plus, where there is one, the campaign the link carried
           // and the site it came from (§7.5) — the same line a subscription
@@ -186,10 +211,67 @@ export function SuggestForm({
           required
         />
 
+        <PlacePicker
+          locale={locale}
+          value={place}
+          point={point}
+          disabled={sending}
+          onChange={(next, where) => {
+            setPlace(next);
+            setPoint(where);
+          }}
+        />
+
+        <div>
+          <span className="mb-2 block text-xs uppercase tracking-widest text-white/60">
+            {f.when[locale]}
+          </span>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <DateField
+              label={f.whenFrom[locale]}
+              name="whenFrom"
+              value={from}
+              onChange={(next) => {
+                setFrom(next);
+                // A trip that ends before it starts is a slip rather than a
+                // plan, and the browser cannot know which of the two dates
+                // was meant — so the end follows the start instead of being
+                // refused.
+                if (to && next && to < next) setTo(next);
+              }}
+              min={TODAY}
+              disabled={sending}
+            />
+            <DateField
+              label={f.whenTo[locale]}
+              name="whenTo"
+              value={to}
+              onChange={setTo}
+              min={from || TODAY}
+              disabled={sending}
+            />
+          </div>
+          <Hint>{f.whenHint[locale]}</Hint>
+        </div>
+
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label={f.place[locale]} name="place" placeholder={f.placePlaceholder[locale]} />
-          <Field label={f.when[locale]} name="when" placeholder={f.whenPlaceholder[locale]} />
-          <Field label={f.budget[locale]} name="budget" placeholder={f.budgetPlaceholder[locale]} />
+          <div className="grid grid-cols-[1fr_auto] gap-3">
+            <Field
+              label={f.budget[locale]}
+              name="budgetAmount"
+              type="number"
+              placeholder={f.budgetPlaceholder[locale]}
+            />
+            <div className="w-28">
+              <SelectField
+                label={f.budgetCurrency[locale]}
+                name="budgetCurrency"
+                value={currency}
+                onChange={setCurrency}
+                options={CURRENCIES.map((code) => ({ value: code, label: code }))}
+              />
+            </div>
+          </div>
           <Field
             label={f.groupSize[locale]}
             name="groupSize"
@@ -228,10 +310,9 @@ export function SuggestForm({
         </div>
         <Hint>{f.emailHint[locale]}</Hint>
 
-        <div className="grid gap-5 sm:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2">
           <Field label={f.facebook[locale]} name="facebook" placeholder="https://facebook.com/…" />
           <Field label={f.instagram[locale]} name="instagram" placeholder="https://instagram.com/…" />
-          <Field label={f.linkedin[locale]} name="linkedin" placeholder="https://linkedin.com/in/…" />
         </div>
         <Hint>{f.socialHint[locale]}</Hint>
 
@@ -247,11 +328,11 @@ export function SuggestForm({
           placeholder={f.audiencePlaceholder[locale]}
           textarea
         />
-        <Field
-          label={f.photos[locale]}
-          name="photos"
-          placeholder={f.photosPlaceholder[locale]}
-          textarea
+        <PhotoUpload
+          locale={locale}
+          urls={photos}
+          onChange={setPhotos}
+          disabled={sending}
         />
         <Hint>{f.photosHint[locale]}</Hint>
       </fieldset>

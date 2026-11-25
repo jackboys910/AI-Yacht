@@ -65,12 +65,35 @@ export const suggestCopy = {
 
     place: t("Destination or location", "Куда"),
     placePlaceholder: t("A city, a region, a marina, a dropzone", "Город, регион, марина, дропзона"),
+    placeOnMap: t("Choose on the map", "Выбрать на карте"),
+    placeHideMap: t("Hide the map", "Скрыть карту"),
+    placeSearch: t("Find a place", "Найти место"),
+    placeSearchPlaceholder: t("Lofoten, Norway", "Лофотены, Норвегия"),
+    placeSearching: t("Searching…", "Ищем…"),
+    placeNothing: t("Nothing found. Try a town or a region.", "Ничего не нашлось. Попробуйте город или регион."),
+    placeDrag: t(
+      "Drag the map so the pin is where you mean, then press the button.",
+      "Подвиньте карту так, чтобы метка встала куда нужно, и нажмите кнопку.",
+    ),
+    placeUse: t("Use this place", "Взять это место"),
+    placeReading: t("Reading the place…", "Определяем место…"),
+    placeFailed: t(
+      "The map service did not answer. Type the place by hand instead.",
+      "Картографическая служба не ответила. Впишите место вручную.",
+    ),
+    placeChosen: t("Chosen on the map", "Выбрано на карте"),
 
     when: t("When, roughly", "Когда примерно"),
-    whenPlaceholder: t("Late spring, or September", "Поздняя весна или сентябрь"),
+    whenFrom: t("From", "С"),
+    whenTo: t("To", "По"),
+    whenHint: t(
+      "Leave both empty if the dates are still open — the idea does not need them.",
+      "Оставьте пустыми, если даты ещё не определились, — идее они не нужны.",
+    ),
 
     budget: t("Budget per person", "Бюджет на человека"),
-    budgetPlaceholder: t("About €1,500 — or “no idea yet”", "Около 1500 € — или «пока не знаю»"),
+    budgetPlaceholder: t("1500", "1500"),
+    budgetCurrency: t("Currency", "Валюта"),
 
     groupSize: t("How many people", "Сколько человек"),
     groupSizePlaceholder: t("6–8", "6–8"),
@@ -96,7 +119,6 @@ export const suggestCopy = {
 
     facebook: t("Facebook", "Facebook"),
     instagram: t("Instagram", "Instagram"),
-    linkedin: t("LinkedIn", "LinkedIn"),
     socialHint: t(
       "Not required, but asked for a reason: trips are small, and knowing who " +
         "is proposing one is how the group stays a group.",
@@ -116,11 +138,27 @@ export const suggestCopy = {
       "Для кого это.",
     ),
 
-    photos: t("Photos or links for reference", "Фото или ссылки для примера"),
-    photosPlaceholder: t("One link per line", "По одной ссылке на строку"),
+    photos: t("Photos for reference", "Фотографии для примера"),
+    photosChoose: t("Choose photos", "Выбрать фотографии"),
+    photosAdd: t("Add more", "Добавить ещё"),
+    photosLeft: (left: number) => t(`${left} more can be added`, `Можно добавить ещё: ${left}`),
+    photosFull: t("That is as many as the form takes.", "Больше форма не принимает."),
+    photosUploading: t("Sending…", "Отправляем…"),
+    photosRemove: t("Remove", "Убрать"),
+    photosRefused: t(
+      "This picture was not accepted. Try another one.",
+      "Эту картинку не приняли. Попробуйте другую.",
+    ),
+    photosBadFile: t(
+      "This is not a picture the browser can read.",
+      "Браузер не может прочитать эту картинку.",
+    ),
+    photosFailed: t("It did not upload. Try once more.", "Не загрузилось. Попробуйте ещё раз."),
     photosHint: t(
-      "Links only — nothing is uploaded here. Real photos come later, when the trip is made.",
-      "Только ссылки, ничего не загружается. Настоящие фотографии появятся позже, когда поездка будет собрана.",
+      "Up to five — straight from your phone or your computer. They are shown to " +
+        "the owner and to nobody else. Real photographs come later, when the trip is made.",
+      "До пяти штук — прямо с телефона или с компьютера. Их увидит владелец сайта " +
+        "и больше никто. Настоящие фотографии появятся позже, когда поездка будет собрана.",
     ),
 
     submit: t("Send the idea", "Отправить идею"),

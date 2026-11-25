@@ -73,13 +73,34 @@ function readLinks(value: unknown): string[] {
  */
 const looksLikeEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
+/**
+ * A number inside the range a coordinate can hold, or nothing.
+ *
+ * The form sends these two only when the map was used, so absent is the
+ * ordinary case rather than an error — which is why anything unreadable is
+ * dropped instead of refusing the whole idea. A destination described in
+ * words is a destination.
+ */
+const coordinate = (value: unknown, limit: number): number | undefined =>
+  typeof value === "number" && Number.isFinite(value) && Math.abs(value) <= limit
+    ? value
+    : undefined;
+
+/** A calendar day as the date controls write it, and nothing else. */
+const isoDate = (value: unknown): string | undefined =>
+  typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : undefined;
+
 interface Submission {
   interestId: string;
   categoryOther?: string;
   title: string;
   description: string;
   place?: string;
+  placeLat?: number;
+  placeLng?: number;
   when?: string;
+  whenFrom?: string;
+  whenTo?: string;
   budget?: string;
   groupSize?: string;
   experienceLevel?: string;
@@ -118,7 +139,11 @@ function read(raw: unknown): Submission | string {
     title,
     description,
     place: clip(body.place, LIMITS.place) || undefined,
+    placeLat: coordinate(body.placeLat, 90),
+    placeLng: coordinate(body.placeLng, 180),
     when: clip(body.when, LIMITS.when) || undefined,
+    whenFrom: isoDate(body.whenFrom),
+    whenTo: isoDate(body.whenTo),
     budget: clip(body.budget, LIMITS.budget) || undefined,
     groupSize: clip(body.groupSize, LIMITS.groupSize) || undefined,
     experienceLevel: LEVELS.includes(level) ? level : undefined,
@@ -181,7 +206,11 @@ export async function suggestion(request: Request, env: Env): Promise<Response> 
       title: parsed.title,
       description: parsed.description,
       place: parsed.place,
+      placeLat: parsed.placeLat,
+      placeLng: parsed.placeLng,
       when: parsed.when,
+      whenFrom: parsed.whenFrom,
+      whenTo: parsed.whenTo,
       budget: parsed.budget,
       groupSize: parsed.groupSize,
       experienceLevel: parsed.experienceLevel,

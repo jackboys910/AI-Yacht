@@ -29,7 +29,7 @@ export function Field({
   required?: boolean;
   textarea?: boolean;
   disabled?: boolean;
-  type?: "text" | "email" | "tel";
+  type?: "text" | "email" | "tel" | "number";
   autoComplete?: string;
 }) {
   return (
@@ -52,9 +52,67 @@ export function Field({
           required={required}
           disabled={disabled}
           autoComplete={autoComplete}
-          className={fieldClass}
+          // A number field is a sum of money here, never a dial: the spinner
+          // arrows invite a click that changes an amount by one, and the
+          // wheel over a focused field changes it without a click at all.
+          {...(type === "number"
+            ? { inputMode: "numeric" as const, min: 0, step: 1 }
+            : {})}
+          className={`${fieldClass}${
+            type === "number"
+              ? " [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              : ""
+          }`}
         />
       )}
+    </label>
+  );
+}
+
+/**
+ * A date, picked from the browser's own calendar.
+ *
+ * `type="date"` rather than a calendar written here, and that is the whole
+ * point: on a phone it opens the date wheel the owner of the phone already
+ * knows, it speaks their language without being told one, and it weighs
+ * nothing. What it does not do is look like the rest of the form — the
+ * picker button is drawn black on black in Chrome, which on a dark field is
+ * invisible — so it is inverted back into view.
+ *
+ * `min` and `max` keep the year inside the century: an empty date field takes
+ * typed digits as well as clicks, and "0005" is what a slipped keystroke
+ * produces.
+ */
+export function DateField({
+  label,
+  name,
+  value,
+  onChange,
+  min,
+  max,
+  disabled,
+}: {
+  label: string;
+  name: string;
+  value: string;
+  onChange: (value: string) => void;
+  min?: string;
+  max?: string;
+  disabled?: boolean;
+}) {
+  return (
+    <label className="block">
+      <Label>{label}</Label>
+      <input
+        name={name}
+        type="date"
+        value={value}
+        min={min}
+        max={max}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+        className={`${fieldClass} [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:invert`}
+      />
     </label>
   );
 }

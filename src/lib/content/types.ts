@@ -368,19 +368,37 @@ export interface AdventureSuggestion {
   title: string;
   description: string;
   place?: string;
-  /** "Late spring", "September-ish" — a time of year, not a date. */
+  /**
+   * Where that place is, when it was chosen on the map rather than typed.
+   *
+   * Kept because "Glastonbury" is four towns in three countries and the
+   * owner has to know which one before he can judge the idea. Absent means
+   * the author typed the line by hand, which the form still allows.
+   */
+  placeLat?: number;
+  placeLng?: number;
+  /** The dates, as the form wrote them out: "8 — 16 May 2027". */
   when?: string;
+  /** Written as well as `when`, so the dates can be sorted and compared. */
+  whenFrom?: IsoDate;
+  whenTo?: IsoDate;
+  /** Amount and currency as one line, e.g. "€1,500" — the form composes it. */
   budget?: string;
   groupSize?: string;
   experienceLevel?: ExperienceLevel;
 
   name: string;
   email: string;
-  /** Instagram, Facebook, LinkedIn — the owner looks at who he lets in. */
+  /** Instagram and Facebook — the owner looks at who he lets in. */
   links: string[];
   experience?: string;
   audience?: string;
-  /** Links, never uploads: see ТЗ v4 §3.2. */
+  /**
+   * Reference pictures: addresses in Storage since 24.11.2026, typed links
+   * before that. ТЗ v4 §3.2 asked for links; the client asked for uploads,
+   * because the photograph that explains an idea is usually on a phone and
+   * nowhere else. Both are plain URLs, so the older records still read.
+   */
   photoLinks: string[];
 
   /** Which language version of the site the form was filled in on. */

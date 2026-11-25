@@ -19,6 +19,26 @@ service firebase.storage {
            );
     }
 
+    // Reference photographs attached to an idea from the public form.
+    //
+    // ТЗ v4 §3.2 said links, never uploads; the client changed that on
+    // 24.11.2026 — people were sending ideas with nothing to look at because
+    // their photographs were on their phone, not on the web. Nobody is signed
+    // in on that page and nobody can be: the form is open to strangers by
+    // design. So this rule gives away the one verb it has to — create — and
+    // nothing else. No overwrite, no delete, no listing: a stranger can put a
+    // picture here and can never come back for it or find anybody else's,
+    // which is what stops the bucket becoming free file hosting.
+    //
+    // The browser compresses to 1920px before it uploads, which lands well
+    // under a megabyte. A file over the cap is therefore not a large
+    // photograph but something that did not come through the form.
+    match /suggestions/{month}/{file} {
+      allow read: if true;
+      allow create: if request.resource.size < 6 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
     match /{allPaths=**} {
       allow read: if true;
 

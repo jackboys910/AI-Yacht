@@ -137,7 +137,22 @@ export function SuggestionDetail({
           )}
         </Row>
         <Block label={t.suggestions.description} text={suggestion.description} />
-        <Row label={t.suggestions.place}>{suggestion.place}</Row>
+        <Row label={t.suggestions.place}>
+          {suggestion.place}
+          {/* Chosen on the map rather than typed: the point is the answer to
+              "which Glastonbury", and it is one click from here. */}
+          {typeof suggestion.placeLat === "number" &&
+            typeof suggestion.placeLng === "number" && (
+              <a
+                href={`https://www.openstreetmap.org/?mlat=${suggestion.placeLat}&mlon=${suggestion.placeLng}#map=12/${suggestion.placeLat}/${suggestion.placeLng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-2 whitespace-nowrap text-[color:var(--teal)] underline underline-offset-2"
+              >
+                {t.suggestions.onMap}
+              </a>
+            )}
+        </Row>
         <Row label={t.suggestions.when}>{suggestion.when}</Row>
         <Row label={t.suggestions.budget}>{suggestion.budget}</Row>
         <Row label={t.suggestions.groupSize}>{suggestion.groupSize}</Row>
@@ -161,7 +176,7 @@ export function SuggestionDetail({
         <Links label={t.suggestions.links} urls={suggestion.links} />
         <Block label={t.suggestions.experience} text={suggestion.experience} />
         <Block label={t.suggestions.audience} text={suggestion.audience} />
-        <Links label={t.suggestions.photoLinks} urls={suggestion.photoLinks} />
+        <Photos label={t.suggestions.photoLinks} urls={suggestion.photoLinks} />
         <Row label={t.suggestions.source}>{suggestion.source}</Row>
       </Card>
 
@@ -340,6 +355,56 @@ function Block({ label, text }: { label: string; text?: string }) {
  * addresses typed by a stranger, so they open in a new tab without handing the
  * destination a handle on this page, and without passing any ranking on.
  */
+/**
+ * The reference photographs, as pictures.
+ *
+ * They used to be links the author typed, and a list of addresses was the
+ * only honest way to show them — nobody wants an unknown website rendered
+ * inside the panel. Since 24.11.2026 they are files in this project's own
+ * storage, so they can simply be looked at, which is the whole reason the
+ * client asked for uploads.
+ *
+ * An address that is not a picture any more — a file removed by hand, a
+ * record from before the change — leaves the thumbnail broken rather than the
+ * row missing, and the link under it still says where it pointed.
+ */
+function Photos({ label, urls }: { label: string; urls: string[] }) {
+  const { t } = useAdmin();
+
+  return (
+    <div className="grid gap-0.5 sm:grid-cols-[13rem_1fr] sm:gap-4">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      {urls.length === 0 ? (
+        <span className="text-sm text-muted-foreground/60">{t.suggestions.empty}</span>
+      ) : (
+        <ul className="flex flex-wrap gap-3">
+          {urls.map((url) => (
+            <li key={url}>
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={t.suggestions.openPhoto}
+                className="block overflow-hidden rounded-xl border border-border"
+              >
+                {/* Someone else's upload at whatever size they sent: the
+                    panel is not a static export, so a plain <img> with a box
+                    around it is exactly right. */}
+                <img
+                  src={url}
+                  alt=""
+                  loading="lazy"
+                  className="h-28 w-28 bg-muted object-cover transition hover:opacity-90"
+                />
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 function Links({ label, urls }: { label: string; urls: string[] }) {
   const { t } = useAdmin();
 
