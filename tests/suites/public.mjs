@@ -72,6 +72,51 @@ export async function run({ browser, base, run: report, site }) {
     report.check("П-01", "в открытом меню видны направления", opened);
   }
 
+  // A menu taller than the screen, inside a header that is fixed to the top
+  // of it, puts everything below the edge out of reach: the page scrolls,
+  // the header does not. On a short phone that was the language switch, in
+  // landscape half the list. Two shapes are checked, because the screen runs
+  // out in two different ways.
+  for (const [name, width, height] of [["375×667", 375, 667], ["844×390", 844, 390]]) {
+    const short = await openPage(browser, { viewport: { width, height } });
+    await short.goto(`${base}/`, { waitUntil: "load" });
+    const button = short.getByRole("button", { name: /Menu|Меню/ });
+    if ((await button.count()) > 0) {
+      await button.first().click();
+      await short.waitForTimeout(400);
+      const seen = await short.evaluate(() => {
+        // The open menu is the second half of the header; the first is the
+        // row with the logo.
+        const panel = document.querySelector("header")?.lastElementChild;
+        if (!panel || !panel.querySelector("a[href='/sailing/']")) return null;
+        const visible = [...panel.querySelectorAll("a, button")].filter((one) => {
+          const box = one.getBoundingClientRect();
+          return box.width > 0 && box.height > 0;
+        });
+        const last = visible[visible.length - 1];
+        if (!last) return null;
+        // Scrolled to its end, because a pane that scrolls is the cure and
+        // reaching the last line is the thing being asked.
+        panel.scrollTop = panel.scrollHeight;
+        const box = last.getBoundingClientRect();
+        return {
+          bottom: panel.getBoundingClientRect().bottom,
+          view: window.innerHeight,
+          top: box.top,
+          end: box.bottom,
+          label: (last.textContent || "").replace(/\s+/g, " ").trim().slice(0, 24),
+        };
+      });
+      report.check("П-15", `меню не выходит за экран ${name}`,
+        seen !== null && seen.bottom <= seen.view + 1,
+        seen ? `низ панели ${Math.round(seen.bottom)} при ${seen.view}` : "панель не найдена");
+      report.check("П-15", `последний пункт меню достижим на ${name}`,
+        seen !== null && seen.end <= seen.view + 1 && seen.top >= -1,
+        seen ? `«${seen.label}» ${Math.round(seen.top)}…${Math.round(seen.end)}` : "панель не найдена");
+    }
+    await short.context().close();
+  }
+
   // ——— the first screen (ТЗ v4 §4) ————————————————————————————
   report.group("Первый экран главной");
   const openingPhone = await pageText(phone, "body");
