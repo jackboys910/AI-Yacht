@@ -108,7 +108,7 @@ export function SettingsView() {
   }
 
   return (
-    <FormLocaleProvider locale={locale}>
+    <FormLocaleProvider locale={locale} onLocale={setLocale}>
       <div className="max-w-3xl">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="max-w-xl text-sm text-muted-foreground">{c.explain}</p>

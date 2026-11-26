@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { locales, localeLabels, type Locale } from "@/i18n/config";
 import type { Localized } from "@/lib/content/types";
 import { useAdmin } from "./i18n";
@@ -26,20 +26,26 @@ import { useAdmin } from "./i18n";
  * EN/RU pairs on one screen are a trap.
  */
 
-const FormLocaleContext = createContext<Locale>("en");
+const FormLocaleContext = createContext<{
+  locale: Locale;
+  /** Set where the form lets a field send the switch to the other language. */
+  go?: (locale: Locale) => void;
+}>({ locale: "en" });
 
-export const useFormLocale = () => useContext(FormLocaleContext);
+export const useFormLocale = () => useContext(FormLocaleContext).locale;
 
 export function FormLocaleProvider({
   locale,
+  onLocale,
   children,
 }: {
   locale: Locale;
+  /** The form's own setter, so the line under a field can reach the tabs. */
+  onLocale?: (locale: Locale) => void;
   children: ReactNode;
 }) {
-  return (
-    <FormLocaleContext.Provider value={locale}>{children}</FormLocaleContext.Provider>
-  );
+  const value = useMemo(() => ({ locale, go: onLocale }), [locale, onLocale]);
+  return <FormLocaleContext.Provider value={value}>{children}</FormLocaleContext.Provider>;
 }
 
 /** The one content-language switch per form. A dot marks a language with gaps. */
@@ -127,31 +133,76 @@ function Hint({ children }: { children: ReactNode }) {
   return <p className="mt-1 text-xs text-muted-foreground">{children}</p>;
 }
 
-/** What the field says in the language the form is not currently showing. */
+/**
+ * What the field says in the language the form is not currently showing.
+ *
+ * It is also the way there. The switch itself is one per form, at the top,
+ * which on a telephone is several screens above the field being filled: the
+ * manager who met «RU: not filled in» under a title he had just typed had no
+ * way of telling what it wanted from him. So the line is a button — it moves
+ * the whole form to that language and puts the cursor in this same field,
+ * which is both the answer to "what is this" and the thing to do about it.
+ *
+ * The field keeps its `id` across the switch, so the element under the cursor
+ * is the one the manager was already looking at; only the text in it changes.
+ */
 function OtherLocale({
   locale,
-  value,
+  field,
+  text,
   optional,
 }: {
   locale: Locale;
-  value: string;
+  /** The input's id, to put the cursor back after the switch. */
+  field: string;
+  /** The other language's text, or how much of it there is. Empty: nothing. */
+  text: string;
   /** True where an empty field is an ordinary answer, not a gap to fill. */
   optional?: boolean;
 }) {
   const { t } = useAdmin();
-  const filled = value.trim().length > 0;
+  const { go } = useContext(FormLocaleContext);
+  const filled = text.trim().length > 0;
   // Nothing to say: the other language is empty and that is allowed.
   if (!filled && optional) return null;
-  return (
-    <p
-      className={`mt-1 truncate text-xs ${
-        filled ? "text-muted-foreground" : "text-amber-600"
-      }`}
-      title={filled ? value : undefined}
-    >
+
+  const line = (
+    <>
       <span className="font-semibold">{localeLabels[locale]}:</span>{" "}
-      {filled ? value : t.field.empty}
-    </p>
+      {filled ? text : t.field.empty}
+      {!filled && go && <span className="ml-1 underline">{t.field.fillOther}</span>}
+    </>
+  );
+  const tone = filled ? "text-muted-foreground" : "text-amber-600";
+
+  if (!go) {
+    return (
+      <p className={`mt-1 truncate text-xs ${tone}`} title={filled ? text : undefined}>
+        {line}
+      </p>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      // py-1 -mb-1: the row is small text, and a target under 24px high is
+      // one a thumb misses. The padding is taken back from the margin so the
+      // spacing under the field does not change.
+      className={`-mb-1 mt-1 block w-full truncate py-1 text-left text-xs ${tone} hover:underline`}
+      title={filled ? text : t.field.fillOtherHint}
+      onClick={() => {
+        go(locale);
+        // After the switch, not during it: the input only holds the other
+        // language's text once React has painted it.
+        requestAnimationFrame(() => {
+          const box = document.getElementById(field);
+          if (box instanceof HTMLInputElement || box instanceof HTMLTextAreaElement) box.focus();
+        });
+      }}
+    >
+      {line}
+    </button>
   );
 }
 
@@ -229,7 +280,7 @@ export function LocalizedInput({
         onChange={(event) => onChange({ ...value, [locale]: event.target.value })}
         className={`mt-1.5 ${inputClass}`}
       />
-      <OtherLocale locale={other} value={value[other]} optional={optional} />
+      <OtherLocale locale={other} field={id} text={value[other]} optional={optional} />
       {hint && <Hint>{hint}</Hint>}
     </div>
   );
@@ -271,7 +322,7 @@ export function LocalizedTextarea({
         onChange={(event) => onChange({ ...value, [locale]: event.target.value })}
         className={`mt-1.5 ${inputClass} resize-y`}
       />
-      <OtherLocale locale={other} value={value[other]} optional={optional} />
+      <OtherLocale locale={other} field={id} text={value[other]} optional={optional} />
       {hint && <Hint>{hint}</Hint>}
     </div>
   );
@@ -330,12 +381,12 @@ export function LocalizedLines({
         }
         className={`mt-1.5 ${inputClass} resize-y`}
       />
-      {(otherCount > 0 || !optional) && (
-        <p className={`mt-1 text-xs ${otherCount ? "text-muted-foreground" : "text-amber-600"}`}>
-          <span className="font-semibold">{localeLabels[other]}:</span>{" "}
-          {otherCount ? t.field.lineCount(otherCount) : t.field.empty}
-        </p>
-      )}
+      <OtherLocale
+        locale={other}
+        field={id}
+        text={otherCount ? t.field.lineCount(otherCount) : ""}
+        optional={optional}
+      />
       {hint && <Hint>{hint}</Hint>}
     </div>
   );
