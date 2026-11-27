@@ -11,9 +11,9 @@ export const en = {
         "Why this community exists, what the letter S stands for, how to follow a direction, join a trip or suggest your own — and why all of it is free.",
     },
     story: {
-      title: "Story — the person behind the trips",
+      title: "Story — our family, our history",
       description:
-        "Who runs these trips, the YouTube channel the long version lives on, and where else to find him.",
+        "Fourteen generations of the Usachevs and the Utkins, from the Vaga in Russia's North to Massachusetts — the family tree, the journey on a globe, and the YouTube channel.",
     },
     suggest: {
       title: "Suggest an Adventure — Nazarov.net",
