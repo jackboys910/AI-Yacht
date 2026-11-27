@@ -45,6 +45,11 @@ export const familyCopy = {
     en: "This browser cannot draw the interactive globe, but the journey is all here, step by step.",
     ru: "Этот браузер не может показать интерактивный глобус, но весь путь здесь, по шагам.",
   },
+  watchJourney: { en: "Watch the family's journey", ru: "Смотреть путь семьи" },
+  placeHint: {
+    en: "Click any lit place on the globe to jump to its moment.",
+    ru: "Нажмите на любую светящуюся точку на глобусе — история перенесётся к ней.",
+  },
   mapHint: {
     en: "Drag to turn the globe; Ctrl + wheel or two fingers to zoom.",
     ru: "Тяните, чтобы вращать глобус; Ctrl + колесо или два пальца — чтобы приблизить.",

@@ -100,6 +100,7 @@ function buildStyle(locale: Locale, ours: string[]): StyleSpecification {
       },
       routes: { type: "geojson", data: EMPTY },
       path: { type: "geojson", data: EMPTY },
+      head: { type: "geojson", data: EMPTY },
     },
     layers: [
       { id: "land", type: "background", paint: { "background-color": "#16263f" } },
@@ -260,6 +261,19 @@ function buildStyle(locale: Locale, ours: string[]): StyleSpecification {
           "line-opacity": ["case", ["==", ["get", "state"], "current"], 1, 0.6],
         },
       },
+      // The bright point at the front of a line while it is being drawn.
+      {
+        id: "head-glow",
+        type: "circle",
+        source: "head",
+        paint: { "circle-radius": 14, "circle-color": COLORS.move, "circle-blur": 1, "circle-opacity": 0.75 },
+      },
+      {
+        id: "head-dot",
+        type: "circle",
+        source: "head",
+        paint: { "circle-radius": 3.5, "circle-color": "#fff8e6" },
+      },
     ],
   };
 }
@@ -326,6 +340,7 @@ function createJourney(
   tree: FamilyTree,
   locale: Locale,
   onUserMove: () => void,
+  onPick: (index: number) => void,
 ): Journey {
   const places = new Map(tree.places.map((p) => [p.id, p]));
   const last = tree.journey.length - 1;
@@ -334,6 +349,8 @@ function createJourney(
   let spin = 0;
   let timers: number[] = [];
   let rocket: Marker | null = null;
+  // While the rocket flies the camera rides along — until someone grabs it.
+  let follow = false;
 
   // The geometry of every route, worked out once.
   const geometry = new Map<string, LngLat[]>();
@@ -371,6 +388,17 @@ function createJourney(
       label.append(small);
     }
     element.append(dot, label);
+    // A lit place is a way back into the story: the latest step up to now
+    // that has it, or else the first one that does.
+    element.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const having = tree.journey
+        .map((step, index) => (step.places.includes(place.id) ? index : -1))
+        .filter((index) => index >= 0);
+      const back = having.filter((index) => index <= current);
+      const pick = back.length ? back[back.length - 1] : having[0];
+      if (pick !== undefined && pick !== current) onPick(pick);
+    });
     pins.push(
       new maplibregl.Marker({ element: outer, anchor: "left", offset: [-6, 0] })
         .setLngLat([place.lng, place.lat])
@@ -390,11 +418,13 @@ function createJourney(
     timers = [];
     rocket?.remove();
     rocket = null;
+    follow = false;
   };
 
   const grabbed = (event: { originalEvent?: unknown }) => {
     if (!event.originalEvent) return;
     cancelAnimationFrame(spin);
+    follow = false;
     onUserMove();
   };
   map.on("dragstart", grabbed);
@@ -402,21 +432,27 @@ function createJourney(
   map.on("rotatestart", grabbed);
   map.on("pitchstart", grabbed);
 
+  /** A ring of light that spreads from a point and fades. */
+  const burst = (point: LngLat) => {
+    const element = document.createElement("div");
+    const ring = document.createElement("div");
+    ring.className = "fam-burst";
+    element.append(ring);
+    const marker = new maplibregl.Marker({ element }).setLngLat(point).addTo(map);
+    later(() => marker.remove(), 1500);
+  };
+
   /** The rocket arrives: a ring of light, and the camera comes down. */
   const land = (point: LngLat) => {
     rocket?.remove();
     rocket = null;
-    const burst = document.createElement("div");
-    const ring = document.createElement("div");
-    ring.className = "fam-burst";
-    burst.append(ring);
-    const marker = new maplibregl.Marker({ element: burst }).setLngLat(point).addTo(map);
-    later(() => marker.remove(), 1500);
+    follow = false;
+    burst(point);
     later(() => {
       if (current === last) {
-        map.flyTo({ center: point, zoom: 5.2, pitch: 30, duration: 3400, essential: true });
+        map.flyTo({ center: point, zoom: 5.2, pitch: 30, duration: 2600, essential: true });
       }
-    }, 600);
+    }, 400);
   };
 
   const show = (index: number) => {
@@ -426,6 +462,8 @@ function createJourney(
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const routes = map.getSource("routes") as GeoJSONSource;
     const path = map.getSource("path") as GeoJSONSource;
+    const head = map.getSource("head") as GeoJSONSource;
+    head.setData(EMPTY);
 
     // Before the story: the planet, turning slowly with Russia in view.
     if (index < 0) {
@@ -485,14 +523,21 @@ function createJourney(
     }));
     const draw = (t: number) => {
       const features: GeoJSON.Feature[] = [...past];
+      const heads: GeoJSON.Feature[] = [];
       for (const { route, line } of drawing) {
+        if (line.length < 2) continue;
+        const end = Math.max(2, Math.ceil(line.length * t));
         features.push({
           type: "Feature",
           properties: { kind: route.kind, state: "current" },
-          geometry: { type: "LineString", coordinates: line.slice(0, Math.max(2, Math.ceil(line.length * t))) },
+          geometry: { type: "LineString", coordinates: line.slice(0, end) },
         });
+        if (route.kind !== "rocket" && t > 0 && t < 1) {
+          heads.push({ type: "Feature", properties: {}, geometry: { type: "Point", coordinates: line[end - 1] } });
+        }
       }
       routes.setData({ type: "FeatureCollection", features });
+      head.setData({ type: "FeatureCollection", features: heads });
     };
     draw(still ? 1 : 0);
 
@@ -511,11 +556,27 @@ function createJourney(
       map.jumpTo(target);
       return;
     }
-    map.flyTo({ ...target, duration: 3200, curve: 1.5, essential: true });
+    const flight = drawing.find(({ route, line }) => route.kind === "rocket" && line.length > 1);
+    const high = narrow ? 2.8 : 3.4;
+
+    // The rocket's step: down to the launch pad first; then the camera rides
+    // along with it across the ocean.
+    if (flight) {
+      map.flyTo({
+        center: flight.line[0],
+        zoom: high,
+        pitch: 20,
+        bearing: 0,
+        padding: { top: 0, bottom: 0, left: 0, right: 0 },
+        duration: 1600,
+        essential: true,
+      });
+    } else {
+      map.flyTo({ ...target, duration: 2300, curve: 1.4, essential: true });
+    }
 
     if (drawing.length === 0) return;
-    const flight = drawing.find(({ route }) => route.kind === "rocket");
-    const length = flight ? 5600 : 1900;
+    const length = flight ? 5200 : 1500;
 
     later(
       () => {
@@ -525,10 +586,14 @@ function createJourney(
           rocket = new maplibregl.Marker({ element, rotationAlignment: "viewport" })
             .setLngLat(flight.line[0])
             .addTo(map);
+          burst(flight.line[0]);
+          follow = true;
         }
         const start = performance.now();
         const tick = (now: number) => {
-          const t = Math.min(1, (now - start) / length);
+          // A frame's timestamp can fall just before `start`; a negative t
+          // would ask for the point before the first one.
+          const t = Math.min(1, Math.max(0, (now - start) / length));
           const eased = ease(t);
           draw(eased);
           if (flight && rocket) {
@@ -536,6 +601,8 @@ function createJourney(
             const at = Math.min(line.length - 1, Math.floor(eased * (line.length - 1)));
             const ahead = Math.min(line.length - 1, at + 2);
             rocket.setLngLat(line[at]);
+            // Up to see the ocean whole halfway over, down again at the end.
+            if (follow) map.jumpTo({ center: line[at], zoom: high - 1.5 * Math.sin(Math.PI * eased) });
             const p1 = map.project(line[Math.max(0, ahead - 3)]);
             const p2 = map.project(line[ahead]);
             if (p1.x !== p2.x || p1.y !== p2.y) {
@@ -547,7 +614,7 @@ function createJourney(
         };
         frame = requestAnimationFrame(tick);
       },
-      flight ? 2600 : 1200,
+      flight ? 1700 : 800,
     );
   };
 
@@ -567,6 +634,7 @@ export default function FamilyMap({
   onReady,
   onFail,
   onUserMove,
+  onPick,
 }: {
   tree: FamilyTree;
   locale: Locale;
@@ -576,6 +644,8 @@ export default function FamilyMap({
   onFail: () => void;
   /** The visitor grabbed the globe — the parent stops the autoplay. */
   onUserMove: () => void;
+  /** A place on the globe was clicked — the parent moves to that step. */
+  onPick: (index: number) => void;
 }) {
   const box = useRef<HTMLDivElement>(null);
   const journey = useRef<Journey | null>(null);
@@ -583,6 +653,7 @@ export default function FamilyMap({
   // Read from inside the map's own callbacks, which outlive any one render.
   const failed = useEffectEvent(() => onFail());
   const moved = useEffectEvent(() => onUserMove());
+  const picked = useEffectEvent((index: number) => onPick(index));
   const loaded = useEffectEvent((made: Journey) => {
     journey.current = made;
     onReady();
@@ -628,7 +699,13 @@ export default function FamilyMap({
 
     let made: Journey | null = null;
     map.on("load", () => {
-      made = createJourney(map, tree, locale, () => moved());
+      made = createJourney(
+        map,
+        tree,
+        locale,
+        () => moved(),
+        (index) => picked(index),
+      );
       loaded(made);
     });
     map.on("webglcontextlost", () => failed());
