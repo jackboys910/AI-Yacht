@@ -14,6 +14,7 @@ import { LocalizedError } from "@/lib/localized-error";
 import { firestore } from "./app";
 import { collections } from "./config";
 import { stripUndefined, toInterest } from "./mappers";
+import { translateMissing } from "../translate";
 
 /**
  * Reading and writing the site's tabs (§7.3).
@@ -69,12 +70,8 @@ export function validateInterest(
       ru: "Не заполнено название на английском.",
     });
   }
-  if (!draft.name.ru.trim()) {
-    problems.push({
-      en: "The Russian name is empty.",
-      ru: "Не заполнено название на русском.",
-    });
-  }
+  // No Russian check: the panel is filled in English and the Russian name is
+  // translated on save (plan 6.9).
 
   if (!draft.slug.trim()) {
     problems.push({
@@ -112,11 +109,14 @@ export async function saveInterest(
 ): Promise<string> {
   const now = new Date().toISOString();
   const documentId = id ?? draft.slug;
+  // The Russian half of what was typed in English (plan 6.9); never a
+  // reason for the save to fail.
+  const { value: ready } = await translateMissing(draft);
 
   await setDoc(
     doc(firestore(), collections.interests, documentId),
     stripUndefined({
-      ...draft,
+      ...ready,
       ...(id ? {} : { createdAt: now }),
       updatedAt: now,
     }),

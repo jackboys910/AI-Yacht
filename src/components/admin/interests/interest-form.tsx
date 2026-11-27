@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import type { Locale } from "@/i18n/config";
 import type { Localized } from "@/lib/content/types";
 import { rebuildSoon } from "@/lib/rebuild";
 import { slugify } from "@/lib/content/slug";
@@ -15,7 +14,6 @@ import {
 import {
   Checkbox,
   FormLocaleProvider,
-  LocaleTabs,
   LocalizedInput,
   LocalizedTextarea,
   PrimaryButton,
@@ -42,9 +40,6 @@ export function InterestForm({
 }) {
   const { locale: panelLocale, t } = useAdmin();
   const [draft, setDraft] = useState(initial);
-  // The content language, which is nothing to do with the panel's: a Russian
-  // interface still has to reach the English name of the tab (§6, А-03).
-  const [locale, setLocale] = useState<Locale>("en");
   const [problems, setProblems] = useState<Localized<string>[]>([]);
   // Kept apart from the problems above: those come from `validateInterest` in
   // both languages and re-read when the panel's language changes, while this
@@ -56,10 +51,6 @@ export function InterestForm({
   const set = <K extends keyof InterestDraft>(key: K, value: InterestDraft[K]) =>
     setDraft((current) => ({ ...current, [key]: value }));
 
-  // Which language still has holes, so the tab can carry a warning dot.
-  const incomplete = (["en", "ru"] as const).filter(
-    (l) => !draft.name[l].trim() || !draft.description[l].trim(),
-  );
 
   async function save() {
     setFailure(null);
@@ -93,13 +84,12 @@ export function InterestForm({
   }
 
   return (
-    <FormLocaleProvider locale={locale} onLocale={setLocale}>
+    <FormLocaleProvider>
       <div className="max-w-2xl">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-display text-xl">
             {id ? t.interests.editTitle : t.interests.createTitle}
           </h2>
-          <LocaleTabs value={locale} onChange={setLocale} incomplete={incomplete} />
         </div>
 
         <div className="mt-6 space-y-5 rounded-2xl border border-border bg-card p-5 sm:p-6">

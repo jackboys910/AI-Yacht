@@ -14,6 +14,7 @@ import { LocalizedError } from "@/lib/localized-error";
 import { firestore } from "./app";
 import { collections } from "./config";
 import { stripUndefined, toTrip } from "./mappers";
+import { translateMissing } from "../translate";
 
 /**
  * Reading and writing trips (§6.3, §7.2).
@@ -102,11 +103,14 @@ export async function saveTrip(
   const now = new Date().toISOString();
   const trips = collection(firestore(), collections.trips);
   const reference = id ? doc(trips, id) : doc(trips);
+  // The Russian half of what was typed in English (plan 6.9); never a
+  // reason for the save to fail.
+  const { value: ready } = await translateMissing(draft, { tripId: id ?? undefined });
 
   await setDoc(
     reference,
     stripUndefined({
-      ...draft,
+      ...ready,
       ...(id ? {} : { createdAt: now }),
       updatedAt: now,
       ...(draft.status === "published" && !draft.publishedAt ? { publishedAt: now } : {}),

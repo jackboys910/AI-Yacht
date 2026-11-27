@@ -178,12 +178,13 @@ export async function run({ browser, base, run: report }) {
     if ((await place.count()) > 0) await place.fill("Nowhere");
 
     // One language filled is no longer a reason to refuse publication. The
-    // client changed that on 27.11.2026: organizers fill the trip in English
-    // and the Russian page prints the English text until a translation
-    // exists (lib/content/fill-locales.ts). So А-03 is checked the other way
-    // round now — what the form refuses must never be the missing Russian.
-    report.check("А-03", "у текстовых полей есть вкладки RU и EN",
-      (await page.locator("div[role=group] button", { hasText: /^(EN|RU)$/ }).count()) >= 2);
+    // client changed that on 27.11.2026, and on 28.11.2026 took the Russian
+    // tabs away altogether: the panel is filled in English and the Russian is
+    // translated on save (lib/translate.ts, plan 6.9). So А-03 is checked the
+    // other way round now — no content-language switch on the form, and what
+    // the form refuses is never the missing Russian.
+    report.check("А-03", "в форме нет переключателя языка содержимого",
+      (await page.locator('[role=group][aria-label="Content language"], [role=group][aria-label="Язык содержимого"]').count()) === 0);
 
     await page.locator("#trip-subtitle").fill("Suite subtitle");
     await page.waitForTimeout(1200);
@@ -204,16 +205,6 @@ export async function run({ browser, base, run: report }) {
         await publish.isDisabled());
     } else {
       report.skip("А-03", "кнопка публикации", "её нет на этом экране");
-    }
-
-    // Now fill the Russian side and save a draft.
-    const ru = page.locator("div[role=group] button", { hasText: /^RU$/ }).first();
-    if ((await ru.count()) > 0) {
-      await ru.click();
-      await page.waitForTimeout(700);
-      await page.locator("#trip-title").fill(`${MARK} (RU)`);
-      await page.locator("div[role=group] button", { hasText: /^EN$/ }).first().click();
-      await page.waitForTimeout(500);
     }
 
     const saveDraft = page.getByRole("button", { name: /Save draft|Сохранить черновик/ }).first();

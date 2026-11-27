@@ -34,7 +34,7 @@ const isText = (value: unknown): value is string => typeof value === "string";
 const isTextList = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every(isText);
 
-type Kind = "text" | "list";
+export type Kind = "text" | "list";
 
 /**
  * Whether this object is a `Localized<string>` or `Localized<string[]>`.
@@ -45,7 +45,7 @@ type Kind = "text" | "list";
  * nobody notices. Every localized field in `content/types.ts` is prose, so
  * the shape is unambiguous.
  */
-function localizedKind(value: Record<string, unknown>): Kind | null {
+export function localizedKind(value: Record<string, unknown>): Kind | null {
   const keys = Object.keys(value);
   if (keys.length !== locales.length) return null;
   if (!locales.every((locale) => keys.includes(locale))) return null;
