@@ -226,7 +226,7 @@ export function TripForm({
   }
 
   return (
-    <FormLocaleProvider locale={locale}>
+    <FormLocaleProvider locale={locale} onLocale={setLocale}>
       <div className="lg:flex lg:gap-8">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-3">

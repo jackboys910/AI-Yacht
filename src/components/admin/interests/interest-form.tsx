@@ -93,7 +93,7 @@ export function InterestForm({
   }
 
   return (
-    <FormLocaleProvider locale={locale}>
+    <FormLocaleProvider locale={locale} onLocale={setLocale}>
       <div className="max-w-2xl">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-display text-xl">
