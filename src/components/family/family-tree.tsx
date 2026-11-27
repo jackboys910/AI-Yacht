@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Photo } from "@/components/photo";
 import type { Locale } from "@/i18n/config";
 import type { FamilyTree, Person, TreeRow } from "@/lib/family/types";
+import { EarthGlobe } from "./earth-globe";
 import { familyCopy as c } from "./family-copy";
 import { PersonPortrait } from "./person-portrait";
 
@@ -100,6 +101,9 @@ export function FamilyTreeView({ tree, locale }: { tree: FamilyTree; locale: Loc
       <MiniGlobe
         visible={inView}
         lng={place?.lng ?? 40}
+        // One viewpoint for every row: a change of latitude would rebuild
+        // the globe and make it jump, where a change of meridian turns it.
+        lat={40}
         label={place?.name[locale] ?? ""}
         year={activeRow.year[locale]}
         locale={locale}
@@ -470,12 +474,14 @@ function Fact({ title, children }: { title: string; children: React.ReactNode })
 function MiniGlobe({
   visible,
   lng,
+  lat,
   label,
   year,
   locale,
 }: {
   visible: boolean;
   lng: number;
+  lat: number;
   label: string;
   year: string;
   locale: Locale;
@@ -495,10 +501,7 @@ function MiniGlobe({
           {label}
         </span>
       </span>
-      <span
-        className="fam-globe [--d:60px] sm:[--d:78px]"
-        style={{ "--lon": lng } as React.CSSProperties}
-      />
+      <EarthGlobe lon={lng} lat={lat} className="w-[60px] shrink-0 sm:w-[78px]" />
     </a>
   );
 }

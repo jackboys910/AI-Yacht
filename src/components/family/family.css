@@ -1,6 +1,6 @@
 /* ---------------------------------------------------------------------------
-   The family pages (Story): paper, stars, a globe made of one picture, and
-   the motion that makes the tree grow as it is read.
+   The family pages (Story): paper, stars, the map's markers and the
+   motion that makes the tree grow as it is read.
 
    Every animation here is an addition. Without scroll-driven animations
    (Firefox today) everything is simply visible; with reduced motion asked
@@ -55,56 +55,6 @@
 @keyframes fam-twinkle {
   from { opacity: 0.15; }
   to { opacity: 0.85; }
-}
-
-/* ——— The globe made of one picture ————————————————————————————————————
-   An equirectangular photograph of the Earth slid sideways inside a circle;
-   `--lon` picks the meridian in the middle. The picture is drawn twice the
-   circle's height, top edge at the top, so the circle shows the northern
-   half of the planet — the family's half — as if seen from above 45°N
-   rather than from the equator, where the Vaga would sit on the rim. */
-
-.fam-globe {
-  --d: 96px;
-  --lon: 40;
-  position: relative;
-  width: var(--d);
-  height: var(--d);
-  border-radius: 9999px;
-  background-color: #0b1a33;
-  background-image: url("/story/earth.jpg");
-  background-repeat: repeat-x;
-  background-size: auto calc(var(--d) * 2);
-  background-position: calc(var(--d) / 2 - (var(--lon) + 180) / 360 * 4 * var(--d)) 0;
-  box-shadow:
-    0 0 0 1px #ffffff14,
-    0 0 calc(var(--d) * 0.18) color-mix(in oklab, oklch(70% 0.12 240) 55%, transparent),
-    inset calc(var(--d) * -0.12) calc(var(--d) * -0.06) calc(var(--d) * 0.22) #000c;
-  transition: background-position 1.6s cubic-bezier(0.65, 0, 0.35, 1);
-  overflow: hidden;
-  isolation: isolate;
-}
-
-/* Light from the upper left, night falling to the lower right. */
-.fam-globe::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background:
-    radial-gradient(circle at 32% 28%, #ffffff30 0%, transparent 32%),
-    radial-gradient(circle at 40% 38%, transparent 46%, #000a 82%, #000e 100%);
-  pointer-events: none;
-}
-
-.fam-globe-spin {
-  animation: fam-spin 80s linear infinite;
-  transition: none;
-}
-
-@keyframes fam-spin {
-  from { background-position-x: 0; }
-  to { background-position-x: calc(var(--d) * -4); }
 }
 
 /* ——— The tree grows as it is read ———————————————————————————————————— */
@@ -316,14 +266,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .fam-twinkle,
-  .fam-globe-spin,
   .fam-marker-dot::before,
   .fam-marker-dot::after,
   .fam-rocket-flame {
     animation: none !important;
-  }
-  .fam-globe {
-    transition: none;
   }
 }
 }

@@ -99,11 +99,17 @@ export function VideoWall({
             the row can reach both edges of the screen while the first card
             still lines up with the heading above it. The scrollbar is hidden
             because on a phone it is drawn over the cards and fades out
-            anyway; the peeking card is the affordance. */}
-        <ul className="-mx-5 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:grid sm:snap-none sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden">
+            anyway; the peeking card is the affordance.
+
+            `scroll-px-5` because snapping lines a card up with the edge of
+            the scroll box, not with its padding: without it the first card
+            snaps flush against the edge of the screen. */}
+        <ul className="-mx-5 mt-10 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:grid sm:snap-none sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden">
           {videos.map((video) => (
-            <li key={video.id} className="w-[82%] shrink-0 snap-start sm:w-auto sm:shrink">
-              <article className="overflow-hidden rounded-2xl border border-border bg-card">
+            <li key={video.id} className="flex w-[82%] shrink-0 snap-start sm:w-auto sm:shrink">
+              {/* Every card as tall as the tallest, whether its title takes
+                  one line or two. */}
+              <article className="flex w-full flex-col overflow-hidden rounded-2xl border border-border bg-card">
                 <div className="relative aspect-video bg-[color:var(--primary)]">
                   {playing === video.id ? (
                     <iframe
@@ -156,13 +162,13 @@ export function VideoWall({
                   )}
                 </div>
 
-                <div className="px-4 py-3.5">
-                  <h3 className="line-clamp-2 text-sm font-medium leading-snug">{video.title}</h3>
+                <div className="flex flex-1 flex-col px-4 py-3.5">
+                  <h3 className="line-clamp-2 min-h-[2lh] text-sm font-medium leading-snug">{video.title}</h3>
                   <a
                     href={video.url}
                     target="_blank"
                     rel="noopener"
-                    className="mt-1.5 inline-block text-xs text-muted-foreground underline underline-offset-2 transition hover:text-foreground"
+                    className="mt-auto inline-block self-start pt-1.5 text-xs text-muted-foreground underline underline-offset-2 transition hover:text-foreground"
                   >
                     {COPY.onYouTube[locale]}
                   </a>
