@@ -157,8 +157,11 @@ export function TripForm({
   const errors = issues.filter((issue) => issue.severity === "error");
   const warnings = issues.filter((issue) => issue.severity === "warning");
 
+  // The dot on a language tab means "something here is wrong", so a missing
+  // translation does not earn one: it is the normal state of a trip now, and
+  // the site prints the other language until it is translated.
   const incomplete = (["en", "ru"] as const).filter((l) =>
-    issues.some((issue) => issue.locale === l),
+    issues.some((issue) => issue.locale === l && issue.severity !== "info"),
   );
 
   async function save(status: TripDraft["status"]) {
@@ -226,7 +229,7 @@ export function TripForm({
   }
 
   return (
-    <FormLocaleProvider locale={locale} onLocale={setLocale}>
+    <FormLocaleProvider locale={locale} onLocale={setLocale} single={organizer}>
       <div className="lg:flex lg:gap-8">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -238,7 +241,12 @@ export function TripForm({
                 </span>
               )}
             </h2>
-            <LocaleTabs value={locale} onChange={setLocale} incomplete={incomplete} />
+            {/* The owner's, not the organizer's: an organizer fills the trip
+                in English and the Russian is made for him, so a language
+                switch would only offer him work that is not his. */}
+            {!organizer && (
+              <LocaleTabs value={locale} onChange={setLocale} incomplete={incomplete} />
+            )}
           </div>
 
           {backup && !backupHandled && (
