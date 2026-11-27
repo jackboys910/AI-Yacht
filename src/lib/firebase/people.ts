@@ -12,6 +12,7 @@ import { LocalizedError } from "@/lib/localized-error";
 import { firestore } from "./app";
 import { collections } from "./config";
 import { stripUndefined, toPerson } from "./mappers";
+import { translateMissing } from "../translate";
 
 /**
  * The crew directory (§7.4).
@@ -48,12 +49,7 @@ export function validatePerson(draft: PersonDraft): Localized<string>[] {
       ru: "Не заполнено имя на английском.",
     });
   }
-  if (!draft.name.ru.trim()) {
-    problems.push({
-      en: "The Russian name is empty.",
-      ru: "Не заполнено имя на русском.",
-    });
-  }
+  // No Russian check: the name is translated on save (plan 6.9).
   return problems;
 }
 
@@ -69,9 +65,13 @@ export async function savePerson(
   // built from a name would break the moment a name is corrected.
   const reference = id ? doc(people, id) : doc(people);
 
+  // The Russian half of what was typed in English (plan 6.9); never a
+  // reason for the save to fail.
+  const { value: ready } = await translateMissing(draft);
+
   await setDoc(
     reference,
-    stripUndefined({ ...draft, ...(id ? {} : { createdAt: now }), updatedAt: now }),
+    stripUndefined({ ...ready, ...(id ? {} : { createdAt: now }), updatedAt: now }),
     { merge: Boolean(id) },
   );
 

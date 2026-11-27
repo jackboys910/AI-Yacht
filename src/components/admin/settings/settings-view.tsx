@@ -11,7 +11,6 @@ import {
 } from "@/lib/firebase/settings";
 import {
   FormLocaleProvider,
-  LocaleTabs,
   LocalizedInput,
   LocalizedLines,
   LocalizedTextarea,
@@ -49,7 +48,8 @@ export function SettingsView() {
   // the settings document — see settings/work-projects.
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [removed, setRemoved] = useState<string[]>([]);
-  const [locale, setLocale] = useState<Locale>("en");
+  // Filled in English; the Russian is translated on save (plan 6.9).
+  const locale: Locale = "en";
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -108,11 +108,10 @@ export function SettingsView() {
   }
 
   return (
-    <FormLocaleProvider locale={locale} onLocale={setLocale}>
+    <FormLocaleProvider>
       <div className="max-w-3xl">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="max-w-xl text-sm text-muted-foreground">{c.explain}</p>
-          <LocaleTabs value={locale} onChange={setLocale} />
         </div>
 
         <div className="mt-6 space-y-5">

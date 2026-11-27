@@ -3,6 +3,7 @@ import type { Settings } from "@/lib/content/types";
 import { firestore } from "./app";
 import { SETTINGS_DOC_ID, collections } from "./config";
 import { stripUndefined, toSettings } from "./mappers";
+import { translateMissing } from "../translate";
 
 /**
  * The one settings document, read and written by the owner (§7.7, А-15).
@@ -97,9 +98,12 @@ export async function readSettings(): Promise<SettingsDraft> {
  * rather than being deleted by a form that never showed it.
  */
 export async function saveSettings(draft: SettingsDraft): Promise<void> {
+  // The Russian half of what was typed in English (plan 6.9); never a
+  // reason for the save to fail.
+  const { value: ready } = await translateMissing(draft);
   await setDoc(
     doc(firestore(), collections.settings, SETTINGS_DOC_ID),
-    stripUndefined({ ...draft, updatedAt: new Date().toISOString() }),
+    stripUndefined({ ...ready, updatedAt: new Date().toISOString() }),
     { merge: true },
   );
 }

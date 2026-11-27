@@ -81,4 +81,13 @@ export interface Env {
    * test, so it must never be left set.
    */
   FACEBOOK_TEST_EVENT_CODE?: string;
+
+  /* ---- Translation (plan item 6.9) ---- */
+
+  /**
+   * Workers AI, bound in wrangler.jsonc as `"ai": { "binding": "AI" }`. Not a
+   * secret and not a value: a binding, which the deploy creates. Without it
+   * `/api/translate` answers 503 and the Russian pages print the English.
+   */
+  AI?: unknown;
 }

@@ -26,6 +26,9 @@
  * needs all three: the mailing list is shut to browsers, the spam check needs
  * the secret, and the welcome letter goes to the subscriber.
  *
+ * `/api/translate` writes the Russian half of what the panel saves in
+ * English, with Workers AI — a binding only the Worker has.
+ *
  * `/api/videos` is the odd one out: it holds no secret at all. It exists
  * because the address a request comes from decides whether YouTube answers it,
  * and a build runner is the wrong address — see videos.ts.
@@ -41,6 +44,7 @@ import { solutions } from "./solutions";
 import { subscribe } from "./subscribe";
 import { subscription } from "./subscription";
 import { suggestion } from "./suggestion";
+import { translate } from "./translate";
 import { videos } from "./videos";
 import type { Env } from "./env";
 
@@ -278,6 +282,20 @@ const worker = {
         // useful: "the letter did not go" with no reason is a dead end.
         console.log(`organizer invite failed: ${String(error)}`);
         return json({ error: "send-failed", detail: String(error) }, 502);
+      }
+    }
+
+    if (pathname === "/api/translate" || pathname === "/api/translate/") {
+      if (request.method !== "POST") {
+        return json({ error: "method-not-allowed" }, 405);
+      }
+      try {
+        return await translate(request, env);
+      } catch (error) {
+        // The panel saves the record anyway; the Russian page then prints
+        // the English until the next save translates it.
+        console.log(`translate failed: ${String(error)}`);
+        return json({ error: "failed", detail: String(error) }, 502);
       }
     }
 

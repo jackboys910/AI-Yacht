@@ -67,6 +67,13 @@
     "FACEBOOK_PIXEL_ID": ""
   },
 
+  // Workers AI, for /api/translate: the panel is filled in English and the
+  // Russian half of every text is translated when it is saved (plan 6.9).
+  // A binding, not a key — nothing to set in the dashboard.
+  "ai": {
+    "binding": "AI"
+  },
+
   "observability": {
     "enabled": true
   }

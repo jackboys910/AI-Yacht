@@ -15,7 +15,6 @@ import {
 import {
   Checkbox,
   FormLocaleProvider,
-  LocaleTabs,
   LocalizedInput,
   LocalizedTextarea,
   NumberInput,
@@ -110,10 +109,9 @@ export function TripForm({
   const organizer = role === "organizer";
   const { locale: panelLocale, t } = useAdmin();
   const [draft, setDraft] = useState(initial);
-  // The content language. Separate from the panel's on purpose: А-03 blocks
-  // publication until both languages of the trip are filled in, so both have
-  // to be reachable from whichever interface the owner is working in.
-  const [locale, setLocale] = useState<Locale>("en");
+  // The trip is filled in English, by everyone; the Russian is translated
+  // when it is saved (plan 6.9, lib/translate.ts).
+  const locale: Locale = "en";
   const [busy, setBusy] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -157,12 +155,6 @@ export function TripForm({
   const errors = issues.filter((issue) => issue.severity === "error");
   const warnings = issues.filter((issue) => issue.severity === "warning");
 
-  // The dot on a language tab means "something here is wrong", so a missing
-  // translation does not earn one: it is the normal state of a trip now, and
-  // the site prints the other language until it is translated.
-  const incomplete = (["en", "ru"] as const).filter((l) =>
-    issues.some((issue) => issue.locale === l && issue.severity !== "info"),
-  );
 
   async function save(status: TripDraft["status"]) {
     setBusy(true);
@@ -229,7 +221,7 @@ export function TripForm({
   }
 
   return (
-    <FormLocaleProvider locale={locale} onLocale={setLocale} single={organizer}>
+    <FormLocaleProvider locale={locale}>
       <div className="lg:flex lg:gap-8">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -241,12 +233,6 @@ export function TripForm({
                 </span>
               )}
             </h2>
-            {/* The owner's, not the organizer's: an organizer fills the trip
-                in English and the Russian is made for him, so a language
-                switch would only offer him work that is not his. */}
-            {!organizer && (
-              <LocaleTabs value={locale} onChange={setLocale} incomplete={incomplete} />
-            )}
           </div>
 
           {backup && !backupHandled && (

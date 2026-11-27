@@ -8,6 +8,17 @@ import { useAdmin } from "./i18n";
 /**
  * The form controls every admin screen is built from.
  *
+ * Since 28.11.2026 (plan item 6.9) every form is filled in English only, by
+ * the owner as well as by organizers: there is no language switch on any
+ * form, and the Russian half of a text is written by machine when the record
+ * is saved (lib/translate.ts). Typing in a field empties its Russian half, so
+ * a changed text is translated afresh instead of standing beside a
+ * translation of what it used to say. The preview keeps its EN/RU switch —
+ * that one is for looking at the result, not for filling anything in.
+ *
+ * What follows describes the two-language mode the components still support
+ * (`single={false}`), which no form uses now.
+ *
  * The piece that matters is how two languages are handled. §7.2 asks for EN and
  * RU tabs on each text field; a tab strip repeated above forty fields would be
  * unusable on the trip form, so the switch is made once per form and every
@@ -32,26 +43,40 @@ const FormLocaleContext = createContext<{
   go?: (locale: Locale) => void;
   /** True where the form is about one language and must not mention another. */
   single?: boolean;
-}>({ locale: "en" });
+}>({ locale: "en", single: true });
 
 export const useFormLocale = () => useContext(FormLocaleContext).locale;
 
+/**
+ * The value a localized field gets when its text changes.
+ *
+ * In one-language mode the other languages are emptied: the Russian half was
+ * a translation of the text that has just changed, and an empty half is what
+ * tells lib/translate.ts to translate it again on save.
+ */
+function useNextLocalized() {
+  const { locale, single } = useContext(FormLocaleContext);
+  return <T,>(value: Localized<T>, next: T, empty: T): Localized<T> =>
+    single
+      ? ({ ...Object.fromEntries(locales.map((l) => [l, empty])), [locale]: next } as Localized<T>)
+      : { ...value, [locale]: next };
+}
+
 export function FormLocaleProvider({
-  locale,
+  locale = "en",
   onLocale,
-  single,
+  single = true,
   children,
 }: {
-  locale: Locale;
+  locale?: Locale;
   /** The form's own setter, so the line under a field can reach the tabs. */
   onLocale?: (locale: Locale) => void;
   /**
-   * One language only (27.11.2026). Organizers are English-speaking and were
-   * being asked, field by field, for a Russian text many of them cannot
-   * write; the site fills that gap itself now, so for them the second
-   * language is not a thing to be shown and left undone — it is not their
-   * business at all. The owner still sees both: he is the one who can judge
-   * a translation.
+   * One language only — the default, and what every form uses (27–28.11.2026).
+   * Organizers are English-speaking and were being asked, field by field,
+   * for a Russian text many of them cannot write; then the owner asked for
+   * the Russian tabs to go for him too, since the translation is made when
+   * the record is saved. The second language is simply not shown.
    */
   single?: boolean;
   children: ReactNode;
@@ -278,6 +303,7 @@ export function LocalizedInput({
   optional?: boolean;
 }) {
   const locale = useFormLocale();
+  const nextValue = useNextLocalized();
   const other = locales.find((l) => l !== locale)!;
 
   return (
@@ -291,7 +317,7 @@ export function LocalizedInput({
         lang={locale}
         value={value[locale]}
         placeholder={placeholder}
-        onChange={(event) => onChange({ ...value, [locale]: event.target.value })}
+        onChange={(event) => onChange(nextValue(value, event.target.value, ""))}
         className={`mt-1.5 ${inputClass}`}
       />
       <OtherLocale locale={other} field={id} text={value[other]} optional={optional} />
@@ -321,6 +347,7 @@ export function LocalizedTextarea({
   optional?: boolean;
 }) {
   const locale = useFormLocale();
+  const nextValue = useNextLocalized();
   const other = locales.find((l) => l !== locale)!;
 
   return (
@@ -333,7 +360,7 @@ export function LocalizedTextarea({
         rows={rows}
         lang={locale}
         value={value[locale]}
-        onChange={(event) => onChange({ ...value, [locale]: event.target.value })}
+        onChange={(event) => onChange(nextValue(value, event.target.value, ""))}
         className={`mt-1.5 ${inputClass} resize-y`}
       />
       <OtherLocale locale={other} field={id} text={value[other]} optional={optional} />
@@ -375,6 +402,7 @@ export function LocalizedLines({
 }) {
   const { t } = useAdmin();
   const locale = useFormLocale();
+  const nextValue = useNextLocalized();
   const other = locales.find((l) => l !== locale)!;
   const otherCount = value[other].filter((line) => line.trim()).length;
 
@@ -388,10 +416,13 @@ export function LocalizedLines({
         placeholder={placeholder}
         value={value[locale].join("\n")}
         onChange={(event) =>
-          onChange({
-            ...value,
-            [locale]: event.target.value.split("\n").filter((line) => line.trim()),
-          })
+          onChange(
+            nextValue(
+              value,
+              event.target.value.split("\n").filter((line) => line.trim()),
+              [] as string[],
+            ),
+          )
         }
         className={`mt-1.5 ${inputClass} resize-y`}
       />

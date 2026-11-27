@@ -9,6 +9,7 @@ import type { WorkProject } from "@/lib/content/types";
 import { firestore } from "./app";
 import { collections } from "./config";
 import { stripUndefined, toWorkProject } from "./mappers";
+import { translateMissing } from "../translate";
 
 /**
  * The "Our work" projects of the Solutions page (§7.7, А-18).
@@ -60,9 +61,12 @@ export async function saveProjects(
 ): Promise<string[]> {
   const store = collection(firestore(), collections.projects);
   const now = new Date().toISOString();
+  // The Russian half of what was typed in English (plan 6.9); never a
+  // reason for the save to fail.
+  const { value: ready } = await translateMissing(projects);
 
   const ids = await Promise.all(
-    projects.map(async (project, index) => {
+    ready.map(async (project, index) => {
       const reference = project.id ? doc(store, project.id) : doc(store);
       await setDoc(
         reference,

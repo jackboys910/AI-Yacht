@@ -2,7 +2,6 @@
 
 import { rebuildSoon } from "@/lib/rebuild";
 import { useState } from "react";
-import type { Locale } from "@/i18n/config";
 import type { Localized } from "@/lib/content/types";
 import {
   deletePerson,
@@ -12,7 +11,6 @@ import {
 } from "@/lib/firebase/people";
 import {
   FormLocaleProvider,
-  LocaleTabs,
   LocalizedInput,
   LocalizedTextarea,
   PrimaryButton,
@@ -35,9 +33,6 @@ export function PersonForm({
 }) {
   const { locale: panelLocale, t } = useAdmin();
   const [draft, setDraft] = useState(initial);
-  // The content language, not the panel's: both names have to be reachable
-  // from either interface (§6, А-03).
-  const [locale, setLocale] = useState<Locale>("en");
   const [problems, setProblems] = useState<Localized<string>[]>([]);
   const [failure, setFailure] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -46,7 +41,6 @@ export function PersonForm({
   const set = <K extends keyof PersonDraft>(key: K, value: PersonDraft[K]) =>
     setDraft((current) => ({ ...current, [key]: value }));
 
-  const incomplete = (["en", "ru"] as const).filter((l) => !draft.name[l].trim());
 
   async function save() {
     setFailure(null);
@@ -80,13 +74,12 @@ export function PersonForm({
   }
 
   return (
-    <FormLocaleProvider locale={locale} onLocale={setLocale}>
+    <FormLocaleProvider>
       <div className="max-w-2xl">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-display text-xl">
             {id ? t.people.editTitle : t.people.createTitle}
           </h2>
-          <LocaleTabs value={locale} onChange={setLocale} incomplete={incomplete} />
         </div>
 
         <div className="mt-6 space-y-5 rounded-2xl border border-border bg-card p-5 sm:p-6">
