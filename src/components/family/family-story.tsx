@@ -1,6 +1,7 @@
 import type { Locale } from "@/i18n/config";
 import type { FamilyTree } from "@/lib/family/types";
 import { familyCopy as c } from "./family-copy";
+import { EarthGlobe } from "./earth-globe";
 import { FamilyCount } from "./family-count";
 import { FamilyTreeView } from "./family-tree";
 import { FamilyWorld } from "./family-world";
@@ -33,7 +34,7 @@ function FamilyHero({ tree, locale }: { tree: FamilyTree; locale: Locale }) {
         aria-hidden="true"
         className="pointer-events-none absolute -right-28 top-24 opacity-60 sm:-right-16 sm:top-16 sm:opacity-80 lg:right-[4%] lg:top-1/2 lg:-translate-y-1/2 lg:opacity-100"
       >
-        <div className="fam-globe fam-globe-spin [--d:260px] sm:[--d:380px] lg:[--d:440px]" />
+        <EarthGlobe lon={25} lat={34} spin={4} className="w-[260px] sm:w-[380px] lg:w-[460px]" />
       </div>
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-[color:var(--night)]" />
 
@@ -188,8 +189,25 @@ function SourceList({
         {items.map((item) => (
           <li key={item.label.en}>
             {item.url ? (
-              <a href={item.url} target="_blank" rel="noopener" className="underline-offset-4 hover:underline">
+              <a
+                href={item.url}
+                target="_blank"
+                rel="noopener"
+                className="group inline underline decoration-[color:var(--gold)]/50 underline-offset-4 transition hover:text-[color:var(--gold)] hover:decoration-[color:var(--gold)]"
+              >
                 {item.label[locale]}
+                <svg
+                  viewBox="0 0 16 16"
+                  aria-hidden="true"
+                  className="ml-1 inline size-3 -translate-y-px align-baseline opacity-60 transition group-hover:translate-x-0.5 group-hover:opacity-100"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M6 3h7v7M13 3 4 12" />
+                </svg>
               </a>
             ) : (
               item.label[locale]

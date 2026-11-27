@@ -98,6 +98,7 @@ function buildStyle(locale: Locale, ours: string[]): StyleSpecification {
         attribution:
           '<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> © <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
       },
+      trail: { type: "geojson", data: EMPTY },
       routes: { type: "geojson", data: EMPTY },
       path: { type: "geojson", data: EMPTY },
       head: { type: "geojson", data: EMPTY },
@@ -224,43 +225,11 @@ function buildStyle(locale: Locale, ours: string[]): StyleSpecification {
         },
         paint: { "text-color": "#ffffff", "text-halo-color": "#0b1222", "text-halo-width": 1.6 },
       },
-      {
-        id: "routes-glow",
-        type: "line",
-        source: "routes",
-        layout: { "line-cap": "round", "line-join": "round" },
-        paint: {
-          "line-color": ["match", ["get", "kind"], "link", COLORS.link, "rocket", COLORS.rocket, COLORS.move],
-          "line-width": ["case", ["==", ["get", "state"], "current"], 12, 6],
-          "line-blur": 8,
-          "line-opacity": ["case", ["==", ["get", "state"], "current"], 0.45, 0.18],
-        },
-      },
-      {
-        id: "routes-solid",
-        type: "line",
-        source: "routes",
-        filter: ["!=", ["get", "kind"], "link"],
-        layout: { "line-cap": "round", "line-join": "round" },
-        paint: {
-          "line-color": ["match", ["get", "kind"], "rocket", COLORS.rocket, COLORS.move],
-          "line-width": ["case", ["==", ["get", "state"], "current"], 3, 1.8],
-          "line-opacity": ["case", ["==", ["get", "state"], "current"], 1, 0.6],
-        },
-      },
-      {
-        id: "routes-dashed",
-        type: "line",
-        source: "routes",
-        filter: ["==", ["get", "kind"], "link"],
-        layout: { "line-cap": "round" },
-        paint: {
-          "line-color": COLORS.link,
-          "line-width": ["case", ["==", ["get", "state"], "current"], 3, 1.8],
-          "line-dasharray": [1, 1.6],
-          "line-opacity": ["case", ["==", ["get", "state"], "current"], 1, 0.6],
-        },
-      },
+      // Routes from earlier steps, set once per step…
+      ...routeLayers("trail"),
+      // …and the ones being drawn now, redrawn every frame. Apart, so a frame
+      // resends one short line to the map's worker rather than all of them.
+      ...routeLayers("routes"),
       // The bright point at the front of a line while it is being drawn.
       {
         id: "head-glow",
@@ -276,6 +245,50 @@ function buildStyle(locale: Locale, ours: string[]): StyleSpecification {
       },
     ],
   };
+}
+
+/** The glow, the solid line and the dashed one (a marriage, not a move)
+ *  for a source of routes. */
+function routeLayers(source: string): StyleSpecification["layers"] {
+  return [
+    {
+      id: `${source}-glow`,
+      type: "line",
+      source,
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": ["match", ["get", "kind"], "link", COLORS.link, "rocket", COLORS.rocket, COLORS.move],
+        "line-width": ["case", ["==", ["get", "state"], "current"], 12, 6],
+        "line-blur": 8,
+        "line-opacity": ["case", ["==", ["get", "state"], "current"], 0.45, 0.18],
+      },
+    },
+    {
+      id: `${source}-solid`,
+      type: "line",
+      source,
+      filter: ["!=", ["get", "kind"], "link"],
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": ["match", ["get", "kind"], "rocket", COLORS.rocket, COLORS.move],
+        "line-width": ["case", ["==", ["get", "state"], "current"], 3, 1.8],
+        "line-opacity": ["case", ["==", ["get", "state"], "current"], 1, 0.6],
+      },
+    },
+    {
+      id: `${source}-dashed`,
+      type: "line",
+      source,
+      filter: ["==", ["get", "kind"], "link"],
+      layout: { "line-cap": "round" },
+      paint: {
+        "line-color": COLORS.link,
+        "line-width": ["case", ["==", ["get", "state"], "current"], 3, 1.8],
+        "line-dasharray": [1, 1.6],
+        "line-opacity": ["case", ["==", ["get", "state"], "current"], 1, 0.6],
+      },
+    },
+  ];
 }
 
 /** A gentle curve between two nearby points: a quadratic Bézier whose
@@ -323,6 +336,20 @@ function greatCircle(a: LngLat, b: LngLat, steps = 160): LngLat[] {
 }
 
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+/** Softer at both ends than the cubic: a rocket that crawls for the first
+ *  half-second reads as a stall, not as a launch. */
+const easeFlight = (t: number) => (1 - Math.cos(Math.PI * t)) / 2;
+
+/** The point a fraction `t` of the way along a line — between its vertices,
+ *  not snapped to one, so slow movement stays smooth instead of stepping. */
+function along(line: LngLat[], t: number): LngLat {
+  const at = Math.min(1, Math.max(0, t)) * (line.length - 1);
+  const i = Math.min(line.length - 2, Math.floor(at));
+  const f = at - i;
+  const a = line[i];
+  const b = line[i + 1];
+  return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
+}
 
 
 interface Journey {
@@ -448,11 +475,18 @@ function createJourney(
     rocket = null;
     follow = false;
     burst(point);
-    later(() => {
-      if (current === last) {
-        map.flyTo({ center: point, zoom: 5.2, pitch: 30, duration: 2600, essential: true });
-      }
-    }, 400);
+    // Straight on from the flight's last frame — a pause here reads as a
+    // stutter. easeTo rather than flyTo: no zoom out-and-in on the way.
+    if (current === last) {
+      map.easeTo({
+        center: point,
+        zoom: 5.2,
+        pitch: 30,
+        duration: 2600,
+        easing: (t) => 1 - Math.pow(1 - t, 3),
+        essential: true,
+      });
+    }
   };
 
   const show = (index: number) => {
@@ -461,6 +495,7 @@ function createJourney(
     stopAll();
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const routes = map.getSource("routes") as GeoJSONSource;
+    const trail = map.getSource("trail") as GeoJSONSource;
     const path = map.getSource("path") as GeoJSONSource;
     const head = map.getSource("head") as GeoJSONSource;
     head.setData(EMPTY);
@@ -469,6 +504,7 @@ function createJourney(
     if (index < 0) {
       for (const element of markers.values()) element.dataset.state = "hidden";
       routes.setData(EMPTY);
+      trail.setData(EMPTY);
       path.setData(EMPTY);
       map.jumpTo({ center: [map.getCenter().lng, 50], zoom: 1.35, pitch: 0, bearing: 0 });
       if (!still) {
@@ -521,19 +557,21 @@ function createJourney(
       route,
       line: geometry.get(`${route.from}>${route.to}`) ?? [],
     }));
+    trail.setData({ type: "FeatureCollection", features: past });
     const draw = (t: number) => {
-      const features: GeoJSON.Feature[] = [...past];
+      const features: GeoJSON.Feature[] = [];
       const heads: GeoJSON.Feature[] = [];
       for (const { route, line } of drawing) {
         if (line.length < 2) continue;
-        const end = Math.max(2, Math.ceil(line.length * t));
+        const end = Math.max(1, Math.floor(t * (line.length - 1)) + 1);
+        const tip = along(line, t);
         features.push({
           type: "Feature",
           properties: { kind: route.kind, state: "current" },
-          geometry: { type: "LineString", coordinates: line.slice(0, end) },
+          geometry: { type: "LineString", coordinates: [...line.slice(0, end), tip] },
         });
         if (route.kind !== "rocket" && t > 0 && t < 1) {
-          heads.push({ type: "Feature", properties: {}, geometry: { type: "Point", coordinates: line[end - 1] } });
+          heads.push({ type: "Feature", properties: {}, geometry: { type: "Point", coordinates: tip } });
         }
       }
       routes.setData({ type: "FeatureCollection", features });
@@ -594,18 +632,19 @@ function createJourney(
           // A frame's timestamp can fall just before `start`; a negative t
           // would ask for the point before the first one.
           const t = Math.min(1, Math.max(0, (now - start) / length));
-          const eased = ease(t);
+          const eased = flight ? easeFlight(t) : ease(t);
           draw(eased);
           if (flight && rocket) {
             const line = flight.line;
-            const at = Math.min(line.length - 1, Math.floor(eased * (line.length - 1)));
-            const ahead = Math.min(line.length - 1, at + 2);
-            rocket.setLngLat(line[at]);
+            const here = along(line, eased);
+            rocket.setLngLat(here);
             // Up to see the ocean whole halfway over, down again at the end.
-            if (follow) map.jumpTo({ center: line[at], zoom: high - 1.5 * Math.sin(Math.PI * eased) });
-            const p1 = map.project(line[Math.max(0, ahead - 3)]);
-            const p2 = map.project(line[ahead]);
-            if (p1.x !== p2.x || p1.y !== p2.y) {
+            if (follow) map.jumpTo({ center: here, zoom: high - 1.5 * Math.sin(Math.PI * eased) });
+            // Pointing where it goes: the screen direction to a point a
+            // little further along.
+            const p1 = map.project(here);
+            const p2 = map.project(along(line, Math.min(1, eased + 0.01)));
+            if (Math.hypot(p2.x - p1.x, p2.y - p1.y) > 0.5) {
               rocket.setRotation((Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180) / Math.PI + 90);
             }
           }
@@ -699,6 +738,9 @@ export default function FamilyMap({
 
     let made: Journey | null = null;
     map.on("load", () => {
+      // A compact attribution starts unfolded; on a phone two lines of it
+      // sit under the player. Folded, it is the usual "i".
+      container.querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show");
       made = createJourney(
         map,
         tree,

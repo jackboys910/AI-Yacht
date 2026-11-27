@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import type { Locale } from "@/i18n/config";
 import type { FamilyTree } from "@/lib/family/types";
+import { EarthGlobe } from "./earth-globe";
 import { familyCopy as c } from "./family-copy";
 
 const FamilyMap = dynamic(() => import("./family-map"), { ssr: false });
@@ -156,7 +157,7 @@ export function FamilyWorld({ tree, locale }: { tree: FamilyTree; locale: Locale
             <div className="absolute inset-0 grid place-items-center">
               <div className="fam-twinkle" />
               <div className="flex flex-col items-center gap-5 px-6 text-center">
-                <div className="fam-globe fam-globe-spin [--d:200px] sm:[--d:280px]" />
+                <EarthGlobe lon={40} lat={34} spin={6} className="w-[200px] sm:w-[280px]" />
                 <p className="max-w-sm text-sm text-white/60">{failed ? c.mapFailed[locale] : c.mapLoading[locale]}</p>
               </div>
             </div>
