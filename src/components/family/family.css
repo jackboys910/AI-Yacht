@@ -149,6 +149,18 @@
   to { filter: none; opacity: 1; transform: none; }
 }
 
+/* The ring around the play button fills while a step is on screen. */
+@keyframes fam-ring {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* The big "watch" button on the waiting globe breathes. */
+@keyframes fam-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--gold) 55%, transparent); }
+  50% { box-shadow: 0 0 0 18px transparent; }
+}
+
 @keyframes fam-progress {
   from { transform: scaleX(0); }
   to { transform: scaleX(1); }
@@ -226,9 +238,30 @@
 }
 
 /* Places already passed keep their dot but drop the name, so the step on
-   screen is the one that speaks. */
+   screen is the one that speaks — the name comes back under the pointer. */
 .fam-marker[data-state="past"] .fam-marker-label {
   display: none;
+}
+
+/* A lit place is a button back into the story. */
+.fam-marker:not([data-state="hidden"]) {
+  pointer-events: auto;
+  cursor: pointer;
+}
+.fam-marker-dot {
+  transition: transform 0.25s ease;
+}
+.fam-marker:not([data-state="hidden"]):hover .fam-marker-dot {
+  transform: scale(1.45);
+}
+.fam-marker[data-state="past"]:hover {
+  opacity: 1;
+}
+.fam-marker[data-state="past"]:hover .fam-marker-label {
+  display: block;
+}
+.fam-marker:not([data-state="hidden"]):hover .fam-marker-label {
+  border-color: color-mix(in oklab, var(--gold) 70%, transparent);
 }
 
 .fam-marker-label {
