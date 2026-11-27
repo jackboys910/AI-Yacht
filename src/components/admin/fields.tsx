@@ -30,6 +30,8 @@ const FormLocaleContext = createContext<{
   locale: Locale;
   /** Set where the form lets a field send the switch to the other language. */
   go?: (locale: Locale) => void;
+  /** True where the form is about one language and must not mention another. */
+  single?: boolean;
 }>({ locale: "en" });
 
 export const useFormLocale = () => useContext(FormLocaleContext).locale;
@@ -37,14 +39,24 @@ export const useFormLocale = () => useContext(FormLocaleContext).locale;
 export function FormLocaleProvider({
   locale,
   onLocale,
+  single,
   children,
 }: {
   locale: Locale;
   /** The form's own setter, so the line under a field can reach the tabs. */
   onLocale?: (locale: Locale) => void;
+  /**
+   * One language only (27.11.2026). Organizers are English-speaking and were
+   * being asked, field by field, for a Russian text many of them cannot
+   * write; the site fills that gap itself now, so for them the second
+   * language is not a thing to be shown and left undone — it is not their
+   * business at all. The owner still sees both: he is the one who can judge
+   * a translation.
+   */
+  single?: boolean;
   children: ReactNode;
 }) {
-  const value = useMemo(() => ({ locale, go: onLocale }), [locale, onLocale]);
+  const value = useMemo(() => ({ locale, go: onLocale, single }), [locale, onLocale, single]);
   return <FormLocaleContext.Provider value={value}>{children}</FormLocaleContext.Provider>;
 }
 
@@ -161,8 +173,10 @@ function OtherLocale({
   optional?: boolean;
 }) {
   const { t } = useAdmin();
-  const { go } = useContext(FormLocaleContext);
+  const { go, single } = useContext(FormLocaleContext);
   const filled = text.trim().length > 0;
+  // This form is about one language; the other one is not shown at all.
+  if (single) return null;
   // Nothing to say: the other language is empty and that is allowed.
   if (!filled && optional) return null;
 

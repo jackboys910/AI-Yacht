@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Locale } from "@/i18n/config";
+import { fillLocales } from "@/lib/content/fill-locales";
 import { todayUtc } from "@/lib/content/schedule";
 import type { Person } from "@/lib/content/types";
 import type { TripDraft } from "@/lib/firebase/trips";
@@ -37,7 +38,9 @@ export function TripPreview({
   const { t } = useAdmin();
   const [locale, setLocale] = useState<Locale>("en");
 
-  const trip = { ...draft, id: id ?? "preview", createdAt: "", updatedAt: "" };
+  // The visitor's view, so the visitor's rule: a language with nothing in
+  // it shows the other one, exactly as the built site will.
+  const trip = fillLocales({ ...draft, id: id ?? "preview", createdAt: "", updatedAt: "" });
   const crew = draft.crewPersonIds
     .map((personId) => people.find((person) => person.id === personId))
     .filter((person): person is Person => Boolean(person));

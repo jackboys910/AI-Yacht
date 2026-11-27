@@ -29,8 +29,15 @@ export interface ValidationIssue {
   message: Localized<string>;
   /** Set when only one language is at fault. */
   locale?: Locale;
-  /** A missing mandatory block blocks publication; a half-translation warns. */
-  severity: "error" | "warning";
+  /**
+   * "error" blocks publication, "warning" is shown and does not, and "info" is
+   * neither — it is a missing translation, which since 27.11.2026 is an
+   * ordinary state of a trip rather than a fault: the site prints the language
+   * there is (see content/fill-locales.ts) and the panel translates the rest
+   * by itself. The entries are kept because they are the list of what to
+   * translate.
+   */
+  severity: "error" | "warning" | "info";
 }
 
 /** Photos the first screen needs before it looks like anything (§6.3). */
@@ -67,27 +74,43 @@ function blankListLocales(value: Localized<string[]> | undefined): Locale[] {
   return locales.filter((locale) => !(value?.[locale] ?? []).some((item) => !isBlank(item)));
 }
 
-/** A mandatory text: every language must carry it. */
+/**
+ * A mandatory text: some language must carry it.
+ *
+ * Until 27.11.2026 this demanded every language, which is what А-03 says. The
+ * client changed who fills trips in — organizers who write English and often
+ * no Russian at all — so the demand is now that the block is not empty, and
+ * the language it is empty in is a translation to be made rather than a
+ * mistake to be corrected.
+ */
 function requireText(
   issues: ValidationIssue[],
   field: string,
   name: Label,
   value: Localized<string> | undefined,
 ): void {
-  for (const locale of blankLocales(value)) {
+  const blank = blankLocales(value);
+  if (blank.length === locales.length) {
     issues.push({
       field,
-      locale,
       severity: "error",
       message: {
-        en: `“${name.en}” has no ${LANGUAGE_NAMES.en[locale]} text`,
-        ru: `«${name.ru}» не заполнено на ${LANGUAGE_NAMES.ru[locale]}`,
+        en: `“${name.en}” is not filled in`,
+        ru: `«${name.ru}» не заполнено`,
       },
     });
+    return;
   }
+  halfTranslated(issues, field, name, blank);
 }
 
-/** The half-translation warning, shared by the two optional-field checks. */
+/**
+ * A text that exists in one language and not the other.
+ *
+ * This is the list of what there is to translate, and nothing worse: the page
+ * prints the language it has, so there is no hole to report. It used to be a
+ * warning, back when a trip was expected to arrive translated.
+ */
 function halfTranslated(
   issues: ValidationIssue[],
   field: string,
@@ -100,10 +123,10 @@ function halfTranslated(
     issues.push({
       field,
       locale,
-      severity: "warning",
+      severity: "info",
       message: {
-        en: `“${name.en}” is filled in for one language only — no ${LANGUAGE_NAMES.en[locale]} text`,
-        ru: `«${name.ru}» заполнено не на всех языках — нет текста на ${LANGUAGE_NAMES.ru[locale]}`,
+        en: `“${name.en}” has no ${LANGUAGE_NAMES.en[locale]} text yet`,
+        ru: `«${name.ru}» пока без текста на ${LANGUAGE_NAMES.ru[locale]}`,
       },
     });
   }

@@ -177,23 +177,33 @@ export async function run({ browser, base, run: report }) {
     const place = page.locator("#trip-place");
     if ((await place.count()) > 0) await place.fill("Nowhere");
 
-    // One language filled: publishing has to be impossible and the form has
-    // to say why. А-03 is both halves — a button that is merely dead would
-    // leave the owner guessing.
+    // One language filled is no longer a reason to refuse publication. The
+    // client changed that on 27.11.2026: organizers fill the trip in English
+    // and the Russian page prints the English text until a translation
+    // exists (lib/content/fill-locales.ts). So А-03 is checked the other way
+    // round now — what the form refuses must never be the missing Russian.
     report.check("А-03", "у текстовых полей есть вкладки RU и EN",
       (await page.locator("div[role=group] button", { hasText: /^(EN|RU)$/ }).count()) >= 2);
 
+    await page.locator("#trip-subtitle").fill("Suite subtitle");
+    await page.waitForTimeout(1200);
+    // What the form refuses to publish, in its own words: the list inside the
+    // alert, not the whole page — the page mentions seats and places in its
+    // own headings and would pass on those alone.
+    const said = (await page.locator("[role=alert]").allInnerTexts()).join(" ").replace(/\s+/g, " ");
+    report.check("А-03", "в причинах отказа нет пустого русского",
+      !/Russian|русск/i.test(said),
+      said.match(/[^.]*(Russian|русск)[^.]*/)?.[0]?.slice(0, 110) || "о русском ни слова");
+    report.check("А-03", "форма называет, чего действительно не хватает",
+      /photos|фото|seats|мест|address|адрес|cover|обложк/i.test(said),
+      said.slice(0, 160) || "список причин пуст");
+
     const publish = page.getByRole("button", { name: /^(Publish|Опубликовать)$/ }).first();
     if ((await publish.count()) > 0) {
-      await page.waitForTimeout(1200);
-      const blocked = await publish.isDisabled();
-      report.check("А-03", "публикация заблокирована, пока второй язык пуст", blocked);
-      const said = await pageText(page, "body");
-      report.check("А-03", "форма называет, чего не хватает",
-        /Russian|русск|both languages|оба языка|Fill|Заполните|required|обязател/i.test(said),
-        said.match(/[^.]*(Russian|русск|both languages|оба языка)[^.]*\./)?.[0]?.slice(0, 110));
+      report.check("А-03", "без фотографий публиковать всё ещё нельзя",
+        await publish.isDisabled());
     } else {
-      report.skip("А-03", "публикация с пустым вторым языком", "кнопки публикации нет на этом экране");
+      report.skip("А-03", "кнопка публикации", "её нет на этом экране");
     }
 
     // Now fill the Russian side and save a draft.
@@ -285,6 +295,19 @@ export async function run({ browser, base, run: report }) {
       report.check("П-06", "незаполненный блок не выводится",
         !/Day by day|Route map|День за днём|Карта маршрута/i.test(bare),
         "у черновика заполнены только название и даты");
+      // The Russian half of the same draft: the subtitle was filled in English
+      // only, so the Russian page must show the English line rather than an
+      // empty frame. That is the whole promise of fill-locales.ts, checked on
+      // the page component itself.
+      const toRu = page.locator("div.fixed.inset-0 div[role=group] button", { hasText: /^RU$/ }).first();
+      if ((await toRu.count()) > 0) {
+        await toRu.click();
+        await page.waitForTimeout(1200);
+        const russian = await pageText(page, "body");
+        report.check("П-08", "на русской версии вместо пустоты — английский текст",
+          russian.includes("Suite subtitle"),
+          russian.slice(0, 80));
+      }
       await page.getByRole("button", { name: /Back to the form|Вернуться к форме/ }).first().click();
       await page.waitForTimeout(1500);
     } else {

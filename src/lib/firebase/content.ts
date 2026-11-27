@@ -7,6 +7,7 @@ import {
   where,
   type DocumentData,
 } from "firebase/firestore/lite";
+import { fillLocales } from "@/lib/content/fill-locales";
 import type { Settings, SiteContent, Trip } from "@/lib/content/types";
 import { firestore } from "./app";
 import { SETTINGS_DOC_ID, collections, isFirebaseConfigured } from "./config";
@@ -72,7 +73,10 @@ async function readSiteContent(): Promise<SiteContent> {
       readSettings(db),
     ]);
 
-    return { interests, trips, people, projects, counters, settings };
+    // Every language gap filled from the other language before anything is
+    // rendered — see fill-locales.ts. One pass here rather than a decision at
+    // each of the several hundred places a page reads a localized field.
+    return fillLocales({ interests, trips, people, projects, counters, settings });
   } catch (cause) {
     throw new Error(
       "[content] Could not read the site content from Firestore. Refusing to " +
